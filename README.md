@@ -81,13 +81,13 @@ In your AppDelegate in the `didFinishLaunchingWithOptions` function you have to 
 ```swift
 try DP3TTracing.initialize(with: "com.example.your.app", enviroment: .prod)
 ```
-The provided app name has to be registered in the discovery service on [Github](https://raw.githubusercontent.com/SecureTagForApproachRecognition/discovery/master/discovery.json)
+The provided app name has to be registered in the discovery service on [Github](https://github.com/DP-3T/dp3t-discovery)
 
 ### Start / Stop tracing
 To start and stop tracing use
 ```swift
 try DP3TTracing.startTracing()
-D3PTTracing.stopTracing()
+DP3TTracing.stopTracing()
 ```
 Make sure that the app includes in the `Info.plist` the bluetooth keys `NSBluetoothAlwaysUsageDescription` and `NSBluetoothPeripheralUsageDescription` and that the user has granted the app permission to use the Bluetooth periferals. Also the app as to support `BackgroundMode` capability for `bluetooth-central` and `bluetooth-peripheral`.
 
@@ -123,7 +123,7 @@ The SDK will call your delegate on every state change, this includes: Handshake 
 
 ### Report user exposed
 ```swift
-D3PTTracing.iWasExposed(onset: Date(), authString: "") { result in
+DP3TTracing.iWasExposed(onset: Date(), authString: "") { result in
 	// Handle result here
 }
 ```
@@ -131,7 +131,7 @@ D3PTTracing.iWasExposed(onset: Date(), authString: "") { result in
 ### Sync with backend for exposed user
 The SDK does not automatically sync with the backend for new exposed users. The app is responsible for fetching the new exposed users as it sees fit (periodically or via user input):
 ```swift
-D3PTTracing.sync() { result in
+DP3TTracing.sync() { result in
 	// Handle result here
 }
 ```
