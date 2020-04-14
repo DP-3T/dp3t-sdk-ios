@@ -37,7 +37,7 @@ class DP3TCryptoModule {
     private func rotateSK() throws {
         var keys = try store.getSecretKeys()
         guard let firstKey = keys.first else {
-            throw CrypoError.dataIntegrity
+            throw CryptoError.dataIntegrity
         }
         let nextEpoch = firstKey.epoch.getNext()
         let sKt1 = getSKt1(SKt0: firstKey.keyData)
@@ -55,7 +55,7 @@ class DP3TCryptoModule {
             keys = try store.getSecretKeys()
         }
         guard let firstKey = keys.first else {
-            throw CrypoError.dataIntegrity
+            throw CryptoError.dataIntegrity
         }
         assert(firstKey.epoch.timestamp == day.timestamp)
         return firstKey.keyData

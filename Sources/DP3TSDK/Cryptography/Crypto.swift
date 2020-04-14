@@ -70,7 +70,7 @@ public class Crypto {
                                                &cryptor)
             }
             if status != 0 {
-                throw CrypoError.AESError
+                throw CryptoError.AESError
             }
         }
 
@@ -97,7 +97,7 @@ public class Crypto {
             }
 
             if UInt32(cryptStatus) != UInt32(kCCSuccess) {
-                throw CrypoError.AESError
+                throw CryptoError.AESError
             }
 
             return cryptData

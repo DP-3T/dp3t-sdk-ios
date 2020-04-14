@@ -21,7 +21,7 @@ enum CryptoConstants {
     static let broadcastKey: Data = "broadcast key".data(using: .utf8)!
 }
 
-enum CrypoError: Error {
+enum CryptoError: Error {
     case dataIntegrity
     case IVError
     case AESError
