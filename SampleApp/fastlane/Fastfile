@@ -1,0 +1,42 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Push a new build to AppCenter"
+  lane :distribute do
+
+  create_keychain(
+    name: "githubactionci",
+    password: "githubkeychain",
+    default_keychain: true,
+    unlock: true
+  )
+
+  match(
+    type: "enterprise",
+    readonly: is_ci,
+    keychain_name: "githubactionci",
+    keychain_password: "githubkeychain"
+  )
+
+  update_code_signing_settings(
+    use_automatic_signing: false,
+    path: ENV["XCODE_PROJ"],
+    profile_name: ENV["sigh_"+ENV["APP_IDENTIFIER"] +"_enterprise_profile-name"],
+    code_sign_identity: "iPhone Distribution",
+    bundle_identifier: ENV["APP_IDENTIFIER"] 
+  )
+
+  build_app(
+    scheme: "Release",
+  )
+
+  appcenter_upload(
+    owner_type: "organization", 
+    file: ENV["IPA_OUTPUT_PATH"],
+    upload_build_only: true,
+    destinations: "Collaborators,Internal"
+  )
+  end
+end
+
+
