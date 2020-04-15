@@ -53,7 +53,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
 
     func testGenerateEphIDs() {
         let store = KeyStore()
-        let crypto: DP3TCryptoModule = DP3TCryptoModule(store: store)!
+        let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
         let allEphsOfToday = try! DP3TCryptoModule.createEphIDs(secretKey: crypto.getSecretKeyForPublishing(onsetDate: Date())!)
         let currentEphID = try! crypto.getCurrentEphID()
         var matchingCount = 0
@@ -68,7 +68,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
 
     func testStorageEphIDs() {
         let store = KeyStore()
-        let crypto: DP3TCryptoModule = DP3TCryptoModule(store: store)!
+        let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
         let currentEphID = try! crypto.getCurrentEphID()
         XCTAssertNotNil(store.ephIDs)
         XCTAssertTrue(store.ephIDs!.ephIDs.contains(currentEphID))
@@ -94,12 +94,12 @@ final class DP3TTracingCryptoTests: XCTestCase {
 
     func testReset() {
         let store = KeyStore()
-        var crypto: DP3TCryptoModule? = DP3TCryptoModule(store: store)!
+        var crypto: DP3TCryptoModule? = try! DP3TCryptoModule(store: store)
         let ephID = try! crypto!.getCurrentEphID()
 
         crypto!.reset()
         crypto = nil
-        crypto = DP3TCryptoModule(store: store)!
+        crypto = try! DP3TCryptoModule(store: store)
 
         let newEphID = try! crypto!.getCurrentEphID()
 
@@ -120,7 +120,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
 
     func testSecretKeyPushlishing() {
         let store1 = KeyStore()
-        let crypto1: DP3TCryptoModule = DP3TCryptoModule(store: store1)!
+        let crypto1: DP3TCryptoModule = try! DP3TCryptoModule(store: store1)
         let token = try! crypto1.getCurrentEphID()
         _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(1 * .day)))
         _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(2 * .day)))
@@ -132,7 +132,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
         handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephID: token, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
 
         let store2 = KeyStore()
-        let crypto2: DP3TCryptoModule = DP3TCryptoModule(store: store2)!
+        let crypto2: DP3TCryptoModule = try! DP3TCryptoModule(store: store2)
 
         let h = try! crypto2.checkContacts(secretKey: key, onsetDate: SecretKeyDay(date: Date()), bucketDate: SecretKeyDay(date: Date().addingTimeInterval(.day)), getHandshake: { (_) -> ([HandshakeModel]) in
             handshakes
@@ -143,7 +143,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
 
     func testSecretKeyPushlishingOnsetAfterContact() {
         let store1 = KeyStore()
-        let crypto1: DP3TCryptoModule = DP3TCryptoModule(store: store1)!
+        let crypto1: DP3TCryptoModule = try! DP3TCryptoModule(store: store1)
         let token = try! crypto1.getCurrentEphID()
         _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(1 * .day)))
         _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(2 * .day)))
@@ -155,7 +155,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
         handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephID: token, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
 
         let store2 = KeyStore()
-        let crypto2: DP3TCryptoModule = DP3TCryptoModule(store: store2)!
+        let crypto2: DP3TCryptoModule = try! DP3TCryptoModule(store: store2)
 
         let h = try! crypto2.checkContacts(secretKey: key, onsetDate: SecretKeyDay(date: Date()), bucketDate: SecretKeyDay(date: Date().addingTimeInterval(.day)), getHandshake: { (_) -> ([HandshakeModel]) in
             handshakes
@@ -166,7 +166,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
 
     func testKeyAndTokenToday(_ key: String, _ token: String, found: Bool) {
         let store = KeyStore()
-        let crypto: DP3TCryptoModule? = DP3TCryptoModule(store: store)!
+        let crypto: DP3TCryptoModule? = try! DP3TCryptoModule(store: store)
 
         var handshakes: [HandshakeModel] = []
         handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephID: Data(base64Encoded: token)!, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))

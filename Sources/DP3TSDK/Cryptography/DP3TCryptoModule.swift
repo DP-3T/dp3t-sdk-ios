@@ -15,7 +15,7 @@ class DP3TCryptoModule {
 
     /// Initilized the module
     /// - Parameter store: storage to use to persist secretkeys and ephIDs
-    init?(store: SecureStorageProtocol = SecureStorage.shared) {
+    init(store: SecureStorageProtocol = SecureStorage.shared) throws {
         self.store = store
         do {
             let keys = try store.getSecretKeys()
@@ -23,15 +23,7 @@ class DP3TCryptoModule {
                 try generateInitialSecretKey()
             }
         } catch KeychainError.notFound {
-            do {
-                try generateInitialSecretKey()
-            } catch {
-                return nil
-            }
-        } catch KeychainError.cannotAccess {
-            return nil
-        } catch {
-            return nil
+            try generateInitialSecretKey()
         }
     }
 
