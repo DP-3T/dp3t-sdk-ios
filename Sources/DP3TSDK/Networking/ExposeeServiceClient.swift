@@ -50,14 +50,15 @@ class ExposeeServiceClient {
 
         var existingEtag: String?
         if  let cache = urlCache.cachedResponse(for: request),
-            let response = cache.response as? HTTPURLResponse {
-            existingEtag = response.allHeaderFields["Etag"] as? String
+            let response = cache.response as? HTTPURLResponse,
+            let etag = response.etag {
+            existingEtag = etag
         }
         let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             // Compare new Etag with old one
             // We only need to process changed lists
             if let httpResponse = response as? HTTPURLResponse,
-                let etag = httpResponse.allHeaderFields["Etag"] as? String {
+                let etag = httpResponse.etag {
                 if etag == existingEtag {
                     completion(.success(nil))
                     return
@@ -215,5 +216,17 @@ class ExposeeServiceClient {
             }
         })
         task.resume()
+    }
+}
+
+extension HTTPURLResponse {
+    var etag: String? {
+        for header in allHeaderFields {
+            if let key = header.key as? String,
+                key.lowercased() == "etag" {
+                return header.value as? String
+            }
+        }
+        return nil
     }
 }
