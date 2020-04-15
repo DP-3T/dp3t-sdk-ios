@@ -10,7 +10,7 @@ import XCTest
 private class KeyStore: SecureStorageProtocol {
     var keys: [SecretKey] = []
 
-    var ephIds: EphIdsForDay?
+    var ephIDs: EphIDsForDay?
 
     func getSecretKeys() throws -> [SecretKey] {
         return keys
@@ -20,17 +20,17 @@ private class KeyStore: SecureStorageProtocol {
         keys = object
     }
 
-    func getEphIds() throws -> EphIdsForDay? {
-        return ephIds
+    func getEphIDs() throws -> EphIDsForDay? {
+        return ephIDs
     }
 
-    func setEphIds(_ object: EphIdsForDay) throws {
-        ephIds = object
+    func setEphIDs(_ object: EphIDsForDay) throws {
+        ephIDs = object
     }
 
     func removeAllObject() {
         keys = []
-        ephIds = nil
+        ephIDs = nil
     }
 }
 
@@ -51,41 +51,41 @@ final class DP3TTracingCryptoTests: XCTestCase {
         XCTAssertEqual(real.base64EncodedString(), expected)
     }
 
-    func testGenerateEphIds() {
+    func testGenerateEphIDs() {
         let store = KeyStore()
         let crypto: DP3TCryptoModule = DP3TCryptoModule(store: store)!
-        let allEphsOfToday = try! DP3TCryptoModule.createEphIds(secretKey: crypto.getSecretKeyForPublishing(onsetDate: Date())!)
-        let currentEphId = try! crypto.getCurrentEphId()
+        let allEphsOfToday = try! DP3TCryptoModule.createEphIDs(secretKey: crypto.getSecretKeyForPublishing(onsetDate: Date())!)
+        let currentEphID = try! crypto.getCurrentEphID()
         var matchingCount = 0
-        for ephId in allEphsOfToday {
-            XCTAssert(ephId.count == CryptoConstants.keyLenght)
-            if ephId == currentEphId {
+        for ephID in allEphsOfToday {
+            XCTAssert(ephID.count == CryptoConstants.keyLenght)
+            if ephID == currentEphID {
                 matchingCount += 1
             }
         }
         XCTAssert(matchingCount == 1)
     }
 
-    func testStorageEphIds() {
+    func testStorageEphIDs() {
         let store = KeyStore()
         let crypto: DP3TCryptoModule = DP3TCryptoModule(store: store)!
-        let currentEphId = try! crypto.getCurrentEphId()
-        XCTAssertNotNil(store.ephIds)
-        XCTAssertTrue(store.ephIds!.ephIds.contains(currentEphId))
-        XCTAssertEqual(currentEphId, try! crypto.getCurrentEphId())
+        let currentEphID = try! crypto.getCurrentEphID()
+        XCTAssertNotNil(store.ephIDs)
+        XCTAssertTrue(store.ephIDs!.ephIDs.contains(currentEphID))
+        XCTAssertEqual(currentEphID, try! crypto.getCurrentEphID())
     }
 
     func testGenerationEphsIdsWithAndorid() {
         let base64SecretKey = "BLz13+/lzSyPbNw4SoGvjjNynqh125AQEQup+FDelG0="
-        let base64EncodedEphId = "0lzW4z8mj+MPdZk8UaK9jA=="
+        let base64EncodedEphID = "0lzW4z8mj+MPdZk8UaK9jA=="
         let base64EncodedEph1Id = "Vq+p4jkSaDbhib6dfgsHGw=="
-        let allEphId: [Data] = try! DP3TCryptoModule.createEphIds(secretKey: Data(base64Encoded: base64SecretKey)!)
+        let allEphID: [Data] = try! DP3TCryptoModule.createEphIDs(secretKey: Data(base64Encoded: base64SecretKey)!)
         var matchingCount = 0
-        for ephId in allEphId {
-            if ephId.base64EncodedString() == base64EncodedEphId {
+        for ephID in allEphID {
+            if ephID.base64EncodedString() == base64EncodedEphID {
                 matchingCount += 1
             }
-            if ephId.base64EncodedString() == base64EncodedEph1Id {
+            if ephID.base64EncodedString() == base64EncodedEph1Id {
                 matchingCount += 1
             }
         }
@@ -95,15 +95,15 @@ final class DP3TTracingCryptoTests: XCTestCase {
     func testReset() {
         let store = KeyStore()
         var crypto: DP3TCryptoModule? = DP3TCryptoModule(store: store)!
-        let ephId = try! crypto!.getCurrentEphId()
+        let ephID = try! crypto!.getCurrentEphID()
 
         crypto!.reset()
         crypto = nil
         crypto = DP3TCryptoModule(store: store)!
 
-        let newEphId = try! crypto!.getCurrentEphId()
+        let newEphID = try! crypto!.getCurrentEphID()
 
-        XCTAssertNotEqual(ephId, newEphId)
+        XCTAssertNotEqual(ephID, newEphID)
     }
 
     func testTokenToday() {
@@ -121,7 +121,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
     func testSecretKeyPushlishing() {
         let store1 = KeyStore()
         let crypto1: DP3TCryptoModule = DP3TCryptoModule(store: store1)!
-        let token = try! crypto1.getCurrentEphId()
+        let token = try! crypto1.getCurrentEphID()
         _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(1 * .day)))
         _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(2 * .day)))
         _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(3 * .day)))
@@ -129,7 +129,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
         let key = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date()))!
 
         var handshakes: [HandshakeModel] = []
-        handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephid: token, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
+        handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephID: token, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
 
         let store2 = KeyStore()
         let crypto2: DP3TCryptoModule = DP3TCryptoModule(store: store2)!
@@ -144,7 +144,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
     func testSecretKeyPushlishingOnsetAfterContact() {
         let store1 = KeyStore()
         let crypto1: DP3TCryptoModule = DP3TCryptoModule(store: store1)!
-        let token = try! crypto1.getCurrentEphId()
+        let token = try! crypto1.getCurrentEphID()
         _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(1 * .day)))
         _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(2 * .day)))
         _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(3 * .day)))
@@ -152,7 +152,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
         let key = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(.day)))!
 
         var handshakes: [HandshakeModel] = []
-        handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephid: token, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
+        handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephID: token, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
 
         let store2 = KeyStore()
         let crypto2: DP3TCryptoModule = DP3TCryptoModule(store: store2)!
@@ -169,7 +169,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
         let crypto: DP3TCryptoModule? = DP3TCryptoModule(store: store)!
 
         var handshakes: [HandshakeModel] = []
-        handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephid: Data(base64Encoded: token)!, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
+        handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephID: Data(base64Encoded: token)!, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
 
         let keyData = Data(base64Encoded: key)!
         let h = try! crypto?.checkContacts(secretKey: keyData, onsetDate: Epoch(date: Date().addingTimeInterval(-1 * .day)), bucketDate: Epoch(), getHandshake: { (_) -> ([HandshakeModel]) in
@@ -180,14 +180,14 @@ final class DP3TTracingCryptoTests: XCTestCase {
 
     static var allTests = [
         ("sha256", testSha256),
-        ("generateEphIds", testGenerateEphIds),
-        ("generateEphIdsAndroid", testGenerationEphsIdsWithAndorid),
+        ("generateEphIDs", testGenerateEphIDs),
+        ("generateEphIDsAndroid", testGenerationEphsIdsWithAndorid),
         ("testHmac", testHmac),
         ("testReset", testReset),
         ("testTokenToday", testTokenToday),
         ("testWrongTokenToday", testWrongTokenToday),
         ("testSecretKeyPushlishing", testSecretKeyPushlishing),
         ("testSecretKeyPushlishingOnsetAfterContact", testSecretKeyPushlishingOnsetAfterContact),
-        ("testStorageEphIds", testStorageEphIds),
+        ("testStorageEphIDs", testStorageEphIDs),
     ]
 }

@@ -15,7 +15,7 @@ struct SecretKey: Codable, CustomStringConvertible {
     }
 }
 
-struct EphIdsForDay: Codable {
+struct EphIDsForDay: Codable {
     let epoch: Epoch
-    let ephIds: [Data]
+    let ephIDs: [Data]
 }

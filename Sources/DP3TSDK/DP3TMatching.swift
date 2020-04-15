@@ -62,7 +62,7 @@ extension DP3TMatcher: BluetoothDiscoveryDelegate {
     func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double?) throws {
         // Do no realtime matching
         let handshake = HandshakeModel(timestamp: Date(),
-                                       ephid: data,
+                                       ephID: data,
                                        TXPowerlevel: TXPowerlevel,
                                        RSSI: RSSI,
                                        knownCaseId: nil)

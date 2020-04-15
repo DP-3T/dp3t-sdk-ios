@@ -185,8 +185,8 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
             #if CALIBRATION
                 logger?.log(type: .receiver, "Found manufacturer specific data \(data.hexEncodedString)")
-                let ephId = String(data: data[..<4], encoding: .utf8) ?? "Unable to decode"
-                logger?.log(type: .receiver, " → ✅ Received (EphID in SCAN_RSP: \(ephId)) from \(peripheral.identifier) at \(Date())")
+                let ephID = String(data: data[..<4], encoding: .utf8) ?? "Unable to decode"
+                logger?.log(type: .receiver, " → ✅ Received (EphID in SCAN_RSP: \(ephID)) from \(peripheral.identifier) at \(Date())")
             #endif
 
             // Cancel connection if it was already made

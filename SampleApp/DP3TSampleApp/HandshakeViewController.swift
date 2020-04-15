@@ -151,7 +151,7 @@ class HandshakeViewController: UIViewController {
     private func groupHandshakes(_ handshakes: [HandshakeModel]) -> [String: [HandshakeModel]] {
         var grouppedHandshakes: [String: [HandshakeModel]] = [:]
         for handshake in handshakes {
-            guard let identifier = handshake.ephid.DP3THeadIndentifier else {
+            guard let identifier = handshake.ephID.DP3THeadIndentifier else {
                 continue
             }
             var group = grouppedHandshakes[identifier, default: []]
@@ -227,8 +227,8 @@ extension HandshakeViewController: UITableViewDataSource {
             cell.detailTextLabel?.text = "\(interval.identifier) - \(interval.count) / \(interval.expectedCount)"
         case .raw:
             let handshake = cachedHandshakes[indexPath.row]
-            let ephid = handshake.ephid
-            cell.textLabel?.text = (ephid.DP3THeadIndentifier ?? "Unknown") + " - " + ephid.hexEncodedString
+            let ephID = handshake.ephID
+            cell.textLabel?.text = (ephID.DP3THeadIndentifier ?? "Unknown") + " - " + ephID.hexEncodedString
             let distance: String = handshake.distance == nil ? "--" : String(format: "%.2fm", handshake.distance!)
             let tx: String = handshake.TXPowerlevel == nil ? " -- " : String(format: "%.2f", handshake.TXPowerlevel!)
             let rssi: String = handshake.RSSI == nil ? " -- " : String(format: "%.2f", handshake.RSSI!)

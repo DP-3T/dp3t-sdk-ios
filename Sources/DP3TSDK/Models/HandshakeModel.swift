@@ -13,7 +13,7 @@ public struct HandshakeModel {
     /// The timestamp of the handshake
     public let timestamp: Date
     /// The DP3T token exchanged during the handshake
-    public let ephid: Data
+    public let ephID: Data
     /// The TX Power Level of both handshaking parties
     public let TXPowerlevel: Double?
     /// The RSSI of both handshaking parties

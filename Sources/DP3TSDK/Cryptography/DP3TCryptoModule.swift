@@ -7,14 +7,14 @@
 import CommonCrypto
 import Foundation
 
-/// Implements the ephid and secretkey handling
+/// Implements the ephID and secretkey handling
 /// as specified in https://github.com/DP-3T/documents
 class DP3TCryptoModule {
 
     private let store: SecureStorageProtocol
 
     /// Initilized the module
-    /// - Parameter store: storage to use to persist secretkeys and ephIds
+    /// - Parameter store: storage to use to persist secretkeys and ephIDs
     init?(store: SecureStorageProtocol = SecureStorage.shared) {
         self.store = store
         do {
@@ -73,53 +73,53 @@ class DP3TCryptoModule {
         return firstKey.keyData
     }
 
-    /// generates ephIds based on secret key
-    /// - Parameter secretKey: secret key to base ephIds on
+    /// generates ephIDs based on secret key
+    /// - Parameter secretKey: secret key to base ephIDs on
     /// - Throws: throws if a error happens
-    /// - Returns: the ephids
-    internal static func createEphIds(secretKey: Data) throws -> [Data] {
+    /// - Returns: the ephIDs
+    internal static func createEphIDs(secretKey: Data) throws -> [Data] {
         let hmac = Crypto.hmac(msg: CryptoConstants.broadcastKey, key: secretKey)
 
         let zeroData = Data(count: CryptoConstants.keyLenght * CryptoConstants.numberOfEpochsPerDay)
 
         let aes = try Crypto.AESCTREncrypt(keyData: hmac)
 
-        var ephIds = [Data]()
+        var ephIDs = [Data]()
         let prgData = try aes.encrypt(data: zeroData)
         for i in 0 ..< CryptoConstants.numberOfEpochsPerDay {
             let pos = i * CryptoConstants.keyLenght
-            ephIds.append(prgData[pos ..< pos + CryptoConstants.keyLenght])
+            ephIDs.append(prgData[pos ..< pos + CryptoConstants.keyLenght])
         }
 
-        ephIds.shuffle()
+        ephIDs.shuffle()
 
-        return ephIds
+        return ephIDs
     }
 
-    /// retrieves the ephIds for a given day
+    /// retrieves the ephIDs for a given day
     ///  either from storage or they get generate on demand
-    /// - Parameter epoch: optional epoch for ephIds, defaults to today
+    /// - Parameter epoch: optional epoch for ephIDs, defaults to today
     /// - Throws: throws if a error happens
-    /// - Returns: the ephids
-    private func getEphidsForToday(epoch: Epoch = Epoch()) throws -> [Data] {
-        var stored = try? store.getEphIds()
+    /// - Returns: the ephIDs
+    private func getEphIDsForToday(epoch: Epoch = Epoch()) throws -> [Data] {
+        var stored = try? store.getEphIDs()
         if stored == nil || stored?.epoch != epoch {
             let currentSk = try getCurrentSK(epoch: epoch)
-            let ephIds = try DP3TCryptoModule.createEphIds(secretKey: currentSk)
-            stored = EphIdsForDay(epoch: epoch, ephIds: ephIds)
-            try store.setEphIds(stored!)
+            let ephIDs = try DP3TCryptoModule.createEphIDs(secretKey: currentSk)
+            stored = EphIDsForDay(epoch: epoch, ephIDs: ephIDs)
+            try store.setEphIDs(stored!)
         }
-        return stored!.ephIds
+        return stored!.ephIDs
     }
 
-    /// retrieve current ephId
+    /// retrieve current ephID
     /// - Throws: throws if a error happens
-    /// - Returns: the ephId
-    internal func getCurrentEphId() throws -> Data {
+    /// - Returns: the ephID
+    internal func getCurrentEphID() throws -> Data {
         let epoch = Epoch()
-        let ephIds = try getEphidsForToday(epoch: epoch)
+        let ephIDs = try getEphIDsForToday(epoch: epoch)
         let counter = Int((Date().timeIntervalSince1970 - epoch.timestamp) / Double(CryptoConstants.millisecondsPerEpoch))
-        return ephIds[counter]
+        return ephIDs[counter]
     }
 
     /// check if we had handshakes with a contact given its secretkey
@@ -141,12 +141,12 @@ class DP3TCryptoModule {
                 continue
             }
 
-            // generate all ephIds for day
-            let ephIds = try DP3TCryptoModule.createEphIds(secretKey: secretKeyForDay)
-            // check all handshakes if they match any of the ephIds
+            // generate all ephIDs for day
+            let ephIDs = try DP3TCryptoModule.createEphIDs(secretKey: secretKeyForDay)
+            // check all handshakes if they match any of the ephIDs
             for handshake in handshakesOnDay {
-                for ephId in ephIds {
-                    if handshake.ephid == ephId {
+                for ephID in ephIDs {
+                    if handshake.ephID == ephID {
                         return handshake
                     }
                 }

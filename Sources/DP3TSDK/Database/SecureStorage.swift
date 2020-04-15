@@ -14,8 +14,8 @@ enum KeychainError: Error {
 protocol SecureStorageProtocol {
     func getSecretKeys() throws -> [SecretKey]
     func setSecretKeys(_ object: [SecretKey]) throws
-    func getEphIds() throws -> EphIdsForDay?
-    func setEphIds(_ object: EphIdsForDay) throws
+    func getEphIDs() throws -> EphIDsForDay?
+    func setEphIDs(_ object: EphIDsForDay) throws
     func removeAllObject()
 }
 
@@ -23,21 +23,21 @@ class SecureStorage: SecureStorageProtocol {
     static let shared = SecureStorage()
 
     private let secretKeyKey: String = "org.dpppt.keylist"
-    private let ephIdsTodayKey: String = "org.dpppt.ephsIds"
+    private let ephIDsTodayKey: String = "org.dpppt.ephsIds"
 
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
     init() {}
 
-    func getEphIds() throws -> EphIdsForDay? {
-        let data = try get(for: ephIdsTodayKey)
-        return try decoder.decode(EphIdsForDay.self, from: data)
+    func getEphIDs() throws -> EphIDsForDay? {
+        let data = try get(for: ephIDsTodayKey)
+        return try decoder.decode(EphIDsForDay.self, from: data)
     }
 
-    func setEphIds(_ object: EphIdsForDay) throws {
+    func setEphIDs(_ object: EphIDsForDay) throws {
         let data = try encoder.encode(object)
-        set(data, key: ephIdsTodayKey)
+        set(data, key: ephIDsTodayKey)
     }
 
     func getSecretKeys() throws -> [SecretKey] {
@@ -89,7 +89,7 @@ class SecureStorage: SecureStorageProtocol {
         do {
             let query: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
-                kSecAttrAccount as String: ephIdsTodayKey,
+                kSecAttrAccount as String: ephIDsTodayKey,
             ]
             SecItemDelete(query as CFDictionary)
         }
