@@ -37,7 +37,7 @@ class SecureStorage: SecureStorageProtocol {
 
     func setEphIds(_ object: EphIdsForDay) throws {
         let data = try encoder.encode(object)
-        set(data, key: ephIdsTodayKey)
+        try set(data, key: ephIdsTodayKey)
     }
 
     func getSecretKeys() throws -> [SecretKey] {
@@ -47,17 +47,21 @@ class SecureStorage: SecureStorageProtocol {
 
     func setSecretKeys(_ object: [SecretKey]) throws {
         let data = try encoder.encode(object)
-        set(data, key: secretKeyKey)
+        try set(data, key: secretKeyKey)
     }
 
-    private func set(_ data: Data, key: String) {
+    private func set(_ data: Data, key: String) throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword as String,
             kSecAttrAccount as String: key,
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
         ]
-        SecItemAdd(query as CFDictionary, nil)
+        SecItemDelete(query as CFDictionary)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        guard status == errSecSuccess else {
+            throw KeychainError.cannotAccess
+        }
     }
 
     private func get(for key: String) throws -> Data {
@@ -78,20 +82,24 @@ class SecureStorage: SecureStorageProtocol {
         return (item as! CFData) as Data
     }
 
+    private func removeSecretKeys() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: secretKeyKey,
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
+
+    private func removeEphIds() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: ephIdsTodayKey,
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
+
     func removeAllObject() {
-        do {
-            let query: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrAccount as String: secretKeyKey,
-            ]
-            SecItemDelete(query as CFDictionary)
-        }
-        do {
-            let query: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrAccount as String: ephIdsTodayKey,
-            ]
-            SecItemDelete(query as CFDictionary)
-        }
+        removeSecretKeys()
+        removeEphIds()
     }
 }
