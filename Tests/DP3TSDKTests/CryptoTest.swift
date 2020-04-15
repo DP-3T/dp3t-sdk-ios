@@ -54,7 +54,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
     func testGenerateEphIds() {
         let store = KeyStore()
         let crypto: DP3TCryptoModule = DP3TCryptoModule(store: store)!
-        let allEphsOfToday = try! crypto.createEphIds(secretKey: crypto.getSecretKeyForPublishing(onsetDate: Date())!)
+        let allEphsOfToday = try! DP3TCryptoModule.createEphIds(secretKey: crypto.getSecretKeyForPublishing(onsetDate: Date())!)
         let currentEphId = try! crypto.getCurrentEphId()
         var matchingCount = 0
         for ephId in allEphsOfToday {
@@ -76,12 +76,10 @@ final class DP3TTracingCryptoTests: XCTestCase {
     }
 
     func testGenerationEphsIdsWithAndorid() {
-        let store = KeyStore()
-        let crypto: DP3TCryptoModule = DP3TCryptoModule(store: store)!
         let base64SecretKey = "BLz13+/lzSyPbNw4SoGvjjNynqh125AQEQup+FDelG0="
         let base64EncodedEphId = "0lzW4z8mj+MPdZk8UaK9jA=="
         let base64EncodedEph1Id = "Vq+p4jkSaDbhib6dfgsHGw=="
-        let allEphId: [Data] = try! crypto.createEphIds(secretKey: Data(base64Encoded: base64SecretKey)!)
+        let allEphId: [Data] = try! DP3TCryptoModule.createEphIds(secretKey: Data(base64Encoded: base64SecretKey)!)
         var matchingCount = 0
         for ephId in allEphId {
             if ephId.base64EncodedString() == base64EncodedEphId {
@@ -124,9 +122,9 @@ final class DP3TTracingCryptoTests: XCTestCase {
         let store1 = KeyStore()
         let crypto1: DP3TCryptoModule = DP3TCryptoModule(store: store1)!
         let token = try! crypto1.getCurrentEphId()
-        _ = try! crypto1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(1 * .day)))
-        _ = try! crypto1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(2 * .day)))
-        _ = try! crypto1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(3 * .day)))
+        _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(1 * .day)))
+        _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(2 * .day)))
+        _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(3 * .day)))
 
         let key = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date()))!
 
@@ -147,9 +145,9 @@ final class DP3TTracingCryptoTests: XCTestCase {
         let store1 = KeyStore()
         let crypto1: DP3TCryptoModule = DP3TCryptoModule(store: store1)!
         let token = try! crypto1.getCurrentEphId()
-        _ = try! crypto1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(1 * .day)))
-        _ = try! crypto1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(2 * .day)))
-        _ = try! crypto1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(3 * .day)))
+        _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(1 * .day)))
+        _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(2 * .day)))
+        _ = try! crypto1.getCurrentSK(epoch: Epoch(date: Date().addingTimeInterval(3 * .day)))
 
         let key = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(.day)))!
 
