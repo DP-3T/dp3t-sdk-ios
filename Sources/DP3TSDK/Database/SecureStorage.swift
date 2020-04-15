@@ -40,6 +40,9 @@ class SecureStorage: SecureStorageProtocol {
             switch error {
             case .notFound:
                 return nil
+            case .decodingError:
+                keychain.delete(for: ephIdsTodayKey)
+                return nil
             default:
                 throw error
             }
@@ -70,6 +73,9 @@ class SecureStorage: SecureStorageProtocol {
         case let .failure(error):
             switch error {
             case .notFound:
+                return []
+            case .decodingError:
+                keychain.delete(for: secretKeyKey)
                 return []
             default:
                 throw error
