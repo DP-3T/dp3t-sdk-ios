@@ -7,7 +7,7 @@
 import Foundation
 
 /// A model for known cases
-struct KnownCaseModel: Decodable {
+struct KnownCaseModel: Codable, Equatable {
     /// The identifier of the case
     let id: Int?
     /// The private key of the case

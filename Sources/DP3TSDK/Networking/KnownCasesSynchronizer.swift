@@ -68,14 +68,16 @@ class KnownCasesSynchronizer {
     /// - Parameters:
     ///   - dayIdentifier: The day identifier
     ///   - callback: The callback once the task is finished
-    private func dayResultHandler(_ dayIdentifier: String, callback: Callback?) -> (Result<[KnownCaseModel], DP3TTracingErrors>) -> Void {
+    private func dayResultHandler(_ dayIdentifier: String, callback: Callback?) -> (Result<[KnownCaseModel]?, DP3TTracingErrors>) -> Void {
         numberOfIssuedRequests += 1
         return { result in
             switch result {
             case let .failure(error):
                 self.errors.append((dayIdentifier, error))
             case let .success(data):
-                self.knownCases[dayIdentifier] = data
+                if let data = data {
+                    self.knownCases[dayIdentifier] = data
+                }
             }
             self.numberOfFulfilledRequests += 1
             self.checkForCompletion(callback: callback)
