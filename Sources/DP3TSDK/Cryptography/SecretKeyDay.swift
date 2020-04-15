@@ -6,7 +6,7 @@
 
 import Foundation
 
-struct Epoch: Codable, CustomStringConvertible, Equatable {
+struct SecretKeyDay: Codable, CustomStringConvertible, Equatable {
     let timestamp: TimeInterval
 
     init(date: Date = Date()) {
@@ -16,20 +16,20 @@ struct Epoch: Codable, CustomStringConvertible, Equatable {
         timestamp = calendar.date(from: components)!.timeIntervalSince1970
     }
 
-    public func getNext() -> Epoch {
+    public func getNext() -> SecretKeyDay {
         let nextDay = Date(timeIntervalSince1970: timestamp).addingTimeInterval(.day)
-        return Epoch(date: nextDay)
+        return SecretKeyDay(date: nextDay)
     }
 
     public func isBefore(other: Date) -> Bool {
         return timestamp < other.timeIntervalSince1970
     }
 
-    public func isBefore(other: Epoch) -> Bool {
+    public func isBefore(other: SecretKeyDay) -> Bool {
         return timestamp < other.timestamp
     }
 
     var description: String {
-        return "<Epoch_\(Date(timeIntervalSince1970: timestamp))>"
+        return "<SecretKeyDay\(Date(timeIntervalSince1970: timestamp))>"
     }
 }
