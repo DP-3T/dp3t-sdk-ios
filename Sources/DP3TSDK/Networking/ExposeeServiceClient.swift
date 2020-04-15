@@ -61,7 +61,6 @@ class ExposeeServiceClient {
                 if etag == existingEtag {
                     completion(.success(nil))
                     return
-                }else {
                 }
             }
 

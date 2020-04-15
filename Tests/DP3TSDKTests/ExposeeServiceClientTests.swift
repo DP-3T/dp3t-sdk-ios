@@ -133,6 +133,8 @@ final class ExposeeServiceClientTests: XCTestCase {
 
     static var allTests = [
         ("testExposeeEmpty", testExposeeEmpty),
-        ("testExposeeSingle", testExposeeSingle)
+        ("testExposeeSingle", testExposeeSingle),
+        ("testWithSameEtagExposeeSingle", testWithSameEtagExposeeSingle),
+        ("testWithDifferentEtagExposeeSingle", testWithDifferentEtagExposeeSingle)
     ]
 }
