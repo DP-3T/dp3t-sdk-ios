@@ -12,27 +12,27 @@ protocol SecureStorageProtocol {
     func getSecretKeys() throws -> [SecretKey]
     /// set secret keys
     func setSecretKeys(_ object: [SecretKey]) throws
-    /// get EphIds
-    func getEphIds() throws -> EphIdsForDay?
-    /// set EphIds
-    func setEphIds(_ object: EphIdsForDay) throws
+    /// get EphIDs
+    func getEphIDs() throws -> EphIDsForDay?
+    /// set EphIDs
+    func setEphIDs(_ object: EphIDsForDay) throws
     /// remove all object
     func removeAllObject()
 }
 
-/// used for storing SecretKeys and EphIds in the Keychain
+/// used for storing SecretKeys and EphIDs in the Keychain
 class SecureStorage: SecureStorageProtocol {
 
     private let keychain = Keychain()
 
     private let secretKeyKey: Keychain.Key<[SecretKey]> = .init(key: "org.dpppt.keylist")
-    private let ephIdsTodayKey: Keychain.Key<EphIdsForDay> = .init(key: "org.dpppt.ephsIds")
+    private let ephIDsTodayKey: Keychain.Key<EphIDsForDay> = .init(key: "org.dpppt.ephsIDs")
 
-    /// Get EphIds
+    /// Get EphIDs
     /// - Throws: if a error happens
-    /// - Returns: the retreived EphIds
-    func getEphIds() throws -> EphIdsForDay? {
-        let result = keychain.get(for: ephIdsTodayKey)
+    /// - Returns: the retreived EphIDs
+    func getEphIDs() throws -> EphIDsForDay? {
+        let result = keychain.get(for: ephIDsTodayKey)
         switch result {
         case let .success(obj):
             return obj
@@ -41,7 +41,7 @@ class SecureStorage: SecureStorageProtocol {
             case .notFound:
                 return nil
             case .decodingError:
-                keychain.delete(for: ephIdsTodayKey)
+                keychain.delete(for: ephIDsTodayKey)
                 return nil
             default:
                 throw error
@@ -49,11 +49,11 @@ class SecureStorage: SecureStorageProtocol {
         }
     }
 
-    /// Set EphIds
+    /// Set EphIDs
     /// - Parameter object: the object to set
     /// - Throws: if a error happens
-    func setEphIds(_ object: EphIdsForDay) throws {
-        let result = keychain.set(object, for: ephIdsTodayKey)
+    func setEphIDs(_ object: EphIDsForDay) throws {
+        let result = keychain.set(object, for: ephIDsTodayKey)
         switch result {
         case .success(_):
             return
@@ -99,6 +99,6 @@ class SecureStorage: SecureStorageProtocol {
     /// Removes all object (managed by this class) from the Keychain
     func removeAllObject() {
         keychain.delete(for: secretKeyKey)
-        keychain.delete(for: ephIdsTodayKey)
+        keychain.delete(for: ephIDsTodayKey)
     }
 }

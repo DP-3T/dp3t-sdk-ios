@@ -18,7 +18,7 @@ class HandshakesStorage {
     /// Column definitions
     let idColumn = Expression<Int>("id")
     let timestampColumn = Expression<Date>("timestamp")
-    let ephidColumn = Expression<Data>("ephid")
+    let ephIDColumn = Expression<Data>("ephID")
     let TXPowerlevelColumn = Expression<Double?>("tx_power_level")
     let RSSIColumn = Expression<Double?>("rssi")
     let associatedKnownCaseColumn = Expression<Int?>("associated_known_case")
@@ -37,7 +37,7 @@ class HandshakesStorage {
         try database.run(table.create(ifNotExists: true) { t in
             t.column(idColumn, primaryKey: .autoincrement)
             t.column(timestampColumn)
-            t.column(ephidColumn)
+            t.column(ephIDColumn)
             t.column(associatedKnownCaseColumn)
             t.column(TXPowerlevelColumn)
             t.column(RSSIColumn)
@@ -46,8 +46,8 @@ class HandshakesStorage {
     }
 
     /// returns the known Case Id for a token
-    func ephidExists(ephid: Data) throws -> Int? {
-        let query = table.filter(ephidColumn == ephid)
+    func ephIDExists(ephID: Data) throws -> Int? {
+        let query = table.filter(ephIDColumn == ephID)
         let row = try database.pluck(query)
         return row?[associatedKnownCaseColumn]
     }
@@ -62,7 +62,7 @@ class HandshakesStorage {
     func add(handshake h: HandshakeModel) throws {
         let insert = table.insert(
             timestampColumn <- h.timestamp,
-            ephidColumn <- h.ephid,
+            ephIDColumn <- h.ephID,
             associatedKnownCaseColumn <- h.knownCaseId,
             TXPowerlevelColumn <- h.TXPowerlevel,
             RSSIColumn <- h.RSSI
@@ -86,7 +86,7 @@ class HandshakesStorage {
         for row in try database.prepare(query) {
             guard row[associatedKnownCaseColumn] == nil else { continue }
             var model = HandshakeModel(timestamp: row[timestampColumn],
-                                       ephid: row[ephidColumn],
+                                       ephID: row[ephIDColumn],
                                        TXPowerlevel: row[TXPowerlevelColumn],
                                        RSSI: row[RSSIColumn],
                                        knownCaseId: nil)
@@ -131,7 +131,7 @@ class HandshakesStorage {
         var handshakes = [HandshakeModel]()
         for row in try database.prepare(query) {
             let model = HandshakeModel(timestamp: row[timestampColumn],
-                                       ephid: row[ephidColumn],
+                                       ephID: row[ephIDColumn],
                                        TXPowerlevel: row[TXPowerlevelColumn],
                                        RSSI: row[RSSIColumn],
                                        knownCaseId: row[associatedKnownCaseColumn])

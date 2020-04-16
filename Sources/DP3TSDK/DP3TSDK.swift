@@ -77,7 +77,7 @@ class DP3TSDK {
         self.enviroment = enviroment
         self.appId = appId
         database = try DP3TDatabase()
-        crypto = DP3TCryptoModule()!
+        crypto = try DP3TCryptoModule()
         matcher = try DP3TMatcher(database: database, crypto: crypto)
         synchronizer = KnownCasesSynchronizer(appId: appId, database: database, matcher: matcher)
         applicationSynchronizer = ApplicationSynchronizer(enviroment: enviroment, storage: database.applicationStorage)
