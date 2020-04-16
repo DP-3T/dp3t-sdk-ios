@@ -229,9 +229,10 @@ class DP3TSDK {
                     }
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd"
-                    let model = ExposeeModel(key: try self.crypto.getSecretKeyForPublishing(onsetDate: onset)!, onset: dateFormatter.string(from: onset), authData: ExposeeAuthData(value: authString))
-                    service.addExposee(model, completion: block)
-
+                    if let key = try self.crypto.getSecretKeyForPublishing(onsetDate: onset) {
+                        let model = ExposeeModel(key: key, onset: dateFormatter.string(from: onset), authData: ExposeeAuthData(value: authString))
+                        service.addExposee(model, completion: block)
+                    }
                 } catch let error as DP3TTracingErrors {
                     DispatchQueue.main.async {
                         callback(.failure(error))
@@ -253,6 +254,7 @@ class DP3TSDK {
         try database.emptyStorage()
         try database.destroyDatabase()
         crypto.reset()
+        URLCache.shared.removeAllCachedResponses()
     }
 
     #if CALIBRATION

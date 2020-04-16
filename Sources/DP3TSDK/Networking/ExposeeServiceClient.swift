@@ -16,6 +16,10 @@ class ExposeeServiceClient {
     /// The endpoint for adding and removing exposee
     private let managingExposeeEndpoint: ManagingExposeeEndpoint
 
+    private let urlSession: URLSession
+
+    private let urlCache: URLCache
+
     /// The user agent to send with the requests
     private var userAgent: String {
         let appId = descriptor.appId
@@ -27,8 +31,10 @@ class ExposeeServiceClient {
 
     /// Initialize the client with a  descriptor
     /// - Parameter descriptor: The descriptor to use
-    public init(descriptor: TracingApplicationDescriptor) {
+    public init(descriptor: TracingApplicationDescriptor, urlSession: URLSession = .shared, urlCache: URLCache = .shared) {
         self.descriptor = descriptor
+        self.urlSession = urlSession
+        self.urlCache = urlCache
         exposeeEndpoint = ExposeeEndpoint(baseURL: descriptor.backendBaseUrl)
         managingExposeeEndpoint = ManagingExposeeEndpoint(baseURL: descriptor.backendBaseUrl)
     }
@@ -37,10 +43,29 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - dayIdentifier: The day identifier
     ///   - completion: The completion block
-    func getExposee(dayIdentifier: String, completion: @escaping (Result<[KnownCaseModel], DP3TTracingErrors>) -> Void) {
+    /// - returns: array of objects or nil if they were already cached
+    func getExposee(dayIdentifier: String, completion: @escaping (Result<[KnownCaseModel]?, DP3TTracingErrors>) -> Void) {
         let url = exposeeEndpoint.getExposee(forDay: dayIdentifier)
+        let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
 
-        let task = URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
+        var existingEtag: String?
+        if  let cache = urlCache.cachedResponse(for: request),
+            let response = cache.response as? HTTPURLResponse,
+            let etag = response.etag {
+            existingEtag = etag
+        }
+        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
+            // Compare new Etag with old one
+            // We only need to process changed lists
+            if let httpResponse = response as? HTTPURLResponse,
+                let etag = httpResponse.etag {
+                if etag == existingEtag {
+                    completion(.success(nil))
+                    return
+                }
+            }
+
+
             guard error == nil else {
                 completion(.failure(.NetworkingError(error: error)))
                 return
@@ -133,7 +158,7 @@ class ExposeeServiceClient {
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
         request.httpBody = payload
 
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { data, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
                 completion(.failure(.NetworkingError(error: error)))
                 return
@@ -161,11 +186,11 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - enviroment: The environment to use
     ///   - completion: The completion block
-    static func getAvailableApplicationDescriptors(enviroment: Enviroment, completion: @escaping (Result<[TracingApplicationDescriptor], DP3TTracingErrors>) -> Void) {
+    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[TracingApplicationDescriptor], DP3TTracingErrors>) -> Void) {
         let url = enviroment.discoveryEndpoint
         let request = URLRequest(url: url)
 
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { data, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
                 completion(.failure(.NetworkingError(error: error)))
                 return
@@ -191,5 +216,16 @@ class ExposeeServiceClient {
             }
         })
         task.resume()
+    }
+}
+
+extension HTTPURLResponse {
+    var etag: String? {
+        if #available(iOS 13.0, *) {
+            return value(forHTTPHeaderField: "etag")
+        } else {
+            //https://bugs.swift.org/browse/SR-2429
+            return (allHeaderFields as NSDictionary)["etag"] as? String
+        }
     }
 }
