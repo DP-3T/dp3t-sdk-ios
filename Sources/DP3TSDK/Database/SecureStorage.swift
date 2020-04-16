@@ -32,6 +32,10 @@ class SecureStorage: SecureStorageProtocol {
     /// - Parameter keychain: the keychain to use
     init(keychain: Keychain = Keychain()) {
         self.keychain = keychain
+        if (Default.shared.isFirstLaunch) {
+            Default.shared.isFirstLaunch = false
+            self.removeAllObject()
+        }
     }
 
     /// Get EphIDs
