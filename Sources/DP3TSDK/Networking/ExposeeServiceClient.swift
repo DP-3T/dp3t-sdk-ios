@@ -221,12 +221,11 @@ class ExposeeServiceClient {
 
 extension HTTPURLResponse {
     var etag: String? {
-        for header in allHeaderFields {
-            if let key = header.key as? String,
-                key.lowercased() == "etag" {
-                return header.value as? String
-            }
+        if #available(iOS 13.0, *) {
+            return value(forHTTPHeaderField: "etag")
+        } else {
+            //https://bugs.swift.org/browse/SR-2429
+            return (allHeaderFields as NSDictionary)["etag"] as? String
         }
-        return nil
     }
 }
