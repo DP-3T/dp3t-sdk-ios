@@ -187,6 +187,9 @@ class HandshakeViewController: UIViewController {
             let interval = HandshakeInterval(identifier: group.key, start: startTime, end: endTime, count: end - start, expectedCount: expectedCount)
             intervals.append(interval)
         }
+        intervals.sort { (lhs, rhs) -> Bool in
+            lhs.start > rhs.start
+        }
         return intervals
     }
 
