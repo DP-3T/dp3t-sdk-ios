@@ -30,6 +30,7 @@ class HandshakesStorage {
     init(database: Connection, knownCasesStorage: KnownCasesStorage) throws {
         self.database = database
         try createTable(knownCasesStorage: knownCasesStorage)
+        try deleteOldHandshakes()
     }
 
     /// Create the table
@@ -68,6 +69,14 @@ class HandshakesStorage {
             RSSIColumn <- h.RSSI
         )
         try database.run(insert)
+        try deleteOldHandshakes()
+    }
+
+    /// Deletes handshakes older than CryptoConstants.numberOfDaysToKeepData
+    func deleteOldHandshakes() throws {
+        let thresholdDate: Date = Date().addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day)
+        let deleteQuery = table.filter(timestampColumn < thresholdDate)
+        try database.run(deleteQuery.delete())
     }
 
     /// Add a known case to the handshake
@@ -81,7 +90,8 @@ class HandshakesStorage {
 
     /// helper function to loop through all entries
     func getBy(day: Date) throws -> [HandshakeModel] {
-        let query = table.filter(timestampColumn >= day.dayMin && timestampColumn <= day.dayMax)
+        try deleteOldHandshakes()
+        let query = table.filter(day.dayMin...day.dayMax ~= timestampColumn)
         var models = [HandshakeModel]()
         for row in try database.prepare(query) {
             guard row[associatedKnownCaseColumn] == nil else { continue }
