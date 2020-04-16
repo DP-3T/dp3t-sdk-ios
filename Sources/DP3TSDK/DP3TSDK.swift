@@ -40,6 +40,9 @@ class DP3TSDK {
     /// enviroemnt of this instance
     private let enviroment: Enviroment
 
+    /// the urlSession to use for networking
+    private let urlSession: URLSession
+
     /// delegate
     public weak var delegate: DP3TTracingDelegate?
 
@@ -73,14 +76,16 @@ class DP3TSDK {
     /// - Parameters:
     ///   - appId: application identifer to use for discovery call
     ///   - enviroment: enviroment to use
-    init(appId: String, enviroment: Enviroment) throws {
+    ///   - urlSession: the url session to use for networking (app can set it to enable certificate pinning)
+    init(appId: String, enviroment: Enviroment, urlSession: URLSession) throws {
         self.enviroment = enviroment
         self.appId = appId
+        self.urlSession = urlSession
         database = try DP3TDatabase()
         crypto = try DP3TCryptoModule()
         matcher = try DP3TMatcher(database: database, crypto: crypto)
         synchronizer = KnownCasesSynchronizer(appId: appId, database: database, matcher: matcher)
-        applicationSynchronizer = ApplicationSynchronizer(enviroment: enviroment, storage: database.applicationStorage)
+        applicationSynchronizer = ApplicationSynchronizer(enviroment: enviroment, storage: database.applicationStorage, urlSession: urlSession)
         broadcaster = BluetoothBroadcastService(crypto: crypto)
         discoverer = BluetoothDiscoveryService(storage: database.peripheralStorage)
         state = TracingState(numberOfHandshakes: (try? database.handshakesStorage.count()) ?? 0,
@@ -106,7 +111,7 @@ class DP3TSDK {
             switch result {
             case .success:
                 if let desc = try? self.database.applicationStorage.descriptor(for: self.appId) {
-                    let client = ExposeeServiceClient(descriptor: desc)
+                    let client = ExposeeServiceClient(descriptor: desc, urlSession: urlSession)
                     self.cachedTracingServiceClient = client
                 }
             case let .failure(error):

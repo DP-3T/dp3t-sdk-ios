@@ -83,6 +83,10 @@ try DP3TTracing.initialize(with: "com.example.your.app", enviroment: .prod)
 ```
 The provided app name has to be registered in the discovery service on [Github](https://github.com/DP-3T/dp3t-discovery)
 
+#### Certificate pinning
+
+The SDK accepts a `URLSession` as an optional argument to the initializer. This can be used to enable certificate pinning. If no session is provided `URLSession.shared` will be used.
+
 ### Start / Stop tracing
 To start and stop tracing use
 ```swift
