@@ -115,10 +115,12 @@ class Keychain {
         let query = self.query(for: key)
 
         let status: OSStatus = SecItemDelete(query as CFDictionary)
-        if status != noErr {
+        switch status {
+        case noErr, errSecItemNotFound:
+            return .success(())
+        default:
             return .failure(.cannotDelete(status))
         }
-        return .success(())
     }
 
     /// helpermethod to construct the keychain query
