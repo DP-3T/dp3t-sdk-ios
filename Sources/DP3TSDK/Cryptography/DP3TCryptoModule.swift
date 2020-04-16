@@ -119,28 +119,27 @@ class DP3TCryptoModule {
     ///   - secretKey: the secret key of the contact
     ///   - onsetDate: the day on which onwards the contact published its secret key
     ///   - bucketDate: the day on which the contact published its secret key
-    ///   - getHandshake: a callback to retreive handshakes for a given day
+    ///   - getContacts: a callback to retreive contacts for a given day
     /// - Throws: throws if a error occurs
-    /// - Returns: the first handshakes whose token matches the secret key
-    internal func checkContacts(secretKey: Data, onsetDate: DayDate, bucketDate: DayDate, getHandshake: (Date) -> ([HandshakeModel])) throws -> HandshakeModel? {
+    /// - Returns: all contacts that match
+    internal func checkContacts(secretKey: Data, onsetDate: DayDate, bucketDate: DayDate, getContacts: (DayDate) -> ([Contact])) throws -> [Contact] {
         var dayToTest: DayDate = onsetDate
         var secretKeyForDay: Data = secretKey
+        var matchingContacts: [Contact] = []
         while dayToTest.timestamp <= bucketDate.timestamp {
-            let handshakesOnDay = getHandshake(Date(timeIntervalSince1970: dayToTest.timestamp))
-            guard !handshakesOnDay.isEmpty else {
+            let contactsOnDay = getContacts(dayToTest)
+            guard !contactsOnDay.isEmpty else {
                 dayToTest = dayToTest.getNext()
                 secretKeyForDay = getSKt1(SKt0: secretKeyForDay)
                 continue
             }
 
             // generate all ephIDs for day
-            let ephIDs = try DP3TCryptoModule.createEphIDs(secretKey: secretKeyForDay)
+            let ephIDs = Set(try DP3TCryptoModule.createEphIDs(secretKey: secretKeyForDay))
             // check all handshakes if they match any of the ephIDs
-            for handshake in handshakesOnDay {
-                for ephID in ephIDs {
-                    if handshake.ephID == ephID {
-                        return handshake
-                    }
+            for contact in contactsOnDay {
+                if ephIDs.contains(contact.ephID) {
+                    matchingContacts.append(contact)
                 }
             }
 
@@ -148,7 +147,7 @@ class DP3TCryptoModule {
             dayToTest = dayToTest.getNext()
             secretKeyForDay = getSKt1(SKt0: secretKeyForDay)
         }
-        return nil
+        return matchingContacts
     }
 
     /// retreives the secret key to publich for a given day

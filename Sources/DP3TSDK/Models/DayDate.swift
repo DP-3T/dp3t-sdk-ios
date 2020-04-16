@@ -30,7 +30,16 @@ struct DayDate: Codable, CustomStringConvertible, Equatable {
         return timestamp < other.timestamp
     }
 
+    var dayMin: Date {
+        return Date(timeIntervalSince1970: timestamp)
+    }
+
+    var dayMax: Date {
+        return dayMin.addingTimeInterval(.day)
+    }
+    
     var description: String {
         return "<DayDate \(Date(timeIntervalSince1970: timestamp))>"
     }
+
 }

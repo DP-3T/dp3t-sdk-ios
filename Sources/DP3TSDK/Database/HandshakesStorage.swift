@@ -88,22 +88,35 @@ class HandshakesStorage {
         try database.run(handshakeRow.update(associatedKnownCaseColumn <- knownCaseId))
     }
 
-    /// helper function to loop through all entries
-    func getBy(day: Date) throws -> [HandshakeModel] {
+    /// Helper function to retrieve Contacts from Handshakes
+    /// - Parameters:
+    ///   - day: the day for which to retreive contact
+    ///   - overlappingTimeInverval: timeinterval to add/subtract for contact retreival
+    ///   - contactThreshold: how many handshakes to have to be recognized as contact
+    /// - Throws: if a database error happens
+    /// - Returns: list of contacts
+    func getContacts(for day: DayDate, overlappingTimeInverval: TimeInterval = 0, contactThreshold: Int = 1) throws -> [Contact] {
         try deleteOldHandshakes()
-        let query = table.filter(day.dayMin...day.dayMax ~= timestampColumn)
-        var models = [HandshakeModel]()
+
+        // extend dayMin and dayMax by given overlappintTimeInterval
+        let dayMin: Date = day.dayMin.addingTimeInterval(-overlappingTimeInverval)
+        let dayMax: Date = day.dayMax.addingTimeInterval(overlappingTimeInverval)
+
+        let query = table.filter(dayMin...dayMax ~= timestampColumn)
+
+        var handshakes = [HandshakeModel]()
         for row in try database.prepare(query) {
             guard row[associatedKnownCaseColumn] == nil else { continue }
-            var model = HandshakeModel(timestamp: row[timestampColumn],
+            let model = HandshakeModel(identifier: row[idColumn],
+                                       timestamp: row[timestampColumn],
                                        ephID: row[ephIDColumn],
                                        TXPowerlevel: row[TXPowerlevelColumn],
                                        RSSI: row[RSSIColumn],
                                        knownCaseId: nil)
-            model.identifier = row[idColumn]
-            models.append(model)
+            handshakes.append(model)
         }
-        return models
+
+        return ContactFactory.contacts(from: handshakes, contactThreshold: contactThreshold)
     }
 
     /// Delete all entries
@@ -208,24 +221,5 @@ public struct HandshakeResponse {
         self.nextRequest = nextRequest
         self.offset = offset
         self.limit = limit
-    }
-}
-
-private extension Date {
-    var dayMax: Date {
-        var calendar = Calendar.current
-        calendar.timeZone = CryptoConstants.timeZone
-        var components = calendar.dateComponents([.year, .day, .month, .hour, .minute, .second], from: self)
-        components.hour = 23
-        components.minute = 59
-        components.second = 59
-        return calendar.date(from: components)!
-    }
-
-    var dayMin: Date {
-        var calendar = Calendar.current
-        calendar.timeZone = CryptoConstants.timeZone
-        let components = calendar.dateComponents([.year, .day, .month], from: self)
-        return calendar.date(from: components)!
     }
 }

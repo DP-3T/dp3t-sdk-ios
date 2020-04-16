@@ -37,3 +37,5 @@ public struct HandshakeModel {
         return distance / 1000
     }
 }
+
+extension HandshakeModel: Equatable {}
