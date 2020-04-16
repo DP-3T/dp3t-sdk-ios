@@ -23,10 +23,16 @@ protocol SecureStorageProtocol {
 /// used for storing SecretKeys and EphIDs in the Keychain
 class SecureStorage: SecureStorageProtocol {
 
-    private let keychain = Keychain()
+    private let keychain: Keychain
 
     private let secretKeyKey: Keychain.Key<[SecretKey]> = .init(key: "org.dpppt.keylist")
     private let ephIDsTodayKey: Keychain.Key<EphIDsForDay> = .init(key: "org.dpppt.ephsIDs")
+
+    /// Initialize a secure storage with a given keychain
+    /// - Parameter keychain: the keychain to use
+    init(keychain: Keychain = Keychain()) {
+        self.keychain = keychain
+    }
 
     /// Get EphIDs
     /// - Throws: if a error happens
