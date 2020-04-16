@@ -16,7 +16,7 @@ extension TimeInterval {
 enum CryptoConstants {
     static let keyLenght: Int = 16
     static let numberOfDaysToKeepData: Int = 21
-    static let numberOfEpochsPerDay: Int = 24 * 12
+    static let numberOfEpochsPerDay: Int = 24 * 4
     static let millisecondsPerEpoch = Int(TimeInterval.day) * 1000 / CryptoConstants.numberOfEpochsPerDay
     static let broadcastKey: Data = "broadcast key".data(using: .utf8)!
     static let timeZone: TimeZone = TimeZone(identifier: "UTC")!
