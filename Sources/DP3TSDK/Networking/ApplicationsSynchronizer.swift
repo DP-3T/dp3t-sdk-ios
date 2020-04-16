@@ -12,20 +12,24 @@ class ApplicationSynchronizer {
     let storage: ApplicationStorage
     /// The enviroment
     let enviroment: Enviroment
+    /// url session to use
+    let urlSession: URLSession
 
     /// Create a synchronizer
     /// - Parameters:
     ///   - enviroment: The environment of the synchronizer
     ///   - storage: The storage
-    init(enviroment: Enviroment, storage: ApplicationStorage) {
+    ///   - urlSession: The urlSession to use
+    init(enviroment: Enviroment, storage: ApplicationStorage, urlSession: URLSession) {
         self.storage = storage
         self.enviroment = enviroment
+        self.urlSession = urlSession
     }
 
     /// Synchronize the local and remote data.
     /// - Parameter callback: A callback with the sync result
     func sync(callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) throws {
-        ExposeeServiceClient.getAvailableApplicationDescriptors(enviroment: enviroment) { [weak self] result in
+        ExposeeServiceClient.getAvailableApplicationDescriptors(enviroment: enviroment, urlSession: urlSession) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case let .success(ad):

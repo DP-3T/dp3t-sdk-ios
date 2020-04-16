@@ -30,14 +30,16 @@ private var instance: DP3TSDK!
 /// DP3TTracing
 public enum DP3TTracing {
     /// initialize the SDK
-    /// - Parameter appId: application identifier used for the discovery call
-    /// - Parameter enviroment: enviroment to use
-    public static func initialize(with appId: String, enviroment: Enviroment, mode: DP3TMode = .production) throws {
+    /// - Parameters:
+    ///   - appId: application identifier used for the discovery call
+    ///   - enviroment: enviroment to use
+    ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
+    public static func initialize(with appId: String, enviroment: Enviroment = .prod, urlSession: URLSession = .shared, mode: DP3TMode = .production) throws {
         guard instance == nil else {
             fatalError("DP3TSDK already initialized")
         }
         DP3TMode.current = mode
-        instance = try DP3TSDK(appId: appId, enviroment: enviroment)
+        instance = try DP3TSDK(appId: appId, enviroment: enviroment, urlSession: urlSession)
     }
 
     /// The delegate
