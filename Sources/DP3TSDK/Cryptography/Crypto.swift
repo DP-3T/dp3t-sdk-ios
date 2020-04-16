@@ -25,7 +25,7 @@ internal class Crypto {
             SecRandomCopyBytes(kSecRandomDefault, Int(CC_SHA256_DIGEST_LENGTH), $0.baseAddress!)
         }
         guard result == errSecSuccess else {
-            throw KeychainError.cannotAccess
+            throw KeychainError.cannotAccess(result)
         }
         return keyData
     }

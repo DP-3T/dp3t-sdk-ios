@@ -15,7 +15,7 @@ class DP3TCryptoModule {
 
     /// Initilized the module
     /// - Parameter store: storage to use to persist secretkeys and ephIDs
-    init(store: SecureStorageProtocol = SecureStorage.shared) throws {
+    init(store: SecureStorageProtocol = SecureStorage()) throws {
         self.store = store
         do {
             let keys = try store.getSecretKeys()

@@ -6,92 +6,109 @@
 
 import Foundation
 
-enum KeychainError: Error {
-    case notFound
-    case cannotAccess
-}
-
+/// StorageProtcol used for testing
 protocol SecureStorageProtocol {
+    /// get the secret keys
     func getSecretKeys() throws -> [SecretKey]
+    /// set secret keys
     func setSecretKeys(_ object: [SecretKey]) throws
+    /// get EphIDs
     func getEphIDs() throws -> EphIDsForDay?
+    /// set EphIDs
     func setEphIDs(_ object: EphIDsForDay) throws
+    /// remove all object
     func removeAllObject()
 }
 
+/// used for storing SecretKeys and EphIDs in the Keychain
 class SecureStorage: SecureStorageProtocol {
-    static let shared = SecureStorage()
 
-    private let secretKeyKey: String = "org.dpppt.keylist"
-    private let ephIDsTodayKey: String = "org.dpppt.ephsIds"
+    private let keychain: Keychain
 
-    private let encoder = JSONEncoder()
-    private let decoder = JSONDecoder()
+    private let secretKeyKey: Keychain.Key<[SecretKey]> = .init(key: "org.dpppt.keylist")
+    private let ephIDsTodayKey: Keychain.Key<EphIDsForDay> = .init(key: "org.dpppt.ephsIDs")
 
-    init() {}
+    /// Initialize a secure storage with a given keychain
+    /// - Parameter keychain: the keychain to use
+    init(keychain: Keychain = Keychain()) {
+        self.keychain = keychain
+        if (Default.shared.isFirstLaunch) {
+            Default.shared.isFirstLaunch = false
+            self.removeAllObject()
+        }
+    }
 
+    /// Get EphIDs
+    /// - Throws: if a error happens
+    /// - Returns: the retreived EphIDs
     func getEphIDs() throws -> EphIDsForDay? {
-        let data = try get(for: ephIDsTodayKey)
-        return try decoder.decode(EphIDsForDay.self, from: data)
+        let result = keychain.get(for: ephIDsTodayKey)
+        switch result {
+        case let .success(obj):
+            return obj
+        case let .failure(error):
+            switch error {
+            case .notFound:
+                return nil
+            case .decodingError:
+                keychain.delete(for: ephIDsTodayKey)
+                return nil
+            default:
+                throw error
+            }
+        }
     }
 
+    /// Set EphIDs
+    /// - Parameter object: the object to set
+    /// - Throws: if a error happens
     func setEphIDs(_ object: EphIDsForDay) throws {
-        let data = try encoder.encode(object)
-        set(data, key: ephIDsTodayKey)
+        let result = keychain.set(object, for: ephIDsTodayKey)
+        switch result {
+        case .success(_):
+            return
+        case let .failure(error):
+            throw error
+        }
     }
 
+    /// get Secret Keys
+    /// - Throws: if a error happens
+    /// - Returns: the retreived secret keys
     func getSecretKeys() throws -> [SecretKey] {
-        let data = try get(for: secretKeyKey)
-        return try decoder.decode([SecretKey].self, from: data)
+        let result = keychain.get(for: secretKeyKey)
+        switch result {
+        case let .success(obj):
+            return obj
+        case let .failure(error):
+            switch error {
+            case .notFound:
+                return []
+            case .decodingError:
+                keychain.delete(for: secretKeyKey)
+                return []
+            default:
+                throw error
+            }
+        }
     }
 
+    /// sets the secret Keys
+    /// - Parameter object: the object to set
+    /// - Throws: if a error happens
     func setSecretKeys(_ object: [SecretKey]) throws {
-        let data = try encoder.encode(object)
-        set(data, key: secretKeyKey)
-    }
-
-    private func set(_ data: Data, key: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword as String,
-            kSecAttrAccount as String: key,
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
-        ]
-        SecItemAdd(query as CFDictionary, nil)
-    }
-
-    private func get(for key: String) throws -> Data {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        guard status != errSecItemNotFound else {
-            throw KeychainError.notFound
+        let result = keychain.set(object, for: secretKeyKey)
+        switch result {
+        case .success(_):
+            return
+        case let .failure(error):
+            throw error
         }
-        guard status == errSecSuccess else {
-            throw KeychainError.cannotAccess
-        }
-        return (item as! CFData) as Data
     }
 
+    /// Removes all object (managed by this class) from the Keychain
     func removeAllObject() {
-        do {
-            let query: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrAccount as String: secretKeyKey,
-            ]
-            SecItemDelete(query as CFDictionary)
-        }
-        do {
-            let query: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrAccount as String: ephIDsTodayKey,
-            ]
-            SecItemDelete(query as CFDictionary)
-        }
+        keychain.delete(for: secretKeyKey)
+        keychain.delete(for: ephIDsTodayKey)
     }
 }

@@ -11,6 +11,16 @@ class Default {
     static var shared = Default()
     var store = UserDefaults.standard
 
+    /// stores if this is the first launch of the SDK
+    var isFirstLaunch: Bool {
+        get {
+            return !store.bool(forKey: "org.dpppt.firstlaunch")
+        }
+        set(newValue) {
+            store.set(!newValue, forKey: "org.dpppt.firstlaunch")
+        }
+    }
+
     /// Last date a backend sync happend
     var lastSync: Date? {
         get {
