@@ -20,9 +20,3 @@ enum CryptoConstants {
     static let millisecondsPerEpoch = Int(TimeInterval.day) * 1000 / CryptoConstants.numberOfEpochsPerDay
     static let broadcastKey: Data = "broadcast key".data(using: .utf8)!
 }
-
-enum CryptoError: Error {
-    case dataIntegrity
-    case IVError
-    case AESError
-}

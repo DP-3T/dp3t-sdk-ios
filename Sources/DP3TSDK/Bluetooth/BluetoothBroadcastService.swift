@@ -127,7 +127,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             logger?.log(type: .sender, "didReceiveRead")
         #endif
         do {
-            let data = try crypto!.getCurrentEphId()
+            let data = try crypto!.getCurrentEphID()
 
             switch DP3TMode.current {
             #if CALIBRATION
