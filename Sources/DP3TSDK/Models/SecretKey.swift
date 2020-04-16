@@ -7,7 +7,7 @@
 import Foundation
 
 struct SecretKey: Codable, CustomStringConvertible {
-    let day: SecretKeyDay
+    let day: DayDate
     let keyData: Data
 
     var description: String {
@@ -16,6 +16,6 @@ struct SecretKey: Codable, CustomStringConvertible {
 }
 
 struct EphIDsForDay: Codable {
-    let day: SecretKeyDay
+    let day: DayDate
     let ephIDs: [Data]
 }

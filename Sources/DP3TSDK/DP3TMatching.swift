@@ -44,7 +44,7 @@ class DP3TMatcher {
         let onset = dateFormatter.date(from: knownCase.onset)!
         let bucketDayDate = dateFormatter.date(from: bucketDay)!
 
-        let handshake = try crypto.checkContacts(secretKey: knownCase.key, onsetDate: SecretKeyDay(date: onset), bucketDate: SecretKeyDay(date: bucketDayDate)) { (day) -> ([HandshakeModel]) in
+        let handshake = try crypto.checkContacts(secretKey: knownCase.key, onsetDate: DayDate(date: onset), bucketDate: DayDate(date: bucketDayDate)) { (day) -> ([HandshakeModel]) in
             (try? database.handshakesStorage.getBy(day: day)) ?? []
         }
 

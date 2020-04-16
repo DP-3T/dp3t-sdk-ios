@@ -6,30 +6,31 @@
 
 import Foundation
 
-struct SecretKeyDay: Codable, CustomStringConvertible, Equatable {
+/// Date model wich is always rounded to just contain the current day
+struct DayDate: Codable, CustomStringConvertible, Equatable {
     let timestamp: TimeInterval
 
     init(date: Date = Date()) {
         var calendar = Calendar.current
-        calendar.timeZone = TimeZone(identifier: "UTC")!
+        calendar.timeZone = CryptoConstants.timeZone
         let components = calendar.dateComponents([.year, .day, .month], from: date)
         timestamp = calendar.date(from: components)!.timeIntervalSince1970
     }
 
-    public func getNext() -> SecretKeyDay {
+    public func getNext() -> DayDate {
         let nextDay = Date(timeIntervalSince1970: timestamp).addingTimeInterval(.day)
-        return SecretKeyDay(date: nextDay)
+        return DayDate(date: nextDay)
     }
 
     public func isBefore(other: Date) -> Bool {
         return timestamp < other.timeIntervalSince1970
     }
 
-    public func isBefore(other: SecretKeyDay) -> Bool {
+    public func isBefore(other: DayDate) -> Bool {
         return timestamp < other.timestamp
     }
 
     var description: String {
-        return "<SecretKeyDay\(Date(timeIntervalSince1970: timestamp))>"
+        return "<DayDate \(Date(timeIntervalSince1970: timestamp))>"
     }
 }

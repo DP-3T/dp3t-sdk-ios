@@ -122,9 +122,9 @@ final class DP3TTracingCryptoTests: XCTestCase {
         let store1 = KeyStore()
         let crypto1: DP3TCryptoModule = try! DP3TCryptoModule(store: store1)
         let token = try! crypto1.getCurrentEphID()
-        _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(1 * .day)))
-        _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(2 * .day)))
-        _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(3 * .day)))
+        _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(1 * .day)))
+        _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(2 * .day)))
+        _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(3 * .day)))
 
         let key = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date()))!
 
@@ -134,7 +134,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
         let store2 = KeyStore()
         let crypto2: DP3TCryptoModule = try! DP3TCryptoModule(store: store2)
 
-        let h = try! crypto2.checkContacts(secretKey: key, onsetDate: SecretKeyDay(date: Date()), bucketDate: SecretKeyDay(date: Date().addingTimeInterval(.day)), getHandshake: { (_) -> ([HandshakeModel]) in
+        let h = try! crypto2.checkContacts(secretKey: key, onsetDate: DayDate(date: Date()), bucketDate: DayDate(date: Date().addingTimeInterval(.day)), getHandshake: { (_) -> ([HandshakeModel]) in
             handshakes
         })
 
@@ -145,9 +145,9 @@ final class DP3TTracingCryptoTests: XCTestCase {
         let store1 = KeyStore()
         let crypto1: DP3TCryptoModule = try! DP3TCryptoModule(store: store1)
         let token = try! crypto1.getCurrentEphID()
-        _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(1 * .day)))
-        _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(2 * .day)))
-        _ = try! crypto1.getCurrentSK(day: SecretKeyDay(date: Date().addingTimeInterval(3 * .day)))
+        _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(1 * .day)))
+        _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(2 * .day)))
+        _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(3 * .day)))
 
         let key = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(.day)))!
 
@@ -157,7 +157,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
         let store2 = KeyStore()
         let crypto2: DP3TCryptoModule = try! DP3TCryptoModule(store: store2)
 
-        let h = try! crypto2.checkContacts(secretKey: key, onsetDate: SecretKeyDay(date: Date()), bucketDate: SecretKeyDay(date: Date().addingTimeInterval(.day)), getHandshake: { (_) -> ([HandshakeModel]) in
+        let h = try! crypto2.checkContacts(secretKey: key, onsetDate: DayDate(date: Date()), bucketDate: DayDate(date: Date().addingTimeInterval(.day)), getHandshake: { (_) -> ([HandshakeModel]) in
             handshakes
         })
 
@@ -172,7 +172,7 @@ final class DP3TTracingCryptoTests: XCTestCase {
         handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), ephID: Data(base64Encoded: token)!, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
 
         let keyData = Data(base64Encoded: key)!
-        let h = try! crypto?.checkContacts(secretKey: keyData, onsetDate: SecretKeyDay(date: Date().addingTimeInterval(-1 * .day)), bucketDate: SecretKeyDay(), getHandshake: { (_) -> ([HandshakeModel]) in
+        let h = try! crypto?.checkContacts(secretKey: keyData, onsetDate: DayDate(date: Date().addingTimeInterval(-1 * .day)), bucketDate: DayDate(), getHandshake: { (_) -> ([HandshakeModel]) in
             handshakes
         })
         XCTAssertEqual(h != nil, found)
