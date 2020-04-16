@@ -39,7 +39,7 @@ class DP3TMatcher {
     /// - Parameter knownCase: known Case
     func checkNewKnownCase(_ knownCase: KnownCaseModel, bucketDay: String) throws {
         let dateFormatter = DateFormatter()
-        dateFormatter.timeZone = TimeZone(identifier: "UTC")!
+        dateFormatter.timeZone = CryptoConstants.timeZone
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let onset = dateFormatter.date(from: knownCase.onset)!
         let bucketDayDate = dateFormatter.date(from: bucketDay)!

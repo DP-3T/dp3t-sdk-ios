@@ -204,7 +204,7 @@ public struct HandshakeResponse {
 private extension Date {
     var dayMax: Date {
         var calendar = Calendar.current
-        calendar.timeZone = TimeZone(identifier: "UTC")!
+        calendar.timeZone = CryptoConstants.timeZone
         var components = calendar.dateComponents([.year, .day, .month, .hour, .minute, .second], from: self)
         components.hour = 23
         components.minute = 59
@@ -214,7 +214,7 @@ private extension Date {
 
     var dayMin: Date {
         var calendar = Calendar.current
-        calendar.timeZone = TimeZone(identifier: "UTC")!
+        calendar.timeZone = CryptoConstants.timeZone
         let components = calendar.dateComponents([.year, .day, .month], from: self)
         return calendar.date(from: components)!
     }
