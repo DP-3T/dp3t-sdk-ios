@@ -8,7 +8,7 @@ import Foundation
 
 /// Mobdel used for grouping and filtering Handshakes
 struct Contact {
-    let ephID: Data
+    let ephID: EphID
     var handshakes: [HandshakeModel]
 }
 

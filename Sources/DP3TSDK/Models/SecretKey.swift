@@ -6,6 +6,8 @@
 
 import Foundation
 
+typealias EphID = Data
+
 struct SecretKey: Codable, CustomStringConvertible {
     let day: DayDate
     let keyData: Data
@@ -17,5 +19,5 @@ struct SecretKey: Codable, CustomStringConvertible {
 
 struct EphIDsForDay: Codable {
     let day: DayDate
-    let ephIDs: [Data]
+    let ephIDs: [EphID]
 }

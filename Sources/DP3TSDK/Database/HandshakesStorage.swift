@@ -18,7 +18,7 @@ class HandshakesStorage {
     /// Column definitions
     let idColumn = Expression<Int>("id")
     let timestampColumn = Expression<Date>("timestamp")
-    let ephIDColumn = Expression<Data>("ephID")
+    let ephIDColumn = Expression<EphID>("ephID")
     let TXPowerlevelColumn = Expression<Double?>("tx_power_level")
     let RSSIColumn = Expression<Double?>("rssi")
     let associatedKnownCaseColumn = Expression<Int?>("associated_known_case")
@@ -47,7 +47,7 @@ class HandshakesStorage {
     }
 
     /// returns the known Case Id for a token
-    func ephIDExists(ephID: Data) throws -> Int? {
+    func ephIDExists(ephID: EphID) throws -> Int? {
         let query = table.filter(ephIDColumn == ephID)
         let row = try database.pluck(query)
         return row?[associatedKnownCaseColumn]

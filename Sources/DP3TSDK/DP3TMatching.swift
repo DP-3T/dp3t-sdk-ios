@@ -67,7 +67,7 @@ class DP3TMatcher {
 // MARK: BluetoothDiscoveryDelegate implementation
 
 extension DP3TMatcher: BluetoothDiscoveryDelegate {
-    func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double?) throws {
+    func didDiscover(data: EphID, TXPowerlevel: Double?, RSSI: Double?) throws {
         // Do no realtime matching
         let handshake = HandshakeModel(timestamp: Date(),
                                        ephID: data,

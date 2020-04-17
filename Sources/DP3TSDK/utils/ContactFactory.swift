@@ -12,7 +12,7 @@ enum ContactFactory {
     ///   - contactThreshold: how many handshakes to have to be recognized as contact
     /// - Returns: list of contacts
     static func contacts(from handshakes: [HandshakeModel], contactThreshold: Int) -> [Contact] {
-        var contacts = [Data: Contact]()
+        var contacts = [EphID: Contact]()
 
         // group handhakes by id
         for handshake in handshakes {

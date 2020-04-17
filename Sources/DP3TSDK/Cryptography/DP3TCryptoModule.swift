@@ -69,7 +69,7 @@ class DP3TCryptoModule {
     /// - Parameter secretKey: secret key to base ephIDs on
     /// - Throws: throws if a error happens
     /// - Returns: the ephIDs
-    internal static func createEphIDs(secretKey: Data) throws -> [Data] {
+    internal static func createEphIDs(secretKey: Data) throws -> [EphID] {
         let hmac = Crypto.hmac(msg: CryptoConstants.broadcastKey, key: secretKey)
 
         let zeroData = Data(count: CryptoConstants.keyLenght * CryptoConstants.numberOfEpochsPerDay)
@@ -93,7 +93,7 @@ class DP3TCryptoModule {
     /// - Parameter day: optional day for ephIDs, defaults to today
     /// - Throws: throws if a error happens
     /// - Returns: the ephIDs
-    private func getEphIDsForToday(day: DayDate = DayDate()) throws -> [Data] {
+    private func getEphIDsForToday(day: DayDate = DayDate()) throws -> [EphID] {
         var stored = try? store.getEphIDs()
         if stored == nil || stored?.day != day {
             let currentSk = try getCurrentSK(day: day)
@@ -108,7 +108,7 @@ class DP3TCryptoModule {
     /// - Parameter timestamp: optional timestamp for ephIDs, defaults to now
     /// - Throws: throws if a error happens
     /// - Returns: the ephID
-    internal func getCurrentEphID(timestamp: Date = Date()) throws -> Data {
+    internal func getCurrentEphID(timestamp: Date = Date()) throws -> EphID {
         let day = DayDate(date: timestamp)
         let ephIDs = try getEphIDsForToday(day: day)
         let counter = Int((timestamp.timeIntervalSince1970 - day.timestamp) / Double(CryptoConstants.millisecondsPerEpoch))
