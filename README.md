@@ -73,6 +73,19 @@ DP3T-SDK is available through [Swift Package Manager](https://swift.org/package-
   ]
 
   ```
+### Cocoapods
+
+DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
+
+1. Add the following to your `Podfile`:
+
+  ```ruby
+
+  pod 'DP3TSDK', => '0.0.1'
+
+  ```
+
+This version points to the HEAD of the `develop` branch and will always fetch the latest development status. Future releases will be made available using semantic versioning to ensure stability for depending projects.
 
 ## Using the SDK
 
