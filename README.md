@@ -140,5 +140,20 @@ DP3TTracing.sync() { result in
 }
 ```
 
+#### Background Tasks
+
+The SDK supports iOS 13 Background tasks. To enable them the app has to support the `Background fetch` capability and include  `org.dpppt.synctask` in the `BGTaskSchedulerPermittedIdentifiers`  `Info.plist` property.
+
+`Info.plist` sample:
+
+```swift
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>org.dpppt.synctask</string>
+	</array>
+```
+
+
+
 ## License
 This project is licensed under the terms of the MPL 2 license. See the [LICENSE](LICENSE) file.
