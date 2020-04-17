@@ -111,8 +111,24 @@ class DP3TCryptoModule {
     internal func getCurrentEphID(timestamp: Date = Date()) throws -> EphID {
         let day = DayDate(date: timestamp)
         let ephIDs = try getEphIDsForToday(day: day)
-        let counter = Int((timestamp.timeIntervalSince1970 - day.timestamp) / Double(CryptoConstants.millisecondsPerEpoch))
+        let counter = DP3TCryptoModule.getEpochCounter(day: day, timestamp: timestamp)
         return ephIDs[counter]
+    }
+
+    /// get the epoch counter by given day and timestamp
+    /// - Parameters:
+    ///   - day: the day
+    ///   - timestamp: the timestamp
+    /// - Returns: the count of the current epoch
+    public static func getEpochCounter(day: DayDate, timestamp: Date) -> Int {
+        return Int((timestamp.timeIntervalSince1970 - day.timestamp) / Double(CryptoConstants.secondsPerEpoch))
+    }
+
+    /// get the timestamp when the current epoch started
+    public static func getCurrentEpochStart() -> Date {
+        let currentDay = DayDate()
+        let counter = DP3TCryptoModule.getEpochCounter(day: currentDay, timestamp: Date())
+        return currentDay.dayMin.addingTimeInterval(Double(counter) * Double(CryptoConstants.secondsPerEpoch))
     }
 
     /// check if we had handshakes with a contact given its secretkey

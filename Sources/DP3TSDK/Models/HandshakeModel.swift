@@ -18,8 +18,6 @@ public struct HandshakeModel {
     public let TXPowerlevel: Double?
     /// The RSSI of both handshaking parties
     public let RSSI: Double?
-    /// If the handshake is associated with a known exposed case
-    public let knownCaseId: Int?
 
     // iOS sends at 12bm? Android seems to vary between -1dbm (HIGH_POWER) and -21dbm (LOW_POWER)
     private let defaultPower = 12.0

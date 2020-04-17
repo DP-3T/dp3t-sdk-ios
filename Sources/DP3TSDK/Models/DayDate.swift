@@ -7,7 +7,7 @@
 import Foundation
 
 /// Date model wich is always rounded to just contain the current day
-struct DayDate: Codable, CustomStringConvertible, Equatable {
+struct DayDate: Codable, CustomStringConvertible, Equatable, Hashable {
     let timestamp: TimeInterval
 
     init(date: Date = Date()) {

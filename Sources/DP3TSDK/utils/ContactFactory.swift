@@ -11,23 +11,25 @@ enum ContactFactory {
     /// - Parameters:
     ///   - contactThreshold: how many handshakes to have to be recognized as contact
     /// - Returns: list of contacts
-    static func contacts(from handshakes: [HandshakeModel], contactThreshold: Int) -> [Contact] {
-        var contacts = [EphID: Contact]()
+    static func contacts(from handshakes: [HandshakeModel], contactThreshold: Int = CryptoConstants.contactsThreshold) -> [Contact] {
+        var groupedHandshakes = [EphID: [HandshakeModel]]()
 
         // group handhakes by id
         for handshake in handshakes {
-            if contacts.keys.contains(handshake.ephID) {
-                contacts[handshake.ephID]?.handshakes.append(handshake)
+            if groupedHandshakes.keys.contains(handshake.ephID) {
+                groupedHandshakes[handshake.ephID]?.append(handshake)
             } else {
-                contacts[handshake.ephID] = Contact(ephID: handshake.ephID, handshakes: [handshake])
+                groupedHandshakes[handshake.ephID] = [handshake]
             }
         }
 
-        //filter result to only contain ephIDs which have been seen more than contactThreshold times
-        let filtered = contacts.filter { contact -> Bool in
-            contact.value.handshakes.count > contactThreshold
+        let contacts: [Contact] = groupedHandshakes.compactMap { element -> Contact? in
+            //filter result to only contain ephIDs which have been seen more than contactThreshold times
+            guard element.value.count > contactThreshold else { return nil }
+            let day = DayDate(date: element.value.first!.timestamp)
+            return Contact(identifier: nil, ephID: element.key, day: day, associatedKnownCase: nil)
         }
-        
-        return Array(filtered.values)
+
+        return contacts
     }
 }

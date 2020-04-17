@@ -21,36 +21,25 @@ class HandshakesStorage {
     let ephIDColumn = Expression<EphID>("ephID")
     let TXPowerlevelColumn = Expression<Double?>("tx_power_level")
     let RSSIColumn = Expression<Double?>("rssi")
-    let associatedKnownCaseColumn = Expression<Int?>("associated_known_case")
 
     /// Initializer
     /// - Parameters:
     ///   - database: database Connection
     ///   - knownCasesStorage: knownCases Storage
-    init(database: Connection, knownCasesStorage: KnownCasesStorage) throws {
+    init(database: Connection) throws {
         self.database = database
-        try createTable(knownCasesStorage: knownCasesStorage)
-        try deleteOldHandshakes()
+        try createTable()
     }
 
     /// Create the table
-    private func createTable(knownCasesStorage: KnownCasesStorage) throws {
+    private func createTable() throws {
         try database.run(table.create(ifNotExists: true) { t in
             t.column(idColumn, primaryKey: .autoincrement)
             t.column(timestampColumn)
             t.column(ephIDColumn)
-            t.column(associatedKnownCaseColumn)
             t.column(TXPowerlevelColumn)
             t.column(RSSIColumn)
-            t.foreignKey(associatedKnownCaseColumn, references: knownCasesStorage.table, knownCasesStorage.idColumn, delete: .setNull)
         })
-    }
-
-    /// returns the known Case Id for a token
-    func ephIDExists(ephID: EphID) throws -> Int? {
-        let query = table.filter(ephIDColumn == ephID)
-        let row = try database.pluck(query)
-        return row?[associatedKnownCaseColumn]
     }
 
     /// count of entries
@@ -64,12 +53,10 @@ class HandshakesStorage {
         let insert = table.insert(
             timestampColumn <- h.timestamp,
             ephIDColumn <- h.ephID,
-            associatedKnownCaseColumn <- h.knownCaseId,
             TXPowerlevelColumn <- h.TXPowerlevel,
             RSSIColumn <- h.RSSI
         )
         try database.run(insert)
-        try deleteOldHandshakes()
     }
 
     /// Deletes handshakes older than CryptoConstants.numberOfDaysToKeepData
@@ -79,44 +66,32 @@ class HandshakesStorage {
         try database.run(deleteQuery.delete())
     }
 
-    /// Add a known case to the handshake
-    /// - Parameters:
-    ///   - knownCaseId: identifier of known case
-    ///   - handshakeId: identifier of handshake
-    func addKnownCase(_ knownCaseId: Int, to handshakeId: Int) throws {
-        let handshakeRow = table.filter(idColumn == handshakeId)
-        try database.run(handshakeRow.update(associatedKnownCaseColumn <- knownCaseId))
+    /// Delete processed handshakes
+    /// - Parameter handshakes: the handshakes to delete
+    /// - Throws: if a error happens
+    func delete(_ handshakes: [HandshakeModel]) throws {
+        for handshake in handshakes {
+            guard let identifier = handshake.identifier else { continue }
+            let deleteQuery = table.filter(idColumn == identifier)
+            try database.run(deleteQuery.delete())
+        }
     }
 
-    /// Helper function to retrieve Contacts from Handshakes
-    /// - Parameters:
-    ///   - day: the day for which to retreive contact
-    ///   - overlappingTimeInverval: timeinterval to add/subtract for contact retreival
-    ///   - contactThreshold: how many handshakes to have to be recognized as contact
-    /// - Throws: if a database error happens
-    /// - Returns: list of contacts
-    func getContacts(for day: DayDate, overlappingTimeInverval: TimeInterval = 0, contactThreshold: Int = 1) throws -> [Contact] {
-        try deleteOldHandshakes()
-
-        // extend dayMin and dayMax by given overlappintTimeInterval
-        let dayMin: Date = day.dayMin.addingTimeInterval(-overlappingTimeInverval)
-        let dayMax: Date = day.dayMax.addingTimeInterval(overlappingTimeInverval)
-
-        let query = table.filter(dayMin...dayMax ~= timestampColumn)
-
+    /// get all Handshakes newer than timestamp
+    /// - Parameter olderThan: the timestamp to compare with
+    /// - Throws: if a error happens
+    /// - Returns: the handshakes
+    func getAll(olderThan date: Date = Date()) throws -> [HandshakeModel] {
         var handshakes = [HandshakeModel]()
-        for row in try database.prepare(query) {
-            guard row[associatedKnownCaseColumn] == nil else { continue }
+        for row in try database.prepare(table.filter(timestampColumn < date)) {
             let model = HandshakeModel(identifier: row[idColumn],
                                        timestamp: row[timestampColumn],
                                        ephID: row[ephIDColumn],
                                        TXPowerlevel: row[TXPowerlevelColumn],
-                                       RSSI: row[RSSIColumn],
-                                       knownCaseId: nil)
+                                       RSSI: row[RSSIColumn])
             handshakes.append(model)
         }
-
-        return ContactFactory.contacts(from: handshakes, contactThreshold: contactThreshold)
+        return handshakes
     }
 
     /// Delete all entries
@@ -127,6 +102,11 @@ class HandshakesStorage {
     func numberOfHandshakes() throws -> Int {
         try database.scalar(table.count)
     }
+}
+
+#if CALIBRATION
+
+extension HandshakesStorage {
 
     func getHandshakes(_ request: HandshakeRequest) throws -> HandshakeResponse {
         var query = table
@@ -146,18 +126,12 @@ class HandshakesStorage {
             query = query.order(timestampColumn.desc)
         }
 
-        // Filtering
-        if request.filterOption.contains(.hasKnownCaseAssociated) {
-            query = query.filter(associatedKnownCaseColumn != nil)
-        }
-
         var handshakes = [HandshakeModel]()
         for row in try database.prepare(query) {
             let model = HandshakeModel(timestamp: row[timestampColumn],
                                        ephID: row[ephIDColumn],
                                        TXPowerlevel: row[TXPowerlevelColumn],
-                                       RSSI: row[RSSIColumn],
-                                       knownCaseId: row[associatedKnownCaseColumn])
+                                       RSSI: row[RSSIColumn])
             handshakes.append(model)
         }
 
@@ -166,7 +140,7 @@ class HandshakesStorage {
             let diff = request.offset - limit
             let previousOffset = max(0, diff)
             let previousLimit = limit + min(0, diff)
-            previousRequest = HandshakeRequest(filterOption: request.filterOption, offset: previousOffset, limit: previousLimit)
+            previousRequest = HandshakeRequest(offset: previousOffset, limit: previousLimit)
         } else {
             previousRequest = nil
         }
@@ -176,7 +150,7 @@ class HandshakesStorage {
             nextRequest = nil
         } else {
             let nextOffset = request.offset + request.limit!
-            nextRequest = HandshakeRequest(filterOption: request.filterOption, offset: nextOffset, limit: request.limit)
+            nextRequest = HandshakeRequest(offset: nextOffset, limit: request.limit)
         }
 
         return HandshakeResponse(handshakes: handshakes, offset: request.offset, limit: request.limit, previousRequest: previousRequest, nextRequest: nextRequest)
@@ -184,25 +158,15 @@ class HandshakesStorage {
 }
 
 public struct HandshakeRequest {
-    public struct FilterOption: OptionSet {
-        public let rawValue: Int
-        public static let hasKnownCaseAssociated = FilterOption(rawValue: 1 << 0)
-        public init(rawValue: Int) {
-            self.rawValue = rawValue
-        }
-    }
-
     public enum SortingOption {
         case ascendingTimestamp
         case descendingTimestamp
     }
 
-    public let filterOption: FilterOption
     public let sortingOption: SortingOption
     public let offset: Int
     public let limit: Int?
-    public init(filterOption: FilterOption = [], sortingOption: SortingOption = .descendingTimestamp, offset: Int = 0, limit: Int? = nil) {
-        self.filterOption = filterOption
+    public init(sortingOption: SortingOption = .descendingTimestamp, offset: Int = 0, limit: Int? = nil) {
         self.sortingOption = sortingOption
         self.offset = offset
         self.limit = limit
@@ -223,3 +187,5 @@ public struct HandshakeResponse {
         self.limit = limit
     }
 }
+
+#endif

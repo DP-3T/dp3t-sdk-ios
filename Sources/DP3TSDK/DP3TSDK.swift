@@ -151,7 +151,9 @@ class DP3TSDK {
 
     /// Perform a new sync
     /// - Parameter callback: callback
-    func sync(callback: ((Result<Void, DP3TTracingErrors>) -> Void)?) {
+    /// - Throws: if a error happed
+    func sync(callback: ((Result<Void, DP3TTracingErrors>) -> Void)?) throws {
+        try database.generateContactsFromHandshakes()
         getATracingServiceClient(forceRefresh: true) { [weak self] result in
             switch result {
             case let .failure(error):

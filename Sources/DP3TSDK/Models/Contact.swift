@@ -8,8 +8,10 @@ import Foundation
 
 /// Mobdel used for grouping and filtering Handshakes
 struct Contact {
+    let identifier: Int?
     let ephID: EphID
-    var handshakes: [HandshakeModel]
+    let day: DayDate
+    let associatedKnownCase: Int?
 }
 
 extension Contact: Equatable {}

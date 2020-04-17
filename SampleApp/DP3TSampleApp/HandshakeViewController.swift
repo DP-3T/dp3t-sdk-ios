@@ -235,7 +235,7 @@ extension HandshakeViewController: UITableViewDataSource {
             let distance: String = handshake.distance == nil ? "--" : String(format: "%.2fm", handshake.distance!)
             let tx: String = handshake.TXPowerlevel == nil ? " -- " : String(format: "%.2f", handshake.TXPowerlevel!)
             let rssi: String = handshake.RSSI == nil ? " -- " : String(format: "%.2f", handshake.RSSI!)
-            cell.detailTextLabel?.text = "\(dateFormatter.string(from: handshake.timestamp)), distance: est. \(distance), TX: \(tx), RSSI: \(rssi), \(handshake.knownCaseId != nil ? "Exposed" : "Not Exposed")"
+            cell.detailTextLabel?.text = "\(dateFormatter.string(from: handshake.timestamp)), distance: est. \(distance), TX: \(tx), RSSI: \(rssi)"
         }
 
         return cell

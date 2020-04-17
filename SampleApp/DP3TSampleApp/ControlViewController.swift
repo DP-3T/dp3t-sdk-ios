@@ -207,7 +207,7 @@ class ControlViewController: UIViewController {
     }
 
     @objc func sync() {
-        DP3TTracing.sync { _ in }
+        try! DP3TTracing.sync { _ in }
     }
 
     @objc func setExposed() {

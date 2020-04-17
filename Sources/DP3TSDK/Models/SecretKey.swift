@@ -6,7 +6,7 @@
 
 import Foundation
 
-typealias EphID = Data
+public typealias EphID = Data
 
 struct SecretKey: Codable, CustomStringConvertible {
     let day: DayDate

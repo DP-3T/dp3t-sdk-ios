@@ -47,16 +47,14 @@ class DP3TMatcher {
         let contacts = try crypto.checkContacts(secretKey: knownCase.key,
                                                 onsetDate: DayDate(date: onset),
                                                 bucketDate: DayDate(date: bucketDayDate)) { (day) -> ([Contact]) in
-            (try? database.handshakesStorage.getContacts(for: day)) ?? []
+            (try? database.contactsStorage.getContacts(for: day)) ?? []
         }
 
         if !contacts.isEmpty,
             let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
             try contacts.forEach { (contact) in
-                try contact.handshakes.forEach { (handshake) in
-                    guard let handshakeId = handshake.identifier else { return }
-                    try database.handshakesStorage.addKnownCase(knownCaseId, to: handshakeId)
-                }
+                guard let contactId = contact.identifier else { return }
+                try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
             }
 
             delegate.didFindMatch()
@@ -72,8 +70,7 @@ extension DP3TMatcher: BluetoothDiscoveryDelegate {
         let handshake = HandshakeModel(timestamp: Date(),
                                        ephID: data,
                                        TXPowerlevel: TXPowerlevel,
-                                       RSSI: RSSI,
-                                       knownCaseId: nil)
+                                       RSSI: RSSI)
         try database.handshakesStorage.add(handshake: handshake)
 
         delegate.handShakeAdded(handshake)
