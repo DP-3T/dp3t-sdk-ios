@@ -23,7 +23,7 @@ struct DayDate: Codable, CustomStringConvertible, Equatable, Hashable {
     }
 
     public func isBefore(other: Date) -> Bool {
-        return timestamp < other.timeIntervalSince1970
+        return timestamp <= other.timeIntervalSince1970
     }
 
     public func isBefore(other: DayDate) -> Bool {

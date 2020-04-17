@@ -89,6 +89,7 @@ class DP3TSDK {
         broadcaster = BluetoothBroadcastService(crypto: crypto)
         discoverer = BluetoothDiscoveryService(storage: database.peripheralStorage)
         state = TracingState(numberOfHandshakes: (try? database.handshakesStorage.count()) ?? 0,
+                             numberOfContacts: (try? database.contactsStorage.count()) ?? 0,
                              trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
                              infectionStatus: Default.shared.infectionStatus)
@@ -154,6 +155,8 @@ class DP3TSDK {
     /// - Throws: if a error happed
     func sync(callback: ((Result<Void, DP3TTracingErrors>) -> Void)?) throws {
         try database.generateContactsFromHandshakes()
+        try? state.numberOfContacts = database.contactsStorage.count()
+        try? state.numberOfHandshakes = database.handshakesStorage.count()
         getATracingServiceClient(forceRefresh: true) { [weak self] result in
             switch result {
             case let .failure(error):
@@ -174,6 +177,7 @@ class DP3TSDK {
     /// - Parameter callback: callback
     func status(callback: (Result<TracingState, DP3TTracingErrors>) -> Void) {
         try? state.numberOfHandshakes = database.handshakesStorage.count()
+        try? state.numberOfContacts = database.contactsStorage.count()
         callback(.success(state))
     }
 

@@ -34,8 +34,10 @@ public enum TrackingState {
 
 /// The state of the API
 public struct TracingState {
-    /// The number of encounters with other people
+    /// The number of handshakes with other phones
     public var numberOfHandshakes: Int
+    /// The number of encounters with other people
+    public var numberOfContacts: Int
     /// The tracking state of the bluetooth and the other networking api
     public var trackingState: TrackingState
     /// The last syncronization when the list of infected people was fetched
