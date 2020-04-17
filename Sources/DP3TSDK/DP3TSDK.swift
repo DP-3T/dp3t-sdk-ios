@@ -43,6 +43,10 @@ class DP3TSDK {
     /// the urlSession to use for networking
     private let urlSession: URLSession
 
+
+    @available(iOS 13, *)
+    private(set) lazy var backgroundTaskManager: DP3TBackgroundTaskManager = .init()
+
     /// delegate
     public weak var delegate: DP3TTracingDelegate?
 
@@ -103,9 +107,14 @@ class DP3TSDK {
             broadcaster.logger = self
             discoverer.logger = self
             database.logger = self
+            if #available(iOS 13, *) {
+                backgroundTaskManager.logger = self
+            }
         #endif
 
-        print(database)
+        if #available(iOS 13, *) {
+            backgroundTaskManager.register()
+        }
 
         try applicationSynchronizer.sync { [weak self] result in
             guard let self = self else { return }
@@ -317,7 +326,9 @@ extension DP3TSDK: BluetoothPermissionDelegate {
         func log(type: LogType, _ string: String) {
             os_log("%@: %@", type.description, string)
             if let entry = try? database.loggingStorage.log(type: type, message: string) {
-                delegate?.didAddLog(entry)
+                DispatchQueue.main.async {
+                    self.delegate?.didAddLog(entry)
+                }
             }
         }
     }
