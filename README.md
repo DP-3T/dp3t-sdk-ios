@@ -1,5 +1,5 @@
 # DP3T-SDK for iOS
-[![Swift Package Manager compatible](https://img.shields.io/badge/SPM-%E2%9C%93-brightgreen.svg?style=flat)](https://github.com/apple/swift-package-manager)
+[![Swift Package Manager compatible](https://img.shields.io/badge/SPM-%E2%9C%93-brightgreen.svg?style=flat)](https://github.com/apple/swift-package-manager) ![CocoaPods compatible](https://img.shields.io/cocoapods/v/DP3TSDK)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://github.com/DP-3T/dp3t-sdk-ios/blob/master/LICENSE)
 ![build](https://github.com/DP-3T/dp3t-sdk-ios/workflows/build/badge.svg)
 
