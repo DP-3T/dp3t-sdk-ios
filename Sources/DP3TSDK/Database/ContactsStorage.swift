@@ -38,6 +38,7 @@ class ContactsStorage {
             t.column(ephIDColumn)
             t.column(associatedKnownCaseColumn)
             t.foreignKey(associatedKnownCaseColumn, references: knownCasesStorage.table, knownCasesStorage.idColumn, delete: .setNull)
+            t.unique(dateColumn,ephIDColumn)
         })
     }
 
@@ -48,13 +49,14 @@ class ContactsStorage {
 
     /// add a Contact
     /// - Parameter contact: the Contact to add
-    func add(contact: Contact) throws {
+    func add(contact: Contact) {
         let insert = table.insert(
             dateColumn <- Date(timeIntervalSince1970: contact.day.timestamp),
             ephIDColumn <- contact.ephID,
             associatedKnownCaseColumn <- contact.associatedKnownCase
         )
-        try database.run(insert)
+        // can fail if contact already exists
+        _ = try? database.run(insert)
     }
 
     /// Deletes contacts older than CryptoConstants.numberOfDaysToKeepData

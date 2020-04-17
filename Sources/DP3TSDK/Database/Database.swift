@@ -88,7 +88,7 @@ class DP3TDatabase {
         let epochStart = DP3TCryptoModule.getCurrentEpochStart()
         let handshakes = try handshakesStorage.getAll(olderThan: epochStart)
         let contacts = ContactFactory.contacts(from: handshakes)
-        try contacts.forEach(contactsStorage.add(contact:))
+        contacts.forEach(contactsStorage.add(contact:))
         #if !CALIBRATION
         try handshakesStorage.delete(handshakes)
         #endif
@@ -105,6 +105,7 @@ class DP3TDatabase {
             #if CALIBRATION
                 try loggingStorage.emptyStorage()
             #endif
+            try contactsStorage.emptyStorage()
         }
     }
 
