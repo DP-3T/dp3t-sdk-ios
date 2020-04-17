@@ -239,6 +239,49 @@ final class CryptoModuleTest: XCTestCase {
 
         XCTAssertEqual(!matchedContacts.isEmpty, found)
     }
+
+    func testGenerationEphsIDsMultiDayRegular(){
+        let store = KeyStoreMock()
+        let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
+
+        for day in 0..<100 {
+            let date = Date().addingTimeInterval(Double(day) * .day)
+            let day = DayDate(date: date)
+            let secretKey = try! crypto.getCurrentSK(day: day)
+            XCTAssertLessThanOrEqual(store.keys.count, CryptoConstants.numberOfDaysToKeepData)
+            XCTAssertEqual(day, store.keys.first!.day)
+            XCTAssertEqual(secretKey, store.keys.first!.keyData)
+            
+            let ephID = try! crypto.getCurrentEphID(timestamp: date)
+            XCTAssertNotNil(store.ephIDs)
+            XCTAssertEqual(store.ephIDs!.ephIDs.count, CryptoConstants.numberOfEpochsPerDay)
+            XCTAssertEqual(store.ephIDs!.day, day)
+            XCTAssertTrue(store.ephIDs!.ephIDs.contains(ephID))
+        }
+    }
+
+    func testGenerationEphsIDsMultiDayIrregular(){
+        let store = KeyStoreMock()
+        let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
+
+        var currentDay = 0
+        for _ in 0..<100 {
+            currentDay += Int.random(in: 0...14)
+            let date = Date().addingTimeInterval(Double(currentDay) * .day)
+            let day = DayDate(date: date)
+            let secretKey = try! crypto.getCurrentSK(day: day)
+            XCTAssertLessThanOrEqual(store.keys.count, CryptoConstants.numberOfDaysToKeepData)
+            XCTAssertEqual(day, store.keys.first!.day)
+            XCTAssertEqual(secretKey, store.keys.first!.keyData)
+
+            let ephID = try! crypto.getCurrentEphID(timestamp: date)
+            XCTAssertNotNil(store.ephIDs)
+            XCTAssertEqual(store.ephIDs!.ephIDs.count, CryptoConstants.numberOfEpochsPerDay)
+            XCTAssertEqual(store.ephIDs!.day, day)
+            XCTAssertTrue(store.ephIDs!.ephIDs.contains(ephID))
+        }
+    }
+
     static var allTests = [
         ("testTokenToday", testTokenToday),
         ("testWrongTokenToday", testWrongTokenToday),
@@ -248,5 +291,7 @@ final class CryptoModuleTest: XCTestCase {
         ("testReset", testReset),
         ("generateEphIDs", testGenerateEphIDs),
         ("generateEphIDsAndroid", testGenerationEphsIdsWithAndorid),
+        ("testGenerationEphsIDsMultiDayRegular", testGenerationEphsIDsMultiDayRegular),
+        ("testGenerationEphsIDsMultiDayIrregular", testGenerationEphsIDsMultiDayIrregular)
     ]
 }

@@ -105,12 +105,13 @@ class DP3TCryptoModule {
     }
 
     /// retrieve current ephID
+    /// - Parameter timestamp: optional timestamp for ephIDs, defaults to now
     /// - Throws: throws if a error happens
     /// - Returns: the ephID
-    internal func getCurrentEphID() throws -> Data {
-        let day = DayDate()
+    internal func getCurrentEphID(timestamp: Date = Date()) throws -> Data {
+        let day = DayDate(date: timestamp)
         let ephIDs = try getEphIDsForToday(day: day)
-        let counter = Int((Date().timeIntervalSince1970 - day.timestamp) / Double(CryptoConstants.millisecondsPerEpoch))
+        let counter = Int((timestamp.timeIntervalSince1970 - day.timestamp) / Double(CryptoConstants.millisecondsPerEpoch))
         return ephIDs[counter]
     }
 
