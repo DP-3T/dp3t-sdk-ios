@@ -131,7 +131,7 @@ class DP3TCryptoModule {
     public static func getCurrentEpochStart() -> Date {
         let currentDay = DayDate()
         let counter = DP3TCryptoModule.getEpochCounter(day: currentDay, timestamp: Date())
-        return currentDay.dayMin.addingTimeInterval(Double(counter) * Double(CryptoConstants.secondsPerEpoch))
+        return currentDay.dayMin.addingTimeInterval(Double(counter * Int(CryptoConstants.secondsPerEpoch)))
     }
 
     /// check if we had handshakes with a contact given its secretkey
