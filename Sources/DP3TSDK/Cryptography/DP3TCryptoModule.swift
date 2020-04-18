@@ -54,14 +54,17 @@ class DP3TCryptoModule {
     /// - Returns: the secret key
     internal func getCurrentSK(day: DayDate = DayDate()) throws -> Data {
         var keys = try store.getSecretKeys()
-        while keys.first!.day.isBefore(other: day) {
+        if let key = keys.first(where: { $0.day == day }){
+            return key.keyData
+        }
+        while keys.first!.day < day {
             try rotateSK()
             keys = try store.getSecretKeys()
         }
-        guard let firstKey = keys.first else {
+        guard let firstKey = keys.first,
+              firstKey.day.timestamp == day.timestamp else {
             throw CryptoError.dataIntegrity
         }
-        assert(firstKey.day.timestamp == day.timestamp)
         return firstKey.keyData
     }
 
@@ -143,7 +146,7 @@ class DP3TCryptoModule {
         var dayToTest: DayDate = onsetDate
         var secretKeyForDay: Data = secretKey
         var matchingContacts: [Contact] = []
-        while dayToTest.timestamp <= bucketDate.timestamp {
+        while dayToTest <= bucketDate {
             let contactsOnDay = getContacts(dayToTest)
             guard !contactsOnDay.isEmpty else {
                 dayToTest = dayToTest.getNext()
@@ -180,7 +183,7 @@ class DP3TCryptoModule {
             }
         }
         if let last = keys.last,
-            day.isBefore(other: last.day) {
+            day < last.day {
             return last.keyData
         }
         return nil

@@ -278,6 +278,35 @@ final class CryptoModuleTest: XCTestCase {
         }
     }
 
+    func testGetSecretKeyMultipleTimes(){
+        let store = KeyStoreMock()
+        let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
+        for _ in 0..<10 {
+            let sec1 = try! crypto.getCurrentSK()
+            let sec2 = try! crypto.getCurrentSK()
+            XCTAssertEqual(sec1, sec2)
+            XCTAssert(store.keys.count == 1)
+        }
+    }
+
+    func testGetSecretKeyFromPastStored(){
+        let store = KeyStoreMock()
+        let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
+        let today = DayDate()
+        let tomorrow = DayDate(date: Date().addingTimeInterval(.day))
+        let secTomorrow = try! crypto.getCurrentSK(day: tomorrow)
+        let secToday = try! crypto.getCurrentSK(day: today)
+        XCTAssert(store.keys.count == 2)
+        XCTAssertNotEqual(secTomorrow, secToday)
+    }
+
+    func testGetSecretKeyFromPastNotStored(){
+        let store = KeyStoreMock()
+        let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
+        let yesterday = DayDate(date: Date().addingTimeInterval(.day * -1))
+        XCTAssertThrowsError(try crypto.getCurrentSK(day: yesterday))
+    }
+
     static var allTests = [
         ("testTokenToday", testTokenToday),
         ("testWrongTokenToday", testWrongTokenToday),
@@ -288,6 +317,9 @@ final class CryptoModuleTest: XCTestCase {
         ("generateEphIDs", testGenerateEphIDs),
         ("generateEphIDsAndroid", testGenerationEphsIdsWithAndorid),
         ("testGenerationEphsIDsMultiDayRegular", testGenerationEphsIDsMultiDayRegular),
-        ("testGenerationEphsIDsMultiDayIrregular", testGenerationEphsIDsMultiDayIrregular)
+        ("testGenerationEphsIDsMultiDayIrregular", testGenerationEphsIDsMultiDayIrregular),
+        ("testGetSecretKeyMultipleTimes", testGetSecretKeyMultipleTimes),
+        ("testGetSecretKeyFromPastStored", testGetSecretKeyFromPastStored),
+        ("testGetSecretKeyFromPastNotStored", testGetSecretKeyFromPastNotStored)
     ]
 }
