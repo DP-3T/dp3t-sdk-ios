@@ -169,6 +169,22 @@ final class DatabaseTests: XCTestCase {
         XCTAssertEqual(count, 1)
     }
 
+    func testDeleteBulkHandshakes(){
+        let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
+        let date = Date()
+
+        let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: nil)
+        try! database.handshakesStorage.add(handshake: h1)
+        let h2 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: nil)
+        try! database.handshakesStorage.add(handshake: h2)
+        let handshakes = try! database.handshakesStorage.getAll()
+        XCTAssertEqual(handshakes.count, 2)
+
+        try! database.handshakesStorage.delete(handshakes)
+
+        XCTAssertEqual(try! database.handshakesStorage.count(), 0)
+    }
+
 
     static var allTests = [
         ("testEmptyStorage", testEmptyStorage),
@@ -178,6 +194,7 @@ final class DatabaseTests: XCTestCase {
         ("testDeleteOldHandshakes", testDeleteOldHandshakes),
         ("testNotDeleteNewHandshakes", testNotDeleteNewHandshakes),
         ("testContactGenerationUnique", testContactGenerationUnique),
-        ("testContactGenerationUniqueDifferentEpoch", testContactGenerationUniqueDifferentEpoch)
+        ("testContactGenerationUniqueDifferentEpoch", testContactGenerationUniqueDifferentEpoch),
+        ("testDeleteBulkHandshakes", testDeleteBulkHandshakes)
     ]
 }

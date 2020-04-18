@@ -70,11 +70,9 @@ class HandshakesStorage {
     /// - Parameter handshakes: the handshakes to delete
     /// - Throws: if a error happens
     func delete(_ handshakes: [HandshakeModel]) throws {
-        for handshake in handshakes {
-            guard let identifier = handshake.identifier else { continue }
-            let deleteQuery = table.filter(idColumn == identifier)
-            try database.run(deleteQuery.delete())
-        }
+        let identifiers = handshakes.compactMap(\.identifier)
+        let deleteQuery = table.filter(identifiers.contains(idColumn))
+        try database.run(deleteQuery.delete())
     }
 
     /// get all Handshakes newer than timestamp
