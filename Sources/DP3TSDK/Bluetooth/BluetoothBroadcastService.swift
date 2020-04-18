@@ -127,16 +127,16 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             logger?.log(type: .sender, "didReceiveRead")
         #endif
         do {
-            let data = try crypto!.getCurrentEphID()
+            var data = try crypto!.getCurrentEphID()
 
-            switch DP3TMode.current {
             #if CALIBRATION
-                case let .calibration(identifierPrefix) where identifierPrefix != "":
-                    request.value = identifierPrefix.data(using: .utf8)! + data.prefix(22)
-            #endif
-            default:
-                request.value = data
+            if case .calibration(let identifierPrefix) = DP3TMode.current, identifierPrefix != "" {
+                let identifierData = identifierPrefix.data(using: .utf8)!
+                data = identifierData + data.suffix(data.count - identifierData.count)
             }
+            #endif
+
+            request.value = data
 
             peripheralManager?.respond(to: request, withResult: .success)
             #if CALIBRATION
