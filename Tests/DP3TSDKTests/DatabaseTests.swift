@@ -112,7 +112,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testDeleteOldContacts(){
-        let date = Date().addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day + 1))
+        let date = DayDate().dayMin.addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day + 1))
         let day = DayDate(date: date)
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
@@ -142,7 +142,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testDeleteOldHandshakes(){
-        let date = Date().addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day + 1))
+        let date = DayDate().dayMin.addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day + 1))
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 

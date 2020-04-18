@@ -61,7 +61,7 @@ class ContactsStorage {
 
     /// Deletes contacts older than CryptoConstants.numberOfDaysToKeepData
     func deleteOldContacts() throws {
-        let thresholdDate: Date = Date().addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day)
+        let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day)
         let deleteQuery = table.filter(dateColumn < thresholdDate)
         try database.run(deleteQuery.delete())
     }
