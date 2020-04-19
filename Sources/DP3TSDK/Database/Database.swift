@@ -68,7 +68,7 @@ class DP3TDatabase {
         if let connection = connection_ {
             self.connection = connection
         } else {
-            self.connection = try Connection(DP3TDatabase.getDatabasePath(), readonly: false)
+             self.connection = try Connection(DP3TDatabase.getDatabasePath(), readonly: false)
         }
         _knownCasesStorage = try KnownCasesStorage(database: connection)
         _handshakesStorage = try HandshakesStorage(database: connection)

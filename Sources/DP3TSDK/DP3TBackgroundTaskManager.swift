@@ -38,12 +38,19 @@ class DP3TBackgroundTaskManager {
         #endif
         task.expirationHandler = {
             task.setTaskCompleted(success: false)
-        }
-
-        DP3TTracing.sync { (_) in
-            task.setTaskCompleted(success: true)
             self.scheduleBackgroundTask()
         }
+
+        do {
+            try DP3TTracing.sync { (_) in
+                task.setTaskCompleted(success: true)
+                self.scheduleBackgroundTask()
+            }
+        } catch {
+            task.setTaskCompleted(success: false)
+            self.scheduleBackgroundTask()
+        }
+
     }
 
     private func scheduleBackgroundTask(){
