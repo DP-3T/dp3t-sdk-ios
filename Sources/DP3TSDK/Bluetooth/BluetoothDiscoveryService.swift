@@ -325,6 +325,13 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
             try? storage.loopThrough(block: { (entity) -> Bool in
                 var toDiscard: String?
+
+                // discard peripheral from storage if it didn't got restored
+                guard peripherals.contains(where: { $0.identifier.uuidString == entity.uuid }) else {
+                    try? storage.discard(uuid: entity.uuid)
+                    return true
+                }
+
                 if let lastConnection = entity.lastConnection,
                     Date().timeIntervalSince(lastConnection) > BluetoothConstants.peripheralDisposeInterval {
                     toDiscard = entity.uuid
