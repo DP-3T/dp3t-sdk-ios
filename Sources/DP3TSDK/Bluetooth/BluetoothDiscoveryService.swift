@@ -177,34 +177,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         }
         RSSICache[peripheral.identifier] = Double(truncating: RSSI)
 
-        // Tidy up pending peripherals (remove peripherals in "connecting" state if they are older than the threshold)
-        peripheralsToDiscard = []
-        try? storage.loopThrough(block: { (entity) -> Bool in
-            var toDiscard: String?
-            if let lastConnection = entity.lastConnection,
-                Date().timeIntervalSince(lastConnection) > BluetoothConstants.peripheralDisposeInterval {
-                toDiscard = entity.uuid
-            } else if Date().timeIntervalSince(entity.discoverTime) > BluetoothConstants.peripheralDisposeIntervalSinceDiscovery {
-                toDiscard = entity.uuid
-            }
-            if let toDiscard = toDiscard,
-                let peripheralToDiscard = pendingPeripherals.first(where: { $0.identifier.uuidString == toDiscard }) {
-                peripheralsToDiscard?.append(peripheralToDiscard)
-            }
-            return true
-        })
-
-        if let toDiscard = peripheralsToDiscard, toDiscard.count > 0 {
-            toDiscard.forEach {
-                    manager?.cancelPeripheralConnection($0)
-                    pendingPeripherals.remove($0)
-                    try? storage.discard(uuid: $0.identifier.uuidString)
-            }
-
-            #if CALIBRATION
-            logger?.log(type: .receiver, "didDiscover: Disposed \(toDiscard.count) peripherals")
-            #endif
-        }
+        tidyUpPendingPeripherals()
 
         if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
             manuData.count == CryptoConstants.keyLenght + 2,
@@ -234,11 +207,43 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         }
     }
 
+    func tidyUpPendingPeripherals(){
+        // Tidy up pending peripherals (remove peripherals in "connecting" state if they are older than the threshold)
+        peripheralsToDiscard = []
+        try? storage.loopThrough(block: { (entity) -> Bool in
+            var toDiscard: String?
+            if let lastConnection = entity.lastConnection,
+                Date().timeIntervalSince(lastConnection) > BluetoothConstants.peripheralDisposeInterval {
+                toDiscard = entity.uuid
+            } else if Date().timeIntervalSince(entity.discoverTime) > BluetoothConstants.peripheralDisposeIntervalSinceDiscovery {
+                toDiscard = entity.uuid
+            }
+            if let toDiscard = toDiscard,
+                let peripheralToDiscard = pendingPeripherals.first(where: { $0.identifier.uuidString == toDiscard }) {
+                peripheralsToDiscard?.append(peripheralToDiscard)
+            }
+            return true
+        })
+
+        if let toDiscard = peripheralsToDiscard, toDiscard.count > 0 {
+            toDiscard.forEach {
+                    manager?.cancelPeripheralConnection($0)
+                    pendingPeripherals.remove($0)
+                    try? storage.discard(uuid: $0.identifier.uuidString)
+            }
+
+            #if CALIBRATION
+            logger?.log(type: .receiver, "tidyUpPendingPeripherals: Disposed \(toDiscard.count) peripherals")
+            #endif
+        }
+    }
+
     func centralManager(_: CBCentralManager, didConnect peripheral: CBPeripheral) {
         #if CALIBRATION
             logger?.log(type: .receiver, " didConnect: \(peripheral)")
         #endif
         try? storage.setConnection(uuid: peripheral.identifier)
+        tidyUpPendingPeripherals()
         peripheral.delegate = self
         peripheral.discoverServices([BluetoothConstants.serviceCBUUID])
         peripheral.readRSSI()
