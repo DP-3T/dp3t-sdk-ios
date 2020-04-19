@@ -23,7 +23,7 @@ class Default {
 
     var reconnectionDelay: Int {
         get {
-            return (store.object(forKey: "org.dpppt.sampleapp.reconnectionDelay") as? Int) ?? 60 * 5
+            return (store.object(forKey: "org.dpppt.sampleapp.reconnectionDelay") as? Int) ?? 60 * 2
         }
         set(newValue) {
             store.set(newValue, forKey: "org.dpppt.sampleapp.reconnectionDelay")

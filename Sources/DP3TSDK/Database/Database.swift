@@ -33,6 +33,13 @@ class DP3TDatabase {
         return _handshakesStorage
     }
 
+    /// contacts Storage
+    private let _contactsStorage: ContactsStorage
+    var contactsStorage: ContactsStorage {
+        guard !isDestroyed else { fatalError("Database is destroyed") }
+        return _contactsStorage
+    }
+
     /// knowncase Storage
     private let _knownCasesStorage: KnownCasesStorage
     var knownCasesStorage: KnownCasesStorage {
@@ -57,16 +64,35 @@ class DP3TDatabase {
     #endif
 
     /// Initializer
-    init() throws {
-        let fileName = DP3TDatabase.getDatabasePath()
-        connection = try Connection(fileName, readonly: false)
+    init(connection_: Connection? = nil) throws {
+        if let connection = connection_ {
+            self.connection = connection
+        } else {
+            self.connection = try Connection(DP3TDatabase.getDatabasePath(), readonly: false)
+        }
         _knownCasesStorage = try KnownCasesStorage(database: connection)
-        _handshakesStorage = try HandshakesStorage(database: connection, knownCasesStorage: _knownCasesStorage)
+        _handshakesStorage = try HandshakesStorage(database: connection)
+        _contactsStorage = try ContactsStorage(database: connection, knownCasesStorage: _knownCasesStorage)
         _peripheralStorage = try PeripheralStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
         #if CALIBRATION
             _logggingStorage = try LoggingStorage(database: connection)
         #endif
+    }
+
+    /// Generates contacts from handshakes and deletes handshakes
+    /// Should be called ragulary to ensure completenes of contacts
+    /// - Throws: if error happens
+    func generateContactsFromHandshakes() throws {
+        try handshakesStorage.deleteOldHandshakes()
+        let epochStart = DP3TCryptoModule.getCurrentEpochStart()
+        let handshakes = try handshakesStorage.getAll(olderThan: epochStart)
+        let contacts = ContactFactory.contacts(from: handshakes)
+        contacts.forEach(contactsStorage.add(contact:))
+        #if !CALIBRATION
+        try handshakesStorage.delete(handshakes)
+        #endif
+        try contactsStorage.deleteOldContacts()
     }
 
     /// Discard all data
@@ -79,6 +105,7 @@ class DP3TDatabase {
             #if CALIBRATION
                 try loggingStorage.emptyStorage()
             #endif
+            try contactsStorage.emptyStorage()
         }
     }
 

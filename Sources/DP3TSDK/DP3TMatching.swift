@@ -39,18 +39,24 @@ class DP3TMatcher {
     /// - Parameter knownCase: known Case
     func checkNewKnownCase(_ knownCase: KnownCaseModel, bucketDay: String) throws {
         let dateFormatter = DateFormatter()
-        dateFormatter.timeZone = TimeZone(identifier: "UTC")!
+        dateFormatter.timeZone = CryptoConstants.timeZone
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let onset = dateFormatter.date(from: knownCase.onset)!
         let bucketDayDate = dateFormatter.date(from: bucketDay)!
 
-        let handshake = try crypto.checkContacts(secretKey: knownCase.key, onsetDate: SecretKeyDay(date: onset), bucketDate: SecretKeyDay(date: bucketDayDate)) { (day) -> ([HandshakeModel]) in
-            (try? database.handshakesStorage.getBy(day: day)) ?? []
+        let contacts = try crypto.checkContacts(secretKey: knownCase.key,
+                                                onsetDate: DayDate(date: onset),
+                                                bucketDate: DayDate(date: bucketDayDate)) { (day) -> ([Contact]) in
+            (try? database.contactsStorage.getContacts(for: day)) ?? []
         }
 
-        if let handshakeid = handshake?.identifier,
+        if !contacts.isEmpty,
             let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
-            try database.handshakesStorage.addKnownCase(knownCaseId, to: handshakeid)
+            try contacts.forEach { (contact) in
+                guard let contactId = contact.identifier else { return }
+                try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
+            }
+
             delegate.didFindMatch()
         }
     }
@@ -59,13 +65,12 @@ class DP3TMatcher {
 // MARK: BluetoothDiscoveryDelegate implementation
 
 extension DP3TMatcher: BluetoothDiscoveryDelegate {
-    func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double?) throws {
+    func didDiscover(data: EphID, TXPowerlevel: Double?, RSSI: Double?) throws {
         // Do no realtime matching
         let handshake = HandshakeModel(timestamp: Date(),
                                        ephID: data,
                                        TXPowerlevel: TXPowerlevel,
-                                       RSSI: RSSI,
-                                       knownCaseId: nil)
+                                       RSSI: RSSI)
         try database.handshakesStorage.add(handshake: handshake)
 
         delegate.handShakeAdded(handshake)

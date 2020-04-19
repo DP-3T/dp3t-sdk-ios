@@ -207,7 +207,7 @@ class ControlViewController: UIViewController {
     }
 
     @objc func sync() {
-        DP3TTracing.sync { _ in }
+        try! DP3TTracing.sync { _ in }
     }
 
     @objc func setExposed() {
@@ -269,7 +269,7 @@ class ControlViewController: UIViewController {
 
     func updateUI(_ state: TracingState) {
         var elements: [String] = []
-        elements.append(state.trackingState.stringValue)
+        elements.append("tracking State: \(state.trackingState.stringValue)")
         switch state.trackingState {
         case .active, .activeReceiving, .activeAdvertising:
             segmentedControl.selectedSegmentIndex = 0
@@ -281,7 +281,7 @@ class ControlViewController: UIViewController {
             startAdvertisingButton.isEnabled = true
         }
         if let lastSync = state.lastSync {
-            elements.append(lastSync.stringVal)
+            elements.append("last Sync: \(lastSync.stringVal)")
         }
 
         switch state.infectionStatus {
@@ -293,6 +293,7 @@ class ControlViewController: UIViewController {
             elements.append("InfectionStatus: HEALTHY")
         }
         elements.append("Handshakes: \(state.numberOfHandshakes)")
+        elements.append("Contacts: \(state.numberOfContacts)")
 
         statusLabel.text = elements.joined(separator: "\n")
     }
