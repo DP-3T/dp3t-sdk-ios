@@ -13,13 +13,11 @@ public struct HandshakeModel {
     /// The timestamp of the handshake
     public let timestamp: Date
     /// The DP3T token exchanged during the handshake
-    public let ephID: Data
+    public let ephID: EphID
     /// The TX Power Level of both handshaking parties
     public let TXPowerlevel: Double?
     /// The RSSI of both handshaking parties
     public let RSSI: Double?
-    /// If the handshake is associated with a known exposed case
-    public let knownCaseId: Int?
 
     // iOS sends at 12bm? Android seems to vary between -1dbm (HIGH_POWER) and -21dbm (LOW_POWER)
     private let defaultPower = 12.0
@@ -37,3 +35,5 @@ public struct HandshakeModel {
         return distance / 1000
     }
 }
+
+extension HandshakeModel: Equatable {}

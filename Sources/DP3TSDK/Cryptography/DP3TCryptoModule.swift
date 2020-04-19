@@ -41,9 +41,9 @@ class DP3TCryptoModule {
         guard let firstKey = keys.first else {
             throw CryptoError.dataIntegrity
         }
-        let nextSecretKeyDay = firstKey.day.getNext()
+        let nextDay = firstKey.day.getNext()
         let sKt1 = getSKt1(SKt0: firstKey.keyData)
-        keys.insert(SecretKey(day: nextSecretKeyDay, keyData: sKt1), at: 0)
+        keys.insert(SecretKey(day: nextDay, keyData: sKt1), at: 0)
         let keysToStore = Array(keys.prefix(CryptoConstants.numberOfDaysToKeepData))
         try store.setSecretKeys(keysToStore)
     }
@@ -52,16 +52,19 @@ class DP3TCryptoModule {
     /// - Parameter day: optional day for secret key, defaults to today
     /// - Throws: throws if a error occurs
     /// - Returns: the secret key
-    internal func getCurrentSK(day: SecretKeyDay = SecretKeyDay()) throws -> Data {
+    internal func getCurrentSK(day: DayDate = DayDate()) throws -> Data {
         var keys = try store.getSecretKeys()
-        while keys.first!.day.isBefore(other: day) {
+        if let key = keys.first(where: { $0.day == day }){
+            return key.keyData
+        }
+        while keys.first!.day < day {
             try rotateSK()
             keys = try store.getSecretKeys()
         }
-        guard let firstKey = keys.first else {
+        guard let firstKey = keys.first,
+              firstKey.day.timestamp == day.timestamp else {
             throw CryptoError.dataIntegrity
         }
-        assert(firstKey.day.timestamp == day.timestamp)
         return firstKey.keyData
     }
 
@@ -69,7 +72,7 @@ class DP3TCryptoModule {
     /// - Parameter secretKey: secret key to base ephIDs on
     /// - Throws: throws if a error happens
     /// - Returns: the ephIDs
-    internal static func createEphIDs(secretKey: Data) throws -> [Data] {
+    internal static func createEphIDs(secretKey: Data) throws -> [EphID] {
         let hmac = Crypto.hmac(msg: CryptoConstants.broadcastKey, key: secretKey)
 
         let zeroData = Data(count: CryptoConstants.keyLenght * CryptoConstants.numberOfEpochsPerDay)
@@ -93,7 +96,7 @@ class DP3TCryptoModule {
     /// - Parameter day: optional day for ephIDs, defaults to today
     /// - Throws: throws if a error happens
     /// - Returns: the ephIDs
-    private func getEphIDsForToday(day: SecretKeyDay = SecretKeyDay()) throws -> [Data] {
+    private func getEphIDsForToday(day: DayDate = DayDate()) throws -> [EphID] {
         var stored = try? store.getEphIDs()
         if stored == nil || stored?.day != day {
             let currentSk = try getCurrentSK(day: day)
@@ -105,13 +108,30 @@ class DP3TCryptoModule {
     }
 
     /// retrieve current ephID
+    /// - Parameter timestamp: optional timestamp for ephIDs, defaults to now
     /// - Throws: throws if a error happens
     /// - Returns: the ephID
-    internal func getCurrentEphID() throws -> Data {
-        let day = SecretKeyDay()
+    internal func getCurrentEphID(timestamp: Date = Date()) throws -> EphID {
+        let day = DayDate(date: timestamp)
         let ephIDs = try getEphIDsForToday(day: day)
-        let counter = Int((Date().timeIntervalSince1970 - day.timestamp) / Double(CryptoConstants.millisecondsPerEpoch))
+        let counter = DP3TCryptoModule.getEpochCounter(day: day, timestamp: timestamp)
         return ephIDs[counter]
+    }
+
+    /// get the epoch counter by given day and timestamp
+    /// - Parameters:
+    ///   - day: the day
+    ///   - timestamp: the timestamp
+    /// - Returns: the count of the current epoch
+    public static func getEpochCounter(day: DayDate, timestamp: Date) -> Int {
+        return Int((timestamp.timeIntervalSince1970 - day.timestamp) / Double(CryptoConstants.secondsPerEpoch))
+    }
+
+    /// get the timestamp when the current epoch started
+    public static func getCurrentEpochStart() -> Date {
+        let currentDay = DayDate()
+        let counter = DP3TCryptoModule.getEpochCounter(day: currentDay, timestamp: Date())
+        return currentDay.dayMin.addingTimeInterval(Double(counter * Int(CryptoConstants.secondsPerEpoch)))
     }
 
     /// check if we had handshakes with a contact given its secretkey
@@ -119,28 +139,27 @@ class DP3TCryptoModule {
     ///   - secretKey: the secret key of the contact
     ///   - onsetDate: the day on which onwards the contact published its secret key
     ///   - bucketDate: the day on which the contact published its secret key
-    ///   - getHandshake: a callback to retreive handshakes for a given day
+    ///   - getContacts: a callback to retreive contacts for a given day
     /// - Throws: throws if a error occurs
-    /// - Returns: the first handshakes whose token matches the secret key
-    internal func checkContacts(secretKey: Data, onsetDate: SecretKeyDay, bucketDate: SecretKeyDay, getHandshake: (Date) -> ([HandshakeModel])) throws -> HandshakeModel? {
-        var dayToTest: SecretKeyDay = onsetDate
+    /// - Returns: all contacts that match
+    internal func checkContacts(secretKey: Data, onsetDate: DayDate, bucketDate: DayDate, getContacts: (DayDate) -> ([Contact])) throws -> [Contact] {
+        var dayToTest: DayDate = onsetDate
         var secretKeyForDay: Data = secretKey
-        while dayToTest.timestamp <= bucketDate.timestamp {
-            let handshakesOnDay = getHandshake(Date(timeIntervalSince1970: dayToTest.timestamp))
-            guard !handshakesOnDay.isEmpty else {
+        var matchingContacts: [Contact] = []
+        while dayToTest <= bucketDate {
+            let contactsOnDay = getContacts(dayToTest)
+            guard !contactsOnDay.isEmpty else {
                 dayToTest = dayToTest.getNext()
                 secretKeyForDay = getSKt1(SKt0: secretKeyForDay)
                 continue
             }
 
             // generate all ephIDs for day
-            let ephIDs = try DP3TCryptoModule.createEphIDs(secretKey: secretKeyForDay)
+            let ephIDs = Set(try DP3TCryptoModule.createEphIDs(secretKey: secretKeyForDay))
             // check all handshakes if they match any of the ephIDs
-            for handshake in handshakesOnDay {
-                for ephID in ephIDs {
-                    if handshake.ephID == ephID {
-                        return handshake
-                    }
+            for contact in contactsOnDay {
+                if ephIDs.contains(contact.ephID) {
+                    matchingContacts.append(contact)
                 }
             }
 
@@ -148,7 +167,7 @@ class DP3TCryptoModule {
             dayToTest = dayToTest.getNext()
             secretKeyForDay = getSKt1(SKt0: secretKeyForDay)
         }
-        return nil
+        return matchingContacts
     }
 
     /// retreives the secret key to publich for a given day
@@ -157,14 +176,14 @@ class DP3TCryptoModule {
     /// - Returns: the secret key
     internal func getSecretKeyForPublishing(onsetDate: Date) throws -> Data? {
         let keys = try store.getSecretKeys()
-        let day = SecretKeyDay(date: onsetDate)
+        let day = DayDate(date: onsetDate)
         for key in keys {
             if key.day == day {
                 return key.keyData
             }
         }
         if let last = keys.last,
-            day.isBefore(other: last.day) {
+            day < last.day {
             return last.keyData
         }
         return nil
@@ -179,6 +198,6 @@ class DP3TCryptoModule {
     /// - Throws: throws if a error occurs
     private func generateInitialSecretKey() throws {
         let keyData = try Crypto.generateRandomKey()
-        try store.setSecretKeys([SecretKey(day: SecretKeyDay(), keyData: keyData)])
+        try store.setSecretKeys([SecretKey(day: DayDate(), keyData: keyData)])
     }
 }
