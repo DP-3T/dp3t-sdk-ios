@@ -194,9 +194,19 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
                 logger?.log(type: .receiver, " → ✅ Received (EphID in SCAN_RSP: \(ephID)) from \(peripheral.identifier) at \(Date())")
             #endif
 
-            // Cancel connection if it was already made and reconnect delayed
-            manager?.cancelPeripheralConnection(peripheral)
-            connect(peripheral, delayed: true)
+            if (peripheral.state == .disconnected) {
+                // New device, connect with a delay (since we already received EphID)
+                try? storage.setDiscovery(uuid: peripheral.identifier)
+                pendingPeripherals.insert(peripheral)
+                connect(peripheral, delayed: true)
+            } else {
+                // If we are already trying to connect, disconnect and then
+                // didDisconnect will try to reconnect delayed
+                #if CALIBRATION
+                    logger?.log(type: .receiver, " didDiscover: cancel peripheral \(peripheral)")
+                #endif
+                manager?.cancelPeripheralConnection(peripheral)
+            }
         } else {
             // Only connect if we didn't got manufacturer data
             // we only get the manufacturer if iOS is actively scanning
@@ -266,6 +276,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             #if CALIBRATION
                 logger?.log(type: .receiver, " didDisconnectPeripheral (unexpected): \(peripheral) with error: \(error)")
             #endif
+
             connect(peripheral)
         } else {
             #if CALIBRATION
