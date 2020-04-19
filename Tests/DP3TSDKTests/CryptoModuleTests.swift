@@ -307,6 +307,17 @@ final class CryptoModuleTest: XCTestCase {
         XCTAssertThrowsError(try crypto.getCurrentSK(day: yesterday))
     }
 
+
+    func testEpochDuration(){
+        let store = KeyStoreMock()
+        let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
+        let now = Date()
+        let ephIDNow: EphID = try! crypto.getCurrentEphID(timestamp: now)
+        let nextEpoch = now.addingTimeInterval(CryptoConstants.secondsPerEpoch)
+        let ephIDNext: EphID = try! crypto.getCurrentEphID(timestamp: nextEpoch)
+        XCTAssertNotEqual(ephIDNow, ephIDNext)
+    }
+
     static var allTests = [
         ("testTokenToday", testTokenToday),
         ("testWrongTokenToday", testWrongTokenToday),
@@ -320,6 +331,7 @@ final class CryptoModuleTest: XCTestCase {
         ("testGenerationEphsIDsMultiDayIrregular", testGenerationEphsIDsMultiDayIrregular),
         ("testGetSecretKeyMultipleTimes", testGetSecretKeyMultipleTimes),
         ("testGetSecretKeyFromPastStored", testGetSecretKeyFromPastStored),
-        ("testGetSecretKeyFromPastNotStored", testGetSecretKeyFromPastNotStored)
+        ("testGetSecretKeyFromPastNotStored", testGetSecretKeyFromPastNotStored),
+        ("testEpochDuration", testEpochDuration)
     ]
 }
