@@ -15,7 +15,7 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
 
   spec.license      = { :type => "MPL", :file => "LICENSE" }
 
-  spec.author             = { "DP^3T" => "dp3t@groupes.epfl.ch" }
+  spec.author             = { "DP^3T" => "dp3t@ubique.ch" }
 
   spec.platform     = :ios, "10.0"
 
