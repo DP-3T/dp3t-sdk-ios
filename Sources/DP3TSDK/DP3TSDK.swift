@@ -303,6 +303,10 @@ extension DP3TSDK: DP3TMatcherDelegate {
 // MARK: BluetoothPermissionDelegate implementation
 
 extension DP3TSDK: BluetoothPermissionDelegate {
+    func noIssues() {
+        state.trackingState = .active
+    }
+    
     func deviceTurnedOff() {
         state.trackingState = .inactive(error: .BluetoothTurnedOff)
     }

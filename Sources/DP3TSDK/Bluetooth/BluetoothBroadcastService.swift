@@ -92,6 +92,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
         switch peripheral.state {
         case .poweredOn where service == nil:
+            permissionDelegate?.noIssues()
             addService()
         case .poweredOff:
             permissionDelegate?.deviceTurnedOff()
