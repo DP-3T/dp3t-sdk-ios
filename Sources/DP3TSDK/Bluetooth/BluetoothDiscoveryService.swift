@@ -436,9 +436,8 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             peripheral.discoverCharacteristics([BluetoothConstants.characteristicsCBUUID], for: service)
         } else {
             #if CALIBRATION
-                logger?.log(type: .receiver, " No service found")
+            logger?.log(type: .receiver, " No service found found: -> (\(peripheral.services?.description ?? "none"))")
             #endif
-            try? storage.discard(uuid: peripheral.identifier.uuidString)
             manager?.cancelPeripheralConnection(peripheral)
         }
     }
