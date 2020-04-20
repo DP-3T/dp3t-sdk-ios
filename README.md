@@ -1,5 +1,5 @@
 # DP3T-SDK for iOS
-[![Swift Package Manager compatible](https://img.shields.io/badge/SPM-%E2%9C%93-brightgreen.svg?style=flat)](https://github.com/apple/swift-package-manager)
+[![Swift Package Manager compatible](https://img.shields.io/badge/SPM-%E2%9C%93-brightgreen.svg?style=flat)](https://github.com/apple/swift-package-manager) ![CocoaPods compatible](https://img.shields.io/cocoapods/v/DP3TSDK)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://github.com/DP-3T/dp3t-sdk-ios/blob/master/LICENSE)
 ![build](https://github.com/DP-3T/dp3t-sdk-ios/workflows/build/badge.svg)
 
@@ -73,6 +73,19 @@ DP3T-SDK is available through [Swift Package Manager](https://swift.org/package-
   ]
 
   ```
+### Cocoapods
+
+DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
+
+1. Add the following to your `Podfile`:
+
+  ```ruby
+
+  pod 'DP3TSDK', => '0.0.1'
+
+  ```
+
+This version points to the HEAD of the `develop` branch and will always fetch the latest development status. Future releases will be made available using semantic versioning to ensure stability for depending projects.
 
 ## Using the SDK
 
