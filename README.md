@@ -54,7 +54,7 @@ Name | Description | Function Name
 startTracing | Starts Bluetooth tracing | `func startTracing() throws`
 stopTracing | Stops Bluetooth tracing | `func stopTracing()`
 sync | Pro-actively triggers sync with backend to refresh exposed list | `func sync(callback: ((Result<Void, DP3TTracingErrors>) -> Void)?)`
-status | Returns a TracingState-Object describing the current state. This contains:<br/>- `numberOfHandshakes` : `Int` <br /> - `trackingState` : `TrackingState` <br /> - `lastSync` : `Date` <br /> - `infectionStatus`:`InfectionStatus` | `func status(callback: (Result<TracingState, DP3TTracingErrors>) -> Void)`
+status | Returns a TracingState-Object describing the current state. This contains:<br/>- `numberOfHandshakes` : `Int` <br /> - `trackingState` : `TrackingState` <br /> - `lastSync` : `Date` <br /> - `infectionStatus`:`InfectionStatus`<br /> - `backgroundRefreshState`:`UIBackgroundRefreshStatus ` | `func status(callback: (Result<TracingState, DP3TTracingErrors>) -> Void)`
 iWasExposed | This method must be called upon positive test. | `func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void)`
 reset | Removes all SDK related data (key and database) and de-initializes SDK | `func reset() throws`
 

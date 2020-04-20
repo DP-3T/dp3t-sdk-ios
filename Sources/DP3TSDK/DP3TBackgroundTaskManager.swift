@@ -8,6 +8,16 @@ import Foundation
 import UIKit.UIApplication
 import BackgroundTasks
 
+fileprivate class SyncOperation: Operation {
+    override func main() {
+        do {
+            try DP3TTracing.sync { _ in }
+        } catch {
+            self.cancel()
+        }
+    }
+}
+
 @available(iOS 13.0, *)
 class DP3TBackgroundTaskManager {
     static let taskIdentifier: String = "org.dpppt.synctask"
@@ -36,29 +46,32 @@ class DP3TBackgroundTaskManager {
         #if CALIBRATION
         logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.handleBackgroundTask")
         #endif
+
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+
+        queue.addOperation(SyncOperation())
+        
         task.expirationHandler = {
-            task.setTaskCompleted(success: false)
-            self.scheduleBackgroundTask()
+            queue.cancelAllOperations()
         }
 
-        do {
-            try DP3TTracing.sync { (_) in
-                task.setTaskCompleted(success: true)
-                self.scheduleBackgroundTask()
-            }
-        } catch {
-            task.setTaskCompleted(success: false)
-            self.scheduleBackgroundTask()
+        let lastOperation = queue.operations.last
+        lastOperation?.completionBlock = {
+            task.setTaskCompleted(success: !(lastOperation?.isCancelled ?? false))
         }
 
+
+        scheduleBackgroundTask()
     }
 
     private func scheduleBackgroundTask(){
-        #if CALIBRATION
-        logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.scheduleBackgroundTask")
-        #endif
+
         let syncTask = BGAppRefreshTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         syncTask.earliestBeginDate = Date(timeIntervalSinceNow: DP3TBackgroundTaskManager.syncInterval)
+        #if CALIBRATION
+        logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.scheduleBackgroundTask earliestBeginDate: \(syncTask.earliestBeginDate!)")
+        #endif
         do {
             try BGTaskScheduler.shared.submit(syncTask)
         } catch {

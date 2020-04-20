@@ -270,6 +270,16 @@ class ControlViewController: UIViewController {
     func updateUI(_ state: TracingState) {
         var elements: [String] = []
         elements.append("tracking State: \(state.trackingState.stringValue)")
+        switch state.backgroundRefreshState {
+        case .available:
+            elements.append("background: available")
+        case .restricted:
+            elements.append("background: restricted")
+        case .denied:
+            elements.append("background: denied")
+        @unknown default:
+            break
+        }
         switch state.trackingState {
         case .active, .activeReceiving, .activeAdvertising:
             segmentedControl.selectedSegmentIndex = 0

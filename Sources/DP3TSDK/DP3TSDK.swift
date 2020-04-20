@@ -96,7 +96,8 @@ class DP3TSDK {
                              numberOfContacts: (try? database.contactsStorage.count()) ?? 0,
                              trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
-                             infectionStatus: Default.shared.infectionStatus)
+                             infectionStatus: Default.shared.infectionStatus,
+                             backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
         broadcaster.permissionDelegate = self
         discoverer.permissionDelegate = self
@@ -131,6 +132,8 @@ class DP3TSDK {
                 }
             }
         }
+
+        NotificationCenter.default.addObserver(self, selector: #selector(backgroundRefreshStatusDidChange), name: UIApplication.backgroundRefreshStatusDidChangeNotification, object: nil)
     }
 
     /// start tracing
@@ -290,6 +293,10 @@ class DP3TSDK {
             return try database.loggingStorage.getLogs(request)
         }
     #endif
+
+    @objc func backgroundRefreshStatusDidChange() {
+        state.backgroundRefreshState = UIApplication.shared.backgroundRefreshStatus
+    }
 }
 
 // MARK: DP3TMatcherDelegate implementation
