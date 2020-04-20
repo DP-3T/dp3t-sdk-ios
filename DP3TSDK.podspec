@@ -19,11 +19,11 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
 
   spec.platform     = :ios, "10.0"
 
-  spec.swift_versions = "5.0"
+  spec.swift_versions = "5.2"
 
   spec.source       = { :git => "https://github.com/DP-3T/dp3t-sdk-ios.git", :branch => "develop" }
 
-  spec.source_files  = "Sources", "Sources/**/*.{h,m,swift}"
+  spec.source_files  = "Sources/DP3TSDK", "Sources/DP3TSDK/**/*.{h,m,swift}"
   spec.exclude_files = "Sources/DP3TSDK/Exclude"
 
   spec.dependency "SQLite.swift", "~>0.12"
