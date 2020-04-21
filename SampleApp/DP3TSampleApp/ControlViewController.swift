@@ -22,6 +22,8 @@ class ControlViewController: UIViewController {
 
     let identifierInput = UITextField()
 
+    let shareButton = UIButton()
+
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Controls"
@@ -212,17 +214,16 @@ class ControlViewController: UIViewController {
         stackView.addSpacerView(12)
 
         do {
-            let button = UIButton()
             if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
+                shareButton.setTitleColor(.systemBlue, for: .normal)
+                shareButton.setTitleColor(.systemGray, for: .highlighted)
             } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
+                shareButton.setTitleColor(.blue, for: .normal)
+                shareButton.setTitleColor(.black, for: .highlighted)
             }
-            button.setTitle("Share Database", for: .normal)
-            button.addTarget(self, action: #selector(shareDatabase), for: .touchUpInside)
-            stackView.addArrangedSubview(button)
+            shareButton.setTitle("Share Database", for: .normal)
+            shareButton.addTarget(self, action: #selector(shareDatabase), for: .touchUpInside)
+            stackView.addArrangedSubview(shareButton)
         }
 
         stackView.addArrangedSubview(UIView())
@@ -258,7 +259,7 @@ class ControlViewController: UIViewController {
     @objc func shareDatabase() {
         let acv = UIActivityViewController(activityItems: [Self.getDatabasePath()], applicationActivities: nil)
         if let popoverController = acv.popoverPresentationController {
-            popoverController.sourceView = view
+            popoverController.sourceView = shareButton
         }
         present(acv, animated: true)
     }
