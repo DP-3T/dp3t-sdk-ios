@@ -191,11 +191,6 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
                 let identifier = String(data: data[..<4], encoding: .utf8) ?? "Unable to decode"
                 logger?.log(type: .receiver, " → ✅ Received (EphID in Advertisement: \(identifier)) from \(peripheral.identifier) at \(Date())")
             #endif
-
-            // connect to the device delayed since we only get a single discovery in the background
-            try? storage.setDiscovery(uuid: peripheral.identifier)
-            pendingPeripherals.insert(peripheral)
-            connect(peripheral, delayed: true)
         } else {
             // Only connect if we didn't got manufacturer data
             // we only get the manufacturer if iOS is actively scanning
