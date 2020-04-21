@@ -66,6 +66,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
     func testCallingOfMatcher(){
         let b64Key = "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI="
+        let key = Data(base64Encoded: b64Key)!
         let matcher = MockMatcher()
         let (service, _) = getMockService(array: "[{ \"key\": \"\(b64Key)\",\"onset\": \"2020-04-14\"}]")
         let synchronizer = KnownCasesSynchronizer(appId: "ch.xy", database: database, matcher: matcher)
@@ -74,7 +75,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
             if case .success = result {
                 XCTAssertEqual(matcher.knownCaseKeys.count, 1)
-                XCTAssert(matcher.knownCaseKeys.contains(Data(base64Encoded: b64Key)!))
+                XCTAssert(matcher.knownCaseKeys.contains(key))
+                XCTAssertEqual(try! self.database.knownCasesStorage.getId(for: key), 1)
             } else {
                 XCTFail()
             }
