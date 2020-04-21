@@ -9,22 +9,22 @@ import Foundation
 /// SDK Errors
 public enum DP3TTracingErrors: Error {
     /// Networking Error
-    case NetworkingError(error: Error?)
+    case networkingError(error: Error?)
 
     /// Error happend during known case synchronization
-    case CaseSynchronizationError(errors: [Error])
+    case caseSynchronizationError(errors: [Error])
 
     /// Cryptography Error
-    case CryptographyError(error: String)
+    case cryptographyError(error: String)
 
     /// Databse Error
-    case DatabaseError(error: Error?)
+    case databaseError(error: Error?)
 
     /// Bluetooth device turned off
-    case BluetoothTurnedOff
+    case bluetoothTurnedOff
 
     /// Bluetooth permission error
-    case PermissonError
+    case permissonError
 
     /// Device time differs from server time
     case timeInconsistency(shift: TimeInterval)

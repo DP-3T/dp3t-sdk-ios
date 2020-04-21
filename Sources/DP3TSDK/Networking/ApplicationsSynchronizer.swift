@@ -37,10 +37,10 @@ class ApplicationSynchronizer {
                     try ad.forEach(self.storage.add(appDescriptor:))
                     callback(.success(()))
                 } catch {
-                    callback(.failure(DP3TTracingErrors.DatabaseError(error: error)))
+                    callback(.failure(DP3TTracingErrors.databaseError(error: error)))
                 }
             case let .failure(error):
-                callback(.failure(DP3TTracingErrors.NetworkingError(error: error)))
+                callback(.failure(DP3TTracingErrors.networkingError(error: error)))
             }
         }
     }

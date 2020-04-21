@@ -70,15 +70,15 @@ class ExposeeServiceClient {
             }
 
             guard error == nil else {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
                 return
             }
             guard let responseData = data else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             if statusCode == 404 {
@@ -87,7 +87,7 @@ class ExposeeServiceClient {
                 return
             }
             guard statusCode == 200 else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             do {
@@ -97,7 +97,7 @@ class ExposeeServiceClient {
 
                 completion(.success(dayData.exposed))
             } catch {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
             }
         })
         task.resume()
@@ -111,7 +111,7 @@ class ExposeeServiceClient {
         exposeeEndpointRequest(exposee, action: .add) { result in
             switch result {
             case let .failure(error):
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
             case .success:
                 completion(.success(()))
             }
@@ -126,7 +126,7 @@ class ExposeeServiceClient {
         exposeeEndpointRequest(exposee, action: .remove) { result in
             switch result {
             case let .failure(error):
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
             case .success:
                 completion(.success(()))
             }
@@ -150,7 +150,7 @@ class ExposeeServiceClient {
         }
 
         guard let payload = try? JSONEncoder().encode(exposee) else {
-            completion(.failure(.NetworkingError(error: nil)))
+            completion(.failure(.networkingError(error: nil)))
             return
         }
 
@@ -163,19 +163,19 @@ class ExposeeServiceClient {
 
         let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
                 return
             }
             guard let responseData = data else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard statusCode == 200 else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             // string response
@@ -195,26 +195,26 @@ class ExposeeServiceClient {
 
         let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
                 return
             }
             guard let responseData = data else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard statusCode == 200 else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             do {
                 let discoveryResponse = try JSONDecoder().decode(DiscoveryServiceResponse.self, from: responseData)
                 return completion(.success(discoveryResponse.applications))
             } catch {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
                 return
             }
         })

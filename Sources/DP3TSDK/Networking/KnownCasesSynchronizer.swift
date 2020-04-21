@@ -100,7 +100,7 @@ class KnownCasesSynchronizer {
             }) {
                 callback?(.failure(tError.1))
             }else {
-                callback?(Result.failure(.CaseSynchronizationError(errors: errors.map(\.1))))
+                callback?(Result.failure(.caseSynchronizationError(errors: errors.map(\.1))))
             }
         }
 

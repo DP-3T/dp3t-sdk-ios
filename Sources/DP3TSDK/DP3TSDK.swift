@@ -206,7 +206,7 @@ class DP3TSDK {
                     self.cachedTracingServiceClient = client
                     callback(.success(client))
                 } catch {
-                    callback(.failure(DP3TTracingErrors.DatabaseError(error: error)))
+                    callback(.failure(DP3TTracingErrors.databaseError(error: error)))
                 }
             case let .failure(error):
                 callback(.failure(error))
@@ -250,7 +250,7 @@ class DP3TSDK {
                     }
                 } catch {
                     DispatchQueue.main.async {
-                        callback(.failure(DP3TTracingErrors.CryptographyError(error: "Cannot get secret key")))
+                        callback(.failure(DP3TTracingErrors.cryptographyError(error: "Cannot get secret key")))
                     }
                 }
             }
@@ -304,11 +304,11 @@ extension DP3TSDK: DP3TMatcherDelegate {
 
 extension DP3TSDK: BluetoothPermissionDelegate {
     func deviceTurnedOff() {
-        state.trackingState = .inactive(error: .BluetoothTurnedOff)
+        state.trackingState = .inactive(error: .bluetoothTurnedOff)
     }
 
     func unauthorized() {
-        state.trackingState = .inactive(error: .PermissonError)
+        state.trackingState = .inactive(error: .permissonError)
     }
 }
 
