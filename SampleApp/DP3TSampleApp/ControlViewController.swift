@@ -244,7 +244,7 @@ class ControlViewController: UIViewController {
     }
 
     @objc func setExposed() {
-        DP3TTracing.iWasExposed(onset: Date(), authString: "123456") { _ in
+        try! DP3TTracing.iWasExposed(onset: Date(), authString: "123456") { _ in
             DP3TTracing.status { result in
                 switch result {
                 case let .success(state):
@@ -268,7 +268,9 @@ class ControlViewController: UIViewController {
         DP3TTracing.stopTracing()
         try? DP3TTracing.reset()
         NotificationCenter.default.post(name: Notification.Name("ClearData"), object: nil)
-        try! DP3TTracing.initialize(with: "org.dpppt.demo", enviroment: .dev, mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
+
+        initializeSDK()
+        
         DP3TTracing.delegate = navigationController?.tabBarController as? DP3TTracingDelegate
         DP3TTracing.status { result in
             switch result {

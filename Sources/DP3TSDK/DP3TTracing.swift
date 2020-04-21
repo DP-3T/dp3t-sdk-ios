@@ -25,6 +25,13 @@ public protocol DP3TTracingDelegate: AnyObject {
     }
 #endif
 
+
+public enum DP3TApplicationInfo {
+    case discovery(_ appId: String, enviroment: Enviroment = .prod)
+    case manual(_ appInfo: ApplicationDescriptor)
+}
+
+
 private var instance: DP3TSDK!
 
 /// DP3TTracing
@@ -34,12 +41,14 @@ public enum DP3TTracing {
     ///   - appId: application identifier used for the discovery call
     ///   - enviroment: enviroment to use
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
-    public static func initialize(with appId: String, enviroment: Enviroment = .prod, urlSession: URLSession = .shared, mode: DP3TMode = .production) throws {
+    public static func initialize(with appInfo: DP3TApplicationInfo,
+                                  urlSession: URLSession = .shared,
+                                  mode: DP3TMode = .production) throws {
         guard instance == nil else {
             fatalError("DP3TSDK already initialized")
         }
         DP3TMode.current = mode
-        instance = try DP3TSDK(appId: appId, enviroment: enviroment, urlSession: urlSession)
+        instance = try DP3TSDK(appInfo: appInfo, urlSession: urlSession)
     }
 
     /// The delegate
@@ -98,11 +107,11 @@ public enum DP3TTracing {
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    public static func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
+    public static func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) throws {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
-        instance.iWasExposed(onset: onset, authString: authString, callback: callback)
+        try instance.iWasExposed(onset: onset, authString: authString, callback: callback)
     }
 
     /// reset the SDK
