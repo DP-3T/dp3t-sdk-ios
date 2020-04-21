@@ -26,6 +26,10 @@ platform :ios do
     bundle_identifier: ENV["APP_IDENTIFIER"] 
   )
 
+  increment_build_number(
+    xcodeproj: ENV["XCODE_PROJ"]
+  )
+
   build_app(
     scheme: "Release",
   )
