@@ -12,17 +12,20 @@ public enum DP3TTracingErrors: Error {
     case NetworkingError(error: Error?)
 
     /// Error happend during known case synchronization
-    case CaseSynchronizationError
+    case CaseSynchronizationError(errors: [Error])
 
     /// Cryptography Error
     case CryptographyError(error: String)
 
     /// Databse Error
-    case DatabaseError(error: Error)
+    case DatabaseError(error: Error?)
 
     /// Bluetooth device turned off
     case BluetoothTurnedOff
 
     /// Bluetooth permission error
     case PermissonError
+
+    /// Device time differs from server time
+    case timeInconsistency(shift: TimeInterval)
 }

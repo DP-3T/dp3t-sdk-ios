@@ -62,9 +62,12 @@ class ExposeeServiceClient {
                 if etag == existingEtag {
                     completion(.success(nil))
                     return
+                } else if let date = httpResponse.date,
+                          abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
+                    completion(.failure(.timeInconsistency(shift: Date().timeIntervalSince(date))))
+                    return
                 }
             }
-
 
             guard error == nil else {
                 completion(.failure(.NetworkingError(error: error)))
@@ -219,13 +222,28 @@ class ExposeeServiceClient {
     }
 }
 
-extension HTTPURLResponse {
+internal extension HTTPURLResponse {
     var etag: String? {
+        return value(for: "etag")
+    }
+
+    static var dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, dd MMMM yyyy HH:mm:ss ZZZ"
+        return formatter
+    }()
+
+    var date: Date? {
+        guard let string = value(for: "date") else { return nil }
+        return HTTPURLResponse.dateFormatter.date(from: string)
+    }
+
+    func value(for key: String) -> String? {
         if #available(iOS 13.0, *) {
-            return value(forHTTPHeaderField: "etag")
+            return value(forHTTPHeaderField: key)
         } else {
             //https://bugs.swift.org/browse/SR-2429
-            return (allHeaderFields as NSDictionary)["etag"] as? String
+            return (allHeaderFields as NSDictionary)[key] as? String
         }
     }
 }

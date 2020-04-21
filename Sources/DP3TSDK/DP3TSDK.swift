@@ -200,12 +200,13 @@ class DP3TSDK {
             guard let self = self else { return }
             switch result {
             case .success:
-                if let desc = try? self.database.applicationStorage.descriptor(for: self.appId) {
+                do {
+                    let desc = try self.database.applicationStorage.descriptor(for: self.appId)
                     let client = ExposeeServiceClient(descriptor: desc)
                     self.cachedTracingServiceClient = client
                     callback(.success(client))
-                } else {
-                    callback(.failure(DP3TTracingErrors.CaseSynchronizationError))
+                } catch {
+                    callback(.failure(DP3TTracingErrors.DatabaseError(error: error)))
                 }
             case let .failure(error):
                 callback(.failure(error))
@@ -238,8 +239,7 @@ class DP3TSDK {
                             callback(result)
                         }
                     }
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy-MM-dd"
+                    let dateFormatter = NetworkingConstants.dayIdentifierFormatter
                     if let key = try self.crypto.getSecretKeyForPublishing(onsetDate: onset) {
                         let model = ExposeeModel(key: key, onset: dateFormatter.string(from: onset), authData: ExposeeAuthData(value: authString))
                         service.addExposee(model, completion: block)

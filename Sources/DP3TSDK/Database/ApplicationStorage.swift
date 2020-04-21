@@ -51,9 +51,11 @@ class ApplicationStorage {
 
     /// Retreive the descriptor for a specific application
     /// - Parameter appid: the application to look for
-    func descriptor(for appid: String) throws -> TracingApplicationDescriptor? {
+    func descriptor(for appid: String) throws -> TracingApplicationDescriptor {
         let query = table.filter(appIdColumn == appid)
-        guard let row = try database.pluck(query) else { return nil }
+        guard let row = try database.pluck(query) else {
+            throw DP3TTracingErrors.DatabaseError(error: nil)
+        }
         return TracingApplicationDescriptor(appId: row[appIdColumn],
                                             description: row[descriptionColumn],
                                             backendBaseUrl: row[backendBaseUrlColumn],
