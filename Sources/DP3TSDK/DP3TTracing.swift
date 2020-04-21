@@ -82,11 +82,11 @@ public enum DP3TTracing {
 
     /// Triggers sync with the backend to refresh the exposed list
     /// - Parameter callback: callback
-    public static func sync(callback: ((Result<Void, DP3TTracingErrors>) -> Void)?) throws {
+    public static func sync(callback: ((Result<Void, DP3TTracingErrors>) -> Void)?) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
-        try instance.sync { result in
+        instance.sync { result in
             DispatchQueue.main.async {
                 callback?(result)
             }
@@ -107,11 +107,11 @@ public enum DP3TTracing {
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    public static func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) throws {
+    public static func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
-        try instance.iWasExposed(onset: onset, authString: authString, callback: callback)
+        instance.iWasExposed(onset: onset, authString: authString, callback: callback)
     }
 
     /// reset the SDK

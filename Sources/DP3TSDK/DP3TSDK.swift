@@ -130,11 +130,11 @@ class DP3TSDK {
     /// Perform a new sync
     /// - Parameter callback: callback
     /// - Throws: if a error happed
-    func sync(callback: ((Result<Void, DP3TTracingErrors>) -> Void)?) throws {
-        try database.generateContactsFromHandshakes()
-        try state.numberOfContacts = database.contactsStorage.count()
-        try state.numberOfHandshakes = database.handshakesStorage.count()
-        try getATracingServiceClient(forceRefresh: true) { [weak self] result in
+    func sync(callback: ((Result<Void, DP3TTracingErrors>) -> Void)?) {
+        try? database.generateContactsFromHandshakes()
+        try? state.numberOfContacts = database.contactsStorage.count()
+        try? state.numberOfHandshakes = database.handshakesStorage.count()
+        getATracingServiceClient(forceRefresh: true) { [weak self] result in
             switch result {
             case let .failure(error):
                 callback?(.failure(error))
@@ -163,33 +163,37 @@ class DP3TSDK {
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) throws {
-        try setExposed(onset: onset, authString: authString, callback: callback)
+    func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
+        setExposed(onset: onset, authString: authString, callback: callback)
     }
 
     /// used to construct a new tracing service client
-    private func getATracingServiceClient(forceRefresh: Bool, callback: @escaping (Result<ExposeeServiceClient, DP3TTracingErrors>) -> Void) throws {
+    private func getATracingServiceClient(forceRefresh: Bool, callback: @escaping (Result<ExposeeServiceClient, DP3TTracingErrors>) -> Void) {
         if forceRefresh == false, let cachedTracingServiceClient = cachedTracingServiceClient {
             callback(.success(cachedTracingServiceClient))
             return
         }
 
         switch appInfo {
-        case let .discovery(appId, enviroment):
-            try applicationSynchronizer.sync { [weak self] result in
-                guard let self = self else { return }
-                switch result {
-                case .success:
-                    if let desc = try? self.database.applicationStorage.descriptor(for: appId) {
-                        let client = ExposeeServiceClient(descriptor: desc)
-                        self.cachedTracingServiceClient = client
-                        callback(.success(client))
-                    } else {
-                        callback(.failure(DP3TTracingErrors.CaseSynchronizationError))
+        case let .discovery(appId, _):
+            do {
+                try applicationSynchronizer.sync { [weak self] result in
+                    guard let self = self else { return }
+                    switch result {
+                    case .success:
+                        if let desc = try? self.database.applicationStorage.descriptor(for: appId) {
+                            let client = ExposeeServiceClient(descriptor: desc)
+                            self.cachedTracingServiceClient = client
+                            callback(.success(client))
+                        } else {
+                            callback(.failure(DP3TTracingErrors.CaseSynchronizationError))
+                        }
+                    case let .failure(error):
+                        callback(.failure(error))
                     }
-                case let .failure(error):
-                    callback(.failure(error))
                 }
+            } catch {
+                callback(.failure(DP3TTracingErrors.DatabaseError(error: error)))
             }
         case let .manual(appInfo):
             let client = ExposeeServiceClient(descriptor: appInfo, urlSession: urlSession)
@@ -202,8 +206,8 @@ class DP3TSDK {
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    private func setExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) throws {
-        try getATracingServiceClient(forceRefresh: false) { [weak self] result in
+    private func setExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
+        getATracingServiceClient(forceRefresh: false) { [weak self] result in
             guard let self = self else {
                 return
             }

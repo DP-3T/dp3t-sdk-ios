@@ -240,11 +240,11 @@ class ControlViewController: UIViewController {
     }
 
     @objc func sync() {
-        try! DP3TTracing.sync { _ in }
+        DP3TTracing.sync { _ in }
     }
 
     @objc func setExposed() {
-        try! DP3TTracing.iWasExposed(onset: Date(), authString: "123456") { _ in
+        DP3TTracing.iWasExposed(onset: Date(), authString: "123456") { _ in
             DP3TTracing.status { result in
                 switch result {
                 case let .success(state):
