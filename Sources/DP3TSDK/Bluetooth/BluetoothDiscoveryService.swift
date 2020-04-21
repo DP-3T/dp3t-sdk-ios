@@ -179,34 +179,23 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
         tidyUpPendingPeripherals()
 
-        if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
-            manuData.count == CryptoConstants.keyLenght + 2,
-            manuData[0 ..< 2].withUnsafeBytes({ $0.load(as: UInt16.self) }) == BluetoothConstants.androidManufacturerId {
-            // drop manufacturer identifier
-            let data = manuData.dropFirst(2)
+        if let serviceData = advertisementData[CBAdvertisementDataServiceDataKey] as? [CBUUID: Data],
+           let data: EphID = serviceData[BluetoothConstants.serviceCBUUID],
+           data.count == CryptoConstants.keyLenght {
 
             let id = peripheral.identifier
             try? delegate?.didDiscover(data: data, TXPowerlevel: powerLevelsCache[id], RSSI: RSSICache[id])
 
             #if CALIBRATION
-                logger?.log(type: .receiver, "Found manufacturer specific data \(data.hexEncodedString)")
-                let ephID = String(data: data[..<4], encoding: .utf8) ?? "Unable to decode"
-                logger?.log(type: .receiver, " → ✅ Received (EphID in SCAN_RSP: \(ephID)) from \(peripheral.identifier) at \(Date())")
+                logger?.log(type: .receiver, "Found service data \(data.hexEncodedString)")
+                let identifier = String(data: data[..<4], encoding: .utf8) ?? "Unable to decode"
+                logger?.log(type: .receiver, " → ✅ Received (EphID in Advertisement: \(identifier)) from \(peripheral.identifier) at \(Date())")
             #endif
 
-            if (peripheral.state == .disconnected) {
-                // New device, connect with a delay (since we already received EphID)
-                try? storage.setDiscovery(uuid: peripheral.identifier)
-                pendingPeripherals.insert(peripheral)
-                connect(peripheral, delayed: true)
-            } else {
-                // If we are already trying to connect, disconnect and then
-                // didDisconnect will try to reconnect delayed
-                #if CALIBRATION
-                    logger?.log(type: .receiver, " didDiscover: cancel peripheral \(peripheral)")
-                #endif
-                manager?.cancelPeripheralConnection(peripheral)
-            }
+            // connect to the device delayed since we only get a single discovery in the background
+            try? storage.setDiscovery(uuid: peripheral.identifier)
+            pendingPeripherals.insert(peripheral)
+            connect(peripheral, delayed: true)
         } else {
             // Only connect if we didn't got manufacturer data
             // we only get the manufacturer if iOS is actively scanning
