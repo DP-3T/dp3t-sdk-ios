@@ -1,9 +1,8 @@
 name: distribute
 
 on:
-  push:
-    branches: [ master, develop ]
-
+   push:		
+     branches: [ master, develop ]
 jobs:
   appcenter:
     runs-on: macOS-latest
