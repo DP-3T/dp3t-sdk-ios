@@ -10,7 +10,7 @@ import Foundation
 /// Some constats used for configuring the bluetooth services
 enum BluetoothConstants {
     /// Predefined Service CBUUID
-    static var serviceCBUUID = CBUUID(string: "8c8494e3-bab5-1848-40a0-1b06991c0000")
+    static var serviceCBUUID = CBUUID(string: "FD6F")
 
     /// Predefined Characteristics CBUUID
     static var characteristicsCBUUID = CBUUID(string: "8c8494e3-bab5-1848-40a0-1b06991c0001")
