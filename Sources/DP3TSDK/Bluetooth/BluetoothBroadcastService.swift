@@ -131,7 +131,8 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
             #if CALIBRATION
             if case .calibration(let identifierPrefix) = DP3TMode.current, identifierPrefix != "" {
-                let identifierData = identifierPrefix.data(using: .utf8)!
+                let paddedIdentifier = identifierPrefix.padding(toLength: 4, withPad: " ", startingAt: 0)
+                let identifierData = paddedIdentifier.data(using: .utf8)!
                 data = identifierData + data.suffix(data.count - identifierData.count)
             }
             #endif
