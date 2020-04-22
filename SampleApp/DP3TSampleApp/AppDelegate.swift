@@ -46,4 +46,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             initWindow()
         }
     }
+
+    func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {  
+        DP3TTracing.performFetch(with: completionHandler)
+    }
 }

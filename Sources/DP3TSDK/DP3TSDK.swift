@@ -44,8 +44,7 @@ class DP3TSDK {
     private let urlSession: URLSession
 
 
-    @available(iOS 13, *)
-    private(set) lazy var backgroundTaskManager: DP3TBackgroundTaskManager = .init()
+    private let backgroundTaskManager: DP3TBackgroundTaskManager = .init()
 
     /// delegate
     public weak var delegate: DP3TTracingDelegate?
@@ -108,14 +107,10 @@ class DP3TSDK {
             broadcaster.logger = self
             discoverer.logger = self
             database.logger = self
-            if #available(iOS 13, *) {
-                backgroundTaskManager.logger = self
-            }
+            backgroundTaskManager.logger = self
         #endif
 
-        if #available(iOS 13, *) {
-            backgroundTaskManager.register()
-        }
+        backgroundTaskManager.register()
 
         try applicationSynchronizer.sync { [weak self] result in
             guard let self = self else { return }
@@ -183,6 +178,10 @@ class DP3TSDK {
                 }
             }
         }
+    }
+
+    func performFetch(with completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        backgroundTaskManager.performFetch(with: completionHandler)
     }
 
     /// get the current status of the SDK

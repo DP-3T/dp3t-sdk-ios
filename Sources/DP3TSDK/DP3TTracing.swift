@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import UIKit.UIApplication
 
 /// A delegate for the DP3T tracing
 public protocol DP3TTracingDelegate: AnyObject {
@@ -82,6 +83,13 @@ public enum DP3TTracing {
                 callback?(result)
             }
         }
+    }
+
+    public static func performFetch(with completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        guard let instance = instance else {
+            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
+        }
+        instance.performFetch(with: completionHandler)
     }
 
     /// get the current status of the SDK
