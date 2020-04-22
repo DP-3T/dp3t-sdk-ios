@@ -18,7 +18,11 @@ class ControlViewController: UIViewController {
 
     let stackView = UIStackView()
 
+    let scrollView = UIScrollView()
+
     let identifierInput = UITextField()
+
+    let shareButton = UIButton()
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -28,6 +32,25 @@ class ControlViewController: UIViewController {
         }
         segmentedControl.selectedSegmentIndex = 1
         segmentedControl.addTarget(self, action: #selector(segmentedControlChanges), for: .valueChanged)
+
+        let notificationCenter = NotificationCenter.default
+        notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+    }
+
+    @objc func adjustForKeyboard(notification: Notification) {
+        guard let keyboardValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+
+        let keyboardScreenEndFrame = keyboardValue.cgRectValue
+        let keyboardViewEndFrame = view.convert(keyboardScreenEndFrame, from: view.window)
+
+        if notification.name == UIResponder.keyboardWillHideNotification {
+            scrollView.contentInset = .zero
+        } else {
+            scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardViewEndFrame.height - view.safeAreaInsets.bottom, right: 0)
+        }
+
+        scrollView.scrollIndicatorInsets = scrollView.contentInset
     }
 
     override func viewDidLoad() {
@@ -35,12 +58,23 @@ class ControlViewController: UIViewController {
         if #available(iOS 13.0, *) {
             self.view.backgroundColor = .systemBackground
         } else {
-            view.backgroundColor = .white
+            self.view.backgroundColor = .white
         }
-        view.addSubview(stackView)
-        stackView.snp.makeConstraints { make in
-            make.left.right.bottom.equalTo(self.view.layoutMarginsGuide)
-            make.top.equalTo(self.view.layoutMarginsGuide).inset(12)
+        self.view.addSubview(scrollView)
+        scrollView.snp.makeConstraints { (make) in
+            make.edges.equalToSuperview()
+        }
+
+        let contentView = UIView()
+        self.scrollView.addSubview(contentView)
+        contentView.snp.makeConstraints { (make) in
+            make.edges.equalToSuperview()
+            make.width.equalTo(self.view)
+        }
+
+        contentView.addSubview(self.stackView)
+        self.stackView.snp.makeConstraints { (make) in
+            make.top.leading.bottom.trailing.equalToSuperview().inset(10)
         }
         stackView.axis = .vertical
 
@@ -180,17 +214,16 @@ class ControlViewController: UIViewController {
         stackView.addSpacerView(12)
 
         do {
-            let button = UIButton()
             if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
+                shareButton.setTitleColor(.systemBlue, for: .normal)
+                shareButton.setTitleColor(.systemGray, for: .highlighted)
             } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
+                shareButton.setTitleColor(.blue, for: .normal)
+                shareButton.setTitleColor(.black, for: .highlighted)
             }
-            button.setTitle("Share Database", for: .normal)
-            button.addTarget(self, action: #selector(shareDatabase), for: .touchUpInside)
-            stackView.addArrangedSubview(button)
+            shareButton.setTitle("Share Database", for: .normal)
+            shareButton.addTarget(self, action: #selector(shareDatabase), for: .touchUpInside)
+            stackView.addArrangedSubview(shareButton)
         }
 
         stackView.addArrangedSubview(UIView())
@@ -226,7 +259,7 @@ class ControlViewController: UIViewController {
     @objc func shareDatabase() {
         let acv = UIActivityViewController(activityItems: [Self.getDatabasePath()], applicationActivities: nil)
         if let popoverController = acv.popoverPresentationController {
-            popoverController.sourceView = view
+            popoverController.sourceView = shareButton
         }
         present(acv, animated: true)
     }
@@ -269,6 +302,10 @@ class ControlViewController: UIViewController {
 
     func updateUI(_ state: TracingState) {
         var elements: [String] = []
+        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String{
+            elements.append("Version: \(version)(\(build))")
+        }
         elements.append("tracking State: \(state.trackingState.stringValue)")
         switch state.backgroundRefreshState {
         case .available:

@@ -70,7 +70,7 @@ class HandshakesStorage {
     /// - Parameter handshakes: the handshakes to delete
     /// - Throws: if a error happens
     func delete(_ handshakes: [HandshakeModel]) throws {
-        let identifiers = handshakes.compactMap(\.identifier)
+        let identifiers = handshakes.compactMap { $0.identifier }
         let deleteQuery = table.filter(identifiers.contains(idColumn))
         try database.run(deleteQuery.delete())
     }

@@ -44,7 +44,7 @@ class ExposeeServiceClient {
     ///   - dayIdentifier: The day identifier
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(dayIdentifier: String, completion: @escaping (Result<[KnownCaseModel]?, DP3TTracingErrors>) -> Void) {
+    func getExposee(dayIdentifier: String, completion: @escaping (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void) {
         let url = exposeeEndpoint.getExposee(forDay: dayIdentifier)
         let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
 
@@ -62,20 +62,23 @@ class ExposeeServiceClient {
                 if etag == existingEtag {
                     completion(.success(nil))
                     return
+                } else if let date = httpResponse.date,
+                          abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
+                    completion(.failure(.timeInconsistency(shift: Date().timeIntervalSince(date))))
+                    return
                 }
             }
 
-
             guard error == nil else {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
                 return
             }
             guard let responseData = data else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             if statusCode == 404 {
@@ -84,7 +87,7 @@ class ExposeeServiceClient {
                 return
             }
             guard statusCode == 200 else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             do {
@@ -94,7 +97,7 @@ class ExposeeServiceClient {
 
                 completion(.success(dayData.exposed))
             } catch {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
             }
         })
         task.resume()
@@ -104,11 +107,11 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - exposee: The exposee to add
     ///   - completion: The completion block
-    func addExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
+    func addExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         exposeeEndpointRequest(exposee, action: .add) { result in
             switch result {
             case let .failure(error):
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
             case .success:
                 completion(.success(()))
             }
@@ -119,11 +122,11 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - exposee: The exposee to remove
     ///   - completion: The completion block
-    func removeExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
+    func removeExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         exposeeEndpointRequest(exposee, action: .remove) { result in
             switch result {
             case let .failure(error):
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
             case .success:
                 completion(.success(()))
             }
@@ -136,7 +139,7 @@ class ExposeeServiceClient {
     ///   - exposee: The exposee to manage
     ///   - action: The action to perform
     ///   - completion: The completion block
-    private func exposeeEndpointRequest(_ exposee: ExposeeModel, action: ExposeeEndpointAction, completion: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
+    private func exposeeEndpointRequest(_ exposee: ExposeeModel, action: ExposeeEndpointAction, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         // addExposee endpoint
         let url: URL
         switch action {
@@ -147,7 +150,7 @@ class ExposeeServiceClient {
         }
 
         guard let payload = try? JSONEncoder().encode(exposee) else {
-            completion(.failure(.NetworkingError(error: nil)))
+            completion(.failure(.networkingError(error: nil)))
             return
         }
 
@@ -160,19 +163,19 @@ class ExposeeServiceClient {
 
         let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
                 return
             }
             guard let responseData = data else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard statusCode == 200 else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             // string response
@@ -186,32 +189,32 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - enviroment: The environment to use
     ///   - completion: The completion block
-    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[TracingApplicationDescriptor], DP3TTracingErrors>) -> Void) {
+    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[TracingApplicationDescriptor], DP3TTracingError>) -> Void) {
         let url = enviroment.discoveryEndpoint
         let request = URLRequest(url: url)
 
         let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
                 return
             }
             guard let responseData = data else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             guard statusCode == 200 else {
-                completion(.failure(.NetworkingError(error: nil)))
+                completion(.failure(.networkingError(error: nil)))
                 return
             }
             do {
                 let discoveryResponse = try JSONDecoder().decode(DiscoveryServiceResponse.self, from: responseData)
                 return completion(.success(discoveryResponse.applications))
             } catch {
-                completion(.failure(.NetworkingError(error: error)))
+                completion(.failure(.networkingError(error: error)))
                 return
             }
         })
@@ -219,13 +222,28 @@ class ExposeeServiceClient {
     }
 }
 
-extension HTTPURLResponse {
+internal extension HTTPURLResponse {
     var etag: String? {
+        return value(for: "etag")
+    }
+
+    static var dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, dd MMMM yyyy HH:mm:ss ZZZ"
+        return formatter
+    }()
+
+    var date: Date? {
+        guard let string = value(for: "date") else { return nil }
+        return HTTPURLResponse.dateFormatter.date(from: string)
+    }
+
+    func value(for key: String) -> String? {
         if #available(iOS 13.0, *) {
-            return value(forHTTPHeaderField: "etag")
+            return value(forHTTPHeaderField: key)
         } else {
             //https://bugs.swift.org/browse/SR-2429
-            return (allHeaderFields as NSDictionary)["etag"] as? String
+            return (allHeaderFields as NSDictionary)[key] as? String
         }
     }
 }
