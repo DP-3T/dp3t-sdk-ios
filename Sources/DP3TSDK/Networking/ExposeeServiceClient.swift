@@ -10,7 +10,7 @@ import UIKit
 /// The client for managing and fetching exposee
 class ExposeeServiceClient {
     /// The descriptor to use for the fetch
-    private let descriptor: TracingApplicationDescriptor
+    private let descriptor: ApplicationDescriptor
     /// The endpoint for getting exposee
     private let exposeeEndpoint: ExposeeEndpoint
     /// The endpoint for adding and removing exposee
@@ -31,7 +31,7 @@ class ExposeeServiceClient {
 
     /// Initialize the client with a  descriptor
     /// - Parameter descriptor: The descriptor to use
-    public init(descriptor: TracingApplicationDescriptor, urlSession: URLSession = .shared, urlCache: URLCache = .shared) {
+    public init(descriptor: ApplicationDescriptor, urlSession: URLSession = .shared, urlCache: URLCache = .shared) {
         self.descriptor = descriptor
         self.urlSession = urlSession
         self.urlCache = urlCache
@@ -189,7 +189,7 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - enviroment: The environment to use
     ///   - completion: The completion block
-    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[TracingApplicationDescriptor], DP3TTracingError>) -> Void) {
+    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[ApplicationDescriptor], DP3TTracingError>) -> Void) {
         let url = enviroment.discoveryEndpoint
         let request = URLRequest(url: url)
 

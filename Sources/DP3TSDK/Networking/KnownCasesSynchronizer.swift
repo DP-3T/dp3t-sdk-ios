@@ -13,7 +13,7 @@ import Foundation
  */
 class KnownCasesSynchronizer {
     /// The app id to use
-    private let appId: String
+    private let appInfo: DP3TApplicationInfo
     /// A database to store the known cases
     private let database: KnownCasesStorage
 
@@ -34,8 +34,8 @@ class KnownCasesSynchronizer {
     ///   - appId: The app id to use
     ///   - database: The database for storage
     ///   - matcher: The matcher for DP3T resolution and checks
-    init(appId: String, database: DP3TDatabase, matcher: DP3TMatcherProtocol) {
-        self.appId = appId
+    init(appInfo: DP3TApplicationInfo, database: DP3TDatabase, matcher: DP3TMatcherProtocol) {
+        self.appInfo = appInfo
         self.database = database.knownCasesStorage
         self.matcher = matcher
     }

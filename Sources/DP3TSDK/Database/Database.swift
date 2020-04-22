@@ -69,8 +69,8 @@ class DP3TDatabase {
             self.connection = connection
         } else {
             var filePath = DP3TDatabase.getDatabasePath()
-            try filePath.addExcludedFromBackupAttribute()
             self.connection = try Connection(filePath.absoluteString, readonly: false)
+            try? filePath.addExcludedFromBackupAttribute()
         }
         _knownCasesStorage = try KnownCasesStorage(database: connection)
         _handshakesStorage = try HandshakesStorage(database: connection)
