@@ -15,8 +15,14 @@ protocol DP3TMatcherDelegate: class {
     func handShakeAdded(_ handshake: HandshakeModel)
 }
 
+protocol DP3TMatcherProtocol: class {
+    /// check for new known case
+    /// - Parameter knownCase: known Case
+    func checkNewKnownCase(_ knownCase: KnownCaseModel, bucketDay: String) throws
+}
+
 /// matcher for DP3T tokens
-class DP3TMatcher {
+class DP3TMatcher: DP3TMatcherProtocol {
     /// The DP3T crypto algorithm
     private let crypto: DP3TCryptoModule
 
@@ -38,9 +44,7 @@ class DP3TMatcher {
     /// check for new known case
     /// - Parameter knownCase: known Case
     func checkNewKnownCase(_ knownCase: KnownCaseModel, bucketDay: String) throws {
-        let dateFormatter = DateFormatter()
-        dateFormatter.timeZone = CryptoConstants.timeZone
-        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateFormatter = NetworkingConstants.dayIdentifierFormatter
         let onset = dateFormatter.date(from: knownCase.onset)!
         let bucketDayDate = dateFormatter.date(from: bucketDay)!
 

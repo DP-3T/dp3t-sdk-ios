@@ -141,6 +141,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         #endif
         switch central.state {
         case .poweredOn:
+            permissionDelegate?.noIssues()
             #if CALIBRATION
                 logger?.log(type: .receiver, " scanning for \(BluetoothConstants.serviceCBUUID.uuidString)")
             #endif

@@ -28,7 +28,7 @@ class ApplicationSynchronizer {
 
     /// Synchronize the local and remote data.
     /// - Parameter callback: A callback with the sync result
-    func sync(callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) throws {
+    func sync(callback: @escaping (Result<Void, DP3TTracingError>) -> Void) throws {
         guard case let DP3TApplicationInfo.discovery(_, enviroment) = appInfo else {
             fatalError("ApplicationSynchronizer should not be used in manual mode")
         }
@@ -40,10 +40,10 @@ class ApplicationSynchronizer {
                     try ad.forEach(self.storage.add(appDescriptor:))
                     callback(.success(()))
                 } catch {
-                    callback(.failure(DP3TTracingErrors.DatabaseError(error: error)))
+                    callback(.failure(DP3TTracingError.databaseError(error: error)))
                 }
             case let .failure(error):
-                callback(.failure(DP3TTracingErrors.NetworkingError(error: error)))
+                callback(.failure(DP3TTracingError.networkingError(error: error)))
             }
         }
 
