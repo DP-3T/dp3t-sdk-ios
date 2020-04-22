@@ -18,7 +18,7 @@ class KnownCasesSynchronizer {
     private let database: KnownCasesStorage
 
     // keep track of errors and successes with regard to individual requests (networking or database errors)
-    private var errors = [(String, DP3TTracingErrors)]()
+    private var errors = [(String, DP3TTracingError)]()
     // a list of temporary known cases
     private var knownCases = [String: [KnownCaseModel]]()
 
@@ -41,7 +41,7 @@ class KnownCasesSynchronizer {
     }
 
     /// A callback result of async operations
-    typealias Callback = (Result<Void, DP3TTracingErrors>) -> Void
+    typealias Callback = (Result<Void, DP3TTracingError>) -> Void
 
     /// Synchronizes the local database with the remote one
     /// - Parameters:
@@ -65,7 +65,7 @@ class KnownCasesSynchronizer {
     /// - Parameters:
     ///   - dayIdentifier: The day identifier
     ///   - callback: The callback once the task is finished
-    private func dayResultHandler(_ dayIdentifier: String, callback: Callback?) -> (Result<[KnownCaseModel]?, DP3TTracingErrors>) -> Void {
+    private func dayResultHandler(_ dayIdentifier: String, callback: Callback?) -> (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void {
         numberOfIssuedRequests += 1
         return { result in
             switch result {
@@ -90,7 +90,7 @@ class KnownCasesSynchronizer {
         /// If we encountered a timeInconsistency we return it
         func completeWithError(){
             if let tError = errors.first(where: {
-                if case DP3TTracingErrors.timeInconsistency(shift: _) = $0.1 {
+                if case DP3TTracingError.timeInconsistency(shift: _) = $0.1 {
                     return true
                 } else {
                     return false

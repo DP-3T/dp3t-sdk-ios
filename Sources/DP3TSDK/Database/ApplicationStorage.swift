@@ -54,7 +54,7 @@ class ApplicationStorage {
     func descriptor(for appid: String) throws -> TracingApplicationDescriptor {
         let query = table.filter(appIdColumn == appid)
         guard let row = try database.pluck(query) else {
-            throw DP3TTracingErrors.databaseError(error: nil)
+            throw DP3TTracingError.databaseError(error: nil)
         }
         return TracingApplicationDescriptor(appId: row[appIdColumn],
                                             description: row[descriptionColumn],

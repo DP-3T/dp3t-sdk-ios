@@ -44,7 +44,7 @@ class ExposeeServiceClient {
     ///   - dayIdentifier: The day identifier
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(dayIdentifier: String, completion: @escaping (Result<[KnownCaseModel]?, DP3TTracingErrors>) -> Void) {
+    func getExposee(dayIdentifier: String, completion: @escaping (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void) {
         let url = exposeeEndpoint.getExposee(forDay: dayIdentifier)
         let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
 
@@ -107,7 +107,7 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - exposee: The exposee to add
     ///   - completion: The completion block
-    func addExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
+    func addExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         exposeeEndpointRequest(exposee, action: .add) { result in
             switch result {
             case let .failure(error):
@@ -122,7 +122,7 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - exposee: The exposee to remove
     ///   - completion: The completion block
-    func removeExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
+    func removeExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         exposeeEndpointRequest(exposee, action: .remove) { result in
             switch result {
             case let .failure(error):
@@ -139,7 +139,7 @@ class ExposeeServiceClient {
     ///   - exposee: The exposee to manage
     ///   - action: The action to perform
     ///   - completion: The completion block
-    private func exposeeEndpointRequest(_ exposee: ExposeeModel, action: ExposeeEndpointAction, completion: @escaping (Result<Void, DP3TTracingErrors>) -> Void) {
+    private func exposeeEndpointRequest(_ exposee: ExposeeModel, action: ExposeeEndpointAction, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         // addExposee endpoint
         let url: URL
         switch action {
@@ -189,7 +189,7 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - enviroment: The environment to use
     ///   - completion: The completion block
-    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[TracingApplicationDescriptor], DP3TTracingErrors>) -> Void) {
+    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[TracingApplicationDescriptor], DP3TTracingError>) -> Void) {
         let url = enviroment.discoveryEndpoint
         let request = URLRequest(url: url)
 

@@ -28,7 +28,7 @@ class ApplicationSynchronizer {
 
     /// Synchronize the local and remote data.
     /// - Parameter callback: A callback with the sync result
-    func sync(callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) throws {
+    func sync(callback: @escaping (Result<Void, DP3TTracingError>) -> Void) throws {
         ExposeeServiceClient.getAvailableApplicationDescriptors(enviroment: enviroment, urlSession: urlSession) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -37,10 +37,10 @@ class ApplicationSynchronizer {
                     try ad.forEach(self.storage.add(appDescriptor:))
                     callback(.success(()))
                 } catch {
-                    callback(.failure(DP3TTracingErrors.databaseError(error: error)))
+                    callback(.failure(DP3TTracingError.databaseError(error: error)))
                 }
             case let .failure(error):
-                callback(.failure(DP3TTracingErrors.networkingError(error: error)))
+                callback(.failure(DP3TTracingError.networkingError(error: error)))
             }
         }
     }

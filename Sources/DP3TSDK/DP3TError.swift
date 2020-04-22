@@ -7,7 +7,7 @@
 import Foundation
 
 /// SDK Errors
-public enum DP3TTracingErrors: Error {
+public enum DP3TTracingError: Error {
     /// Networking Error
     case networkingError(error: Error?)
 
