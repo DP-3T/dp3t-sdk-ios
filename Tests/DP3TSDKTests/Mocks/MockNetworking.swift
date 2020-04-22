@@ -39,13 +39,13 @@ class MockUrlCache: URLCache {
 
 class MockSession: URLSession {
     let task: MockTask
-    var request_: URLRequest?
+    var requests: [URLRequest] = []
 
     init(data: Data?, urlResponse: URLResponse?, error: Error?) {
         task = MockTask(data: data, urlResponse: urlResponse, error: error)
     }
     override func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
-        request_ = request
+        requests.append(request)
         task.completionHandler = completionHandler
         return task
     }
