@@ -266,6 +266,29 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         }
     }
 
+    /// Cancel the connection only if we have retreived all data we need
+    func cancelPeripheralConnectionIfNeeded(_ peripheral: CBPeripheral){
+        guard let metaData = pendingPeripherals[peripheral] else { return }
+
+        /// only cancel connection if we have 5 rsssiValues and received the ephID
+        if let ephID = metaData.ephID, metaData.rssiValues.count >= BluetoothConstants.rssiValueRequirement{
+            #if CALIBRATION
+            logger?.log(type: .receiver, "cancelling connection to: \(peripheral)")
+            #endif
+
+            manager?.cancelPeripheralConnection(peripheral)
+
+            try? delegate?.didDiscover(data: ephID,
+                                       TXPowerlevel: metaData.TXPowerlevel,
+                                       RSSI: metaData.rssi)
+            //remove rssi readings
+            pendingPeripherals[peripheral]?.rssiValues.removeAll()
+
+        } else {
+            peripheral.readRSSI()
+        }
+    }
+
     func centralManager(_: CBCentralManager, didConnect peripheral: CBPeripheral) {
         #if CALIBRATION
             logger?.log(type: .receiver, " didConnect: \(peripheral)")
@@ -444,22 +467,6 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
         pendingPeripherals[peripheral]?.ephID = data
 
         cancelPeripheralConnectionIfNeeded(peripheral)
-    }
-
-    /// Cancel the connection only if we have retreived all data we need
-    func cancelPeripheralConnectionIfNeeded(_ peripheral: CBPeripheral){
-        guard let metaData = pendingPeripherals[peripheral] else { return }
-
-        /// only cancel connection if we have 5 rsssiValues and received the ephID
-        if let ephID = metaData.ephID, metaData.rssiValues.count >= BluetoothConstants.rssiValueRequirement{
-            manager?.cancelPeripheralConnection(peripheral)
-
-            try? delegate?.didDiscover(data: ephID,
-                                       TXPowerlevel: metaData.TXPowerlevel,
-                                       RSSI: metaData.rssi)
-        } else {
-            peripheral.readRSSI()
-        }
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {

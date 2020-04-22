@@ -25,5 +25,6 @@ enum BluetoothConstants {
 
     static var androidManufacturerId: UInt16 = 0xABBA
 
-    static var rssiValueRequirement: Int = 2
+    /// how many rssi value should be read if we connect to a device
+    static var rssiValueRequirement: Int = 3
 }
