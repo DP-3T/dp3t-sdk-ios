@@ -48,8 +48,6 @@ class KnownCasesSynchronizer {
     ///   - service: The service to use for synchronization
     ///   - callback: The callback once the task if finished
     func sync(service: ExposeeServiceClient, callback: Callback?) {
-        errors.removeAll()
-        knownCases.removeAll()
         // compute day identifiers (formatted dates) for the last 14 days
         let dayIdentifierFormatter = NetworkingConstants.dayIdentifierFormatter
         let dayIdentifiers = (0 ..< NetworkingConstants.daysToFetch).reversed().map { days -> String in
@@ -99,7 +97,7 @@ class KnownCasesSynchronizer {
                 }
             }) {
                 callback?(.failure(tError.1))
-            }else {
+            } else {
                 callback?(Result.failure(.caseSynchronizationError(errors: errors.map(\.1))))
             }
         }
@@ -111,6 +109,9 @@ class KnownCasesSynchronizer {
         } else { // all requests were successful
             processDayResults(callback: callback)
         }
+
+        errors.removeAll()
+        knownCases.removeAll()
     }
 
     /** Process all received day data. */
