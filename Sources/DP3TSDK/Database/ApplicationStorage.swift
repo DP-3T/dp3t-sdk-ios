@@ -17,9 +17,9 @@ class ApplicationStorage {
 
     /// Column definitions
     let appIdColumn = Expression<String>("app_id")
-    let descriptionColumn = Expression<String>("description")
+    let descriptionColumn = Expression<String?>("description")
     let backendBaseUrlColumn = Expression<URL>("backend_base_url")
-    let contactColumn = Expression<String>("contact")
+    let contactColumn = Expression<String?>("contact")
 
     /// Initializer
     /// - Parameter database: database connection
@@ -40,7 +40,7 @@ class ApplicationStorage {
 
     /// Add a application descriptro
     /// - Parameter ad: The descriptor to add
-    func add(appDescriptor ad: TracingApplicationDescriptor) throws {
+    func add(appDescriptor ad: ApplicationDescriptor) throws {
         let insert = table.insert(or: .replace,
                                   appIdColumn <- ad.appId,
                                   descriptionColumn <- ad.description,
@@ -51,10 +51,12 @@ class ApplicationStorage {
 
     /// Retreive the descriptor for a specific application
     /// - Parameter appid: the application to look for
-    func descriptor(for appid: String) throws -> TracingApplicationDescriptor? {
+    func descriptor(for appid: String) throws -> ApplicationDescriptor {
         let query = table.filter(appIdColumn == appid)
-        guard let row = try database.pluck(query) else { return nil }
-        return TracingApplicationDescriptor(appId: row[appIdColumn],
+        guard let row = try database.pluck(query) else {
+            throw DP3TTracingError.databaseError(error: nil)
+        }
+        return ApplicationDescriptor(appId: row[appIdColumn],
                                             description: row[descriptionColumn],
                                             backendBaseUrl: row[backendBaseUrlColumn],
                                             contact: row[contactColumn])

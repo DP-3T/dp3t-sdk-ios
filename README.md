@@ -46,7 +46,7 @@ Included in this repository is a Calibration App that can run, debug and test th
 ### Initialization
 Name | Description | Function Name
 ---- | ----------- | -------------
-init | Initializes the SDK and configures it |  `func initialize(with appId: String, enviroment: Enviroment`
+init | Initializes the SDK and configures it | `func initialize(with appinfo: DP3TApplicationInfo)` 
 
 ### Methods 
 Name | Description | Function Name
@@ -90,11 +90,27 @@ This version points to the HEAD of the `develop` branch and will always fetch th
 ## Using the SDK
 
 ### Initialization
-In your AppDelegate in the `didFinishLaunchingWithOptions` function you have to initialize the SDK with
+
+In your AppDelegate in the `didFinishLaunchingWithOptions` function you have to initialize the SDK.
+
+There are two ways to initialize the SDK:
+
+##### By using the discovery
+
+The provided app has to be registered in the discovery service on [Github](https://github.com/DP-3T/dp3t-discovery) by issuing a pull request.
+
 ```swift
-try DP3TTracing.initialize(with: "com.example.your.app", enviroment: .prod)
+try DP3TTracing.initialize(with: .discovery("com.example.your.app", enviroment: .prod))
 ```
-The provided app name has to be registered in the discovery service on [Github](https://github.com/DP-3T/dp3t-discovery)
+##### By manually specifying the backend url
+
+```swift
+let url = URL(string: "https://example.com/your/api/")!
+try DP3TTracing.initialize(with: .manual(.init(appId: "com.example.your.app", 
+                                               backendBaseUrl: url))
+```
+
+##### 
 
 #### Certificate pinning
 

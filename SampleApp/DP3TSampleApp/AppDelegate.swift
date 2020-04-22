@@ -8,14 +8,25 @@ import DP3TSDK_CALIBRATION
 import os
 import UIKit
 
+func initializeSDK(){
+    /// Can be initialized either by:
+    /// - using the discovery:
+    try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
+                                mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
+    /// - passing the url:
+    //try! DP3TTracing.initialize(with: .manual(.init(appId: "org.dpppt.demo", backendBaseUrl: URL(string: "https://demo.dpppt.org/")!)),
+    //                            mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         DP3TTracing.reconnectionDelay = Default.shared.reconnectionDelay
-        try! DP3TTracing.initialize(with: "org.dpppt.demo", enviroment: .dev, mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
 
+        initializeSDK()
+        
         if application.applicationState != .background {
             initWindow()
         }

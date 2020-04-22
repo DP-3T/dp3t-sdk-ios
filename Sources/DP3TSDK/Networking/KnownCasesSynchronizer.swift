@@ -13,12 +13,12 @@ import Foundation
  */
 class KnownCasesSynchronizer {
     /// The app id to use
-    private let appId: String
+    private let appInfo: DP3TApplicationInfo
     /// A database to store the known cases
     private let database: KnownCasesStorage
 
     // keep track of errors and successes with regard to individual requests (networking or database errors)
-    private var errors = [(String, Error)]()
+    private var errors = [(String, DP3TTracingError)]()
     // a list of temporary known cases
     private var knownCases = [String: [KnownCaseModel]]()
 
@@ -27,33 +27,30 @@ class KnownCasesSynchronizer {
     private var numberOfFulfilledRequests: Int = 0
 
     /// A DP3T matcher
-    private weak var matcher: DP3TMatcher?
+    private weak var matcher: DP3TMatcherProtocol?
 
     /// Create a known case synchronizer
     /// - Parameters:
     ///   - appId: The app id to use
     ///   - database: The database for storage
     ///   - matcher: The matcher for DP3T resolution and checks
-    init(appId: String, database: DP3TDatabase, matcher: DP3TMatcher) {
-        self.appId = appId
+    init(appInfo: DP3TApplicationInfo, database: DP3TDatabase, matcher: DP3TMatcherProtocol) {
+        self.appInfo = appInfo
         self.database = database.knownCasesStorage
         self.matcher = matcher
     }
 
     /// A callback result of async operations
-    typealias Callback = (Result<Void, DP3TTracingErrors>) -> Void
+    typealias Callback = (Result<Void, DP3TTracingError>) -> Void
 
     /// Synchronizes the local database with the remote one
     /// - Parameters:
     ///   - service: The service to use for synchronization
     ///   - callback: The callback once the task if finished
     func sync(service: ExposeeServiceClient, callback: Callback?) {
-        errors.removeAll()
-        knownCases.removeAll()
         // compute day identifiers (formatted dates) for the last 14 days
-        let dayIdentifierFormatter = DateFormatter()
-        dayIdentifierFormatter.dateFormat = "yyyy-MM-dd"
-        let dayIdentifiers = (0 ..< 14).reversed().map { days -> String in
+        let dayIdentifierFormatter = NetworkingConstants.dayIdentifierFormatter
+        let dayIdentifiers = (0 ..< NetworkingConstants.daysToFetch).reversed().map { days -> String in
             let date = Calendar.current.date(byAdding: .day, value: -1 * days, to: Date())!
             return dayIdentifierFormatter.string(from: date)
         }
@@ -68,7 +65,7 @@ class KnownCasesSynchronizer {
     /// - Parameters:
     ///   - dayIdentifier: The day identifier
     ///   - callback: The callback once the task is finished
-    private func dayResultHandler(_ dayIdentifier: String, callback: Callback?) -> (Result<[KnownCaseModel]?, DP3TTracingErrors>) -> Void {
+    private func dayResultHandler(_ dayIdentifier: String, callback: Callback?) -> (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void {
         numberOfIssuedRequests += 1
         return { result in
             switch result {
@@ -90,13 +87,31 @@ class KnownCasesSynchronizer {
             return
         }
 
+        /// If we encountered a timeInconsistency we return it
+        func completeWithError(){
+            if let tError = errors.first(where: {
+                if case DP3TTracingError.timeInconsistency(shift: _) = $0.1 {
+                    return true
+                } else {
+                    return false
+                }
+            }) {
+                callback?(.failure(tError.1))
+            } else {
+                callback?(Result.failure(.caseSynchronizationError(errors: errors.map(\.1))))
+            }
+        }
+
         if errors.count == numberOfIssuedRequests { // all requests failed
-            callback?(Result.failure(.CaseSynchronizationError))
+            completeWithError()
         } else if errors.count > 0 { // some requests failed
-            callback?(Result.failure(.CaseSynchronizationError))
+            completeWithError()
         } else { // all requests were successful
             processDayResults(callback: callback)
         }
+
+        errors.removeAll()
+        knownCases.removeAll()
     }
 
     /** Process all received day data. */

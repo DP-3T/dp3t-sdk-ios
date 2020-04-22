@@ -18,6 +18,8 @@ protocol BluetoothDiscoveryDelegate: class {
 
 /// A delegate that can react to bluetooth permission requests
 protocol BluetoothPermissionDelegate: class {
+    /// Device turned on without issues
+    func noIssues()
     /// The Bluetooth device is turned off
     func deviceTurnedOff()
     /// The app is not authorized to use bluetooth

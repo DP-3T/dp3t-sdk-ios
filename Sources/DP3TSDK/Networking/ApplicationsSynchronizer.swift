@@ -10,8 +10,8 @@ import Foundation
 class ApplicationSynchronizer {
     /// The storage of the data
     let storage: ApplicationStorage
-    /// The enviroment
-    let enviroment: Enviroment
+    /// applicationInfo
+    let appInfo: DP3TApplicationInfo
     /// url session to use
     let urlSession: URLSession
 
@@ -20,15 +20,18 @@ class ApplicationSynchronizer {
     ///   - enviroment: The environment of the synchronizer
     ///   - storage: The storage
     ///   - urlSession: The urlSession to use
-    init(enviroment: Enviroment, storage: ApplicationStorage, urlSession: URLSession) {
+    init(appInfo: DP3TApplicationInfo, storage: ApplicationStorage, urlSession: URLSession) {
         self.storage = storage
-        self.enviroment = enviroment
+        self.appInfo = appInfo
         self.urlSession = urlSession
     }
 
     /// Synchronize the local and remote data.
     /// - Parameter callback: A callback with the sync result
-    func sync(callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void) throws {
+    func sync(callback: @escaping (Result<Void, DP3TTracingError>) -> Void) throws {
+        guard case let DP3TApplicationInfo.discovery(_, enviroment) = appInfo else {
+            fatalError("ApplicationSynchronizer should not be used in manual mode")
+        }
         ExposeeServiceClient.getAvailableApplicationDescriptors(enviroment: enviroment, urlSession: urlSession) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -37,11 +40,13 @@ class ApplicationSynchronizer {
                     try ad.forEach(self.storage.add(appDescriptor:))
                     callback(.success(()))
                 } catch {
-                    callback(.failure(DP3TTracingErrors.DatabaseError(error: error)))
+                    callback(.failure(DP3TTracingError.databaseError(error: error)))
                 }
             case let .failure(error):
-                callback(.failure(DP3TTracingErrors.NetworkingError(error: error)))
+                callback(.failure(DP3TTracingError.networkingError(error: error)))
             }
         }
+
+
     }
 }

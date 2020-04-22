@@ -29,7 +29,7 @@ public enum TrackingState {
     /// The tracking is stopped by the user
     case stopped
     /// The tracking is facing some issues that needs to be solved
-    case inactive(error: DP3TTracingErrors)
+    case inactive(error: DP3TTracingError)
 }
 
 /// The state of the API
