@@ -24,4 +24,7 @@ enum BluetoothConstants {
     static var peripheralDisposeIntervalSinceDiscovery: TimeInterval = 30 * 60
 
     static var androidManufacturerId: UInt16 = 0xABBA
+
+    /// how many rssi value should be read if we connect to a device
+    static var rssiValueRequirement: Int = 3
 }
