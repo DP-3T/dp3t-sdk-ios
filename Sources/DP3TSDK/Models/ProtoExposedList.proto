@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+message ProtoExposedList {
+  repeated ProtoExposee exposed = 1;
+}
+
+message ProtoExposee{
+  bytes key = 2;
+  int64 onset = 3;
+}
