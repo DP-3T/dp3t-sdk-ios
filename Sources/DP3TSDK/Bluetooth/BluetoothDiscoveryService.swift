@@ -180,56 +180,43 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         #if CALIBRATION
             logger?.log(type: .receiver, " didDiscover: \(peripheral), rssi: \(RSSI)db")
         #endif
-        if let power = advertisementData[CBAdvertisementDataTxPowerLevelKey] as? Double {
-            #if CALIBRATION
-                logger?.log(type: .receiver, " found TX-Power in Advertisment data: \(power)")
-            #endif
-            pendingPeripherals[peripheral]?.TXPowerlevel = power
-        } else {
-            #if CALIBRATION
-                logger?.log(type: .receiver, " TX-Power not available")
-            #endif
-        }
 
-        pendingPeripherals[peripheral]?.rssiValues.append(Double(truncating: RSSI))
+        let txPowerlevel = advertisementData[CBAdvertisementDataTxPowerLevelKey] as? Double
+
+        #if CALIBRATION
+        if let power = txPowerlevel {
+            logger?.log(type: .receiver, "found TX-Power in Advertisment data: \(power)")
+        } else {
+            logger?.log(type: .receiver, " TX-Power not available")
+        }
+        #endif
 
         tidyUpPendingPeripherals()
 
-        if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
-            manuData.count == CryptoConstants.keyLenght + 2,
-            manuData[0 ..< 2].withUnsafeBytes({ $0.load(as: UInt16.self) }) == BluetoothConstants.androidManufacturerId {
-            // drop manufacturer identifier
-            let data = manuData.dropFirst(2)
+        if let serviceData = advertisementData[CBAdvertisementDataServiceDataKey] as? [CBUUID: Data],
+           let data: EphID = serviceData[BluetoothConstants.serviceCBUUID],
+           data.count == CryptoConstants.keyLenght {
 
             try? delegate?.didDiscover(data: data,
-                                       TXPowerlevel: pendingPeripherals[peripheral]?.TXPowerlevel,
-                                       RSSI: pendingPeripherals[peripheral]?.rssi)
+                                       TXPowerlevel: txPowerlevel,
+                                       RSSI: Double(truncating: RSSI))
 
             #if CALIBRATION
-                logger?.log(type: .receiver, "Found manufacturer specific data \(data.hexEncodedString)")
-                let ephID = String(data: data[..<4], encoding: .utf8) ?? "Unable to decode"
-                logger?.log(type: .receiver, " → ✅ Received (EphID in SCAN_RSP: \(ephID)) from \(peripheral.identifier) at \(Date())")
+                logger?.log(type: .receiver, "Found service data \(data.hexEncodedString)")
+                let identifier = String(data: data[..<4], encoding: .utf8) ?? "Unable to decode"
+                logger?.log(type: .receiver, " → ✅ Received (EphID in Advertisement: \(identifier)) from \(peripheral.identifier) at \(Date())")
             #endif
-
-            if (peripheral.state == .disconnected) {
-                // New device, connect with a delay (since we already received EphID)
-                try? storage.setDiscovery(uuid: peripheral.identifier)
-                pendingPeripherals[peripheral] = .init(ephID: data)
-                connect(peripheral, delayed: true)
-            } else {
-                // If we are already trying to connect, disconnect and then
-                // didDisconnect will try to reconnect delayed
-                #if CALIBRATION
-                    logger?.log(type: .receiver, " didDiscover: cancel peripheral \(peripheral)")
-                #endif
-                manager?.cancelPeripheralConnection(peripheral)
-            }
+            
         } else {
-            // Only connect if we didn't got manufacturer data
-            // we only get the manufacturer if iOS is actively scanning
-            // otherwise we have to connect to the peripheral and read the characteristics
+            // Only connect if we didn't got a EphId in the Advertisement
             try? storage.setDiscovery(uuid: peripheral.identifier)
+
             pendingPeripherals[peripheral] = .init()
+
+            pendingPeripherals[peripheral]?.rssiValues.append(Double(truncating: RSSI))
+
+            pendingPeripherals[peripheral]?.TXPowerlevel = txPowerlevel
+
             connect(peripheral)
         }
     }
