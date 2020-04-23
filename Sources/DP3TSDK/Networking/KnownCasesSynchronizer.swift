@@ -124,11 +124,10 @@ class KnownCasesSynchronizer {
     /** Process all received day data. */
     private func processDayResults(callback: Callback?) {
         // TODO: Handle db errors
-        for (_, knownCases) in knownCases {
-            try? database.update(knownCases: knownCases)
-            for knownCase in knownCases {
-                try? matcher?.checkNewKnownCase(knownCase)
-            }
+        let mergedKnownCases = knownCases.values.flatMap{ $0 }
+        try? database.update(knownCases: mergedKnownCases)
+        for knownCase in mergedKnownCases {
+            try? matcher?.checkNewKnownCase(knownCase)
         }
 
         callback?(Result.success(()))

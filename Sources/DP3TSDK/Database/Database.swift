@@ -94,6 +94,7 @@ class DP3TDatabase {
     /// Should be called ragulary to ensure completenes of contacts
     /// - Throws: if error happens
     func generateContactsFromHandshakes() throws {
+        try contactsStorage.deleteOldContacts()
         try handshakesStorage.deleteOldHandshakes()
         let epochStart = DP3TCryptoModule.getEpochStart()
         let handshakes = try handshakesStorage.getAll(olderThan: epochStart)
