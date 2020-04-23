@@ -40,7 +40,7 @@ class ExposeeServiceClient {
         self.urlCache = urlCache
         exposeeEndpoint = ExposeeEndpoint(baseURL: descriptor.backendBaseUrl)
         managingExposeeEndpoint = ManagingExposeeEndpoint(baseURL: descriptor.backendBaseUrl)
-        if let jwtPublicKey = descriptor.jwtPublicKey {
+        if #available(iOS 11.0, *), let jwtPublicKey = descriptor.jwtPublicKey {
             jwtVerifier = JWTVerifier.es256(publicKey: jwtPublicKey)
         } else {
             jwtVerifier = nil
@@ -102,7 +102,7 @@ class ExposeeServiceClient {
             
             // Validate JWT
             if let verifier = self.jwtVerifier {
-                guard let jwtString = httpResponse.value(forHTTPHeaderField: "Signature") else {
+                guard let jwtString = httpResponse.value(for: "Signature") else {
                     completion(.failure(.jwtSignitureError))
                     return
                 }
