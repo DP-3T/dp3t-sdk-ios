@@ -327,7 +327,7 @@ final class CryptoModuleTest: XCTestCase {
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(2 * .day)))
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(3 * .day)))
 
-        let (day, key) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(-10 * .day)))!
+        let (day, _) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(-10 * .day)))!
 
         XCTAssertEqual(day, DayDate())
     }

@@ -44,19 +44,22 @@ class DP3TMatcher: DP3TMatcherProtocol {
     /// check for new known case
     /// - Parameter knownCase: known Case
     func checkNewKnownCase(_ knownCase: KnownCaseModel) throws {
-        let contacts = try crypto.checkContacts(secretKey: knownCase.key,
+        let matchingContacts = try crypto.checkContacts(secretKey: knownCase.key,
                                                 onsetDate: DayDate(date: knownCase.onset),
                                                 bucketDate: knownCase.batchTimestamp) { (day) -> ([Contact]) in
             (try? database.contactsStorage.getContacts(for: day)) ?? []
         }
 
-        if !contacts.isEmpty,
+        if !matchingContacts.isEmpty,
             let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
-            try contacts.forEach { (contact) in
+
+            try matchingContacts.forEach { (contact) in
                 guard let contactId = contact.identifier else { return }
                 try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
             }
 
+            let matchedContact = MatchedContact(identifier: knownCaseId, reportDate: DayDate(date: knownCase.batchTimestamp).dayMin)
+            try database.matchedContactsStorage.add(matchedContact: matchedContact)
             delegate.didFindMatch()
         }
     }

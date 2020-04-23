@@ -10,7 +10,7 @@ import SQLite
 
 fileprivate class MockMatcher: DP3TMatcherProtocol {
     var knownCaseKeys: [Data] = []
-    func checkNewKnownCase(_ knownCase: KnownCaseModel, batchTimestamp: Date) throws {
+    func checkNewKnownCase(_ knownCase: KnownCaseModel) throws {
         knownCaseKeys.append(knownCase.key)
     }
 }
