@@ -8,6 +8,6 @@ import Foundation
 
 /// Mobdel used for showing matched contacts
 public struct MatchedContact {
-    let identifier: Int
-    let reportDate: Date
+    public let identifier: Int
+    public let reportDate: Date
 }
