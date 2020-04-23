@@ -19,7 +19,7 @@ class ContactsStorage {
     let idColumn = Expression<Int>("id")
     let dateColumn = Expression<Date>("date")
     let ephIDColumn = Expression<EphID>("ephID")
-    let windowCountColumn = Expression<Int>("windows_count")
+    let windowCountColumn = Expression<Int>("windowsCount")
     let associatedKnownCaseColumn = Expression<Int?>("associated_known_case")
 
     /// Initializer

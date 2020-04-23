@@ -178,7 +178,7 @@ final class CryptoModuleTest: XCTestCase {
 
         let date = Date()
 
-        let contacts: [Contact] = [Contact(identifier: nil, ephID: token, day: DayDate(date: date), associatedKnownCase: nil)]
+        let contacts: [Contact] = [Contact(identifier: nil, ephID: token, day: DayDate(date: date), windowCount: 0, associatedKnownCase: nil)]
         let store2 = KeyStoreMock()
         let crypto2: DP3TCryptoModule = try! DP3TCryptoModule(store: store2)
 
@@ -205,7 +205,7 @@ final class CryptoModuleTest: XCTestCase {
 
         let date = Date()
 
-        let contacts: [Contact] = [Contact(identifier: nil, ephID: token, day: DayDate(date: date), associatedKnownCase: nil)]
+        let contacts: [Contact] = [Contact(identifier: nil, ephID: token, day: DayDate(date: date), windowCount: 0, associatedKnownCase: nil)]
 
         let store2 = KeyStoreMock()
         let crypto2: DP3TCryptoModule = try! DP3TCryptoModule(store: store2)
@@ -225,7 +225,7 @@ final class CryptoModuleTest: XCTestCase {
         let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
 
         let date = Date()
-        let contacts: [Contact] = [Contact(identifier: nil, ephID: token, day: DayDate(date: date), associatedKnownCase: nil)]
+        let contacts: [Contact] = [Contact(identifier: nil, ephID: token, day: DayDate(date: date), windowCount: 0, associatedKnownCase: nil)]
 
         let matchedContacts = try! crypto.checkContacts(secretKey: key,
                                                   onsetDate: DayDate(date: Date().addingTimeInterval(-1 * .day)),

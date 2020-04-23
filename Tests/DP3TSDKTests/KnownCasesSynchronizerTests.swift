@@ -37,7 +37,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: date)]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
         let session = MockSession(data: data, urlResponse: response, error: nil)
-        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
         return (ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session), session)
     }
 
