@@ -38,7 +38,8 @@ class UploadDatabaseHelper {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMddHHmmss"
         dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-        let fileName = dateFormatter.string(from: Date()) + "_" + deviceToken + "_dp3t_callibration_db.sqlite"
+        let identifierPrefix = (Default.shared.identifierPrefix ?? "")
+        let fileName = dateFormatter.string(from: Date()) + "_" + identifierPrefix + "_" + deviceToken + "_dp3t_callibration_db.sqlite"
 
         AF.upload(multipartFormData: { multipartFormData in
             multipartFormData.append(databaseData, withName: "file", fileName: fileName, mimeType: "application/sqlite")
