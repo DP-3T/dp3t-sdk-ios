@@ -46,7 +46,7 @@ class DP3TMatcher: DP3TMatcherProtocol {
     func checkNewKnownCase(_ knownCase: KnownCaseModel, batchTimestamp: Date) throws {
         let contacts = try crypto.checkContacts(secretKey: knownCase.key,
                                                 onsetDate: DayDate(date: knownCase.onset),
-                                                bucketDate: DayDate(date: knownCase.batchTimestamp)) { (day) -> ([Contact]) in
+                                                bucketDate: knownCase.batchTimestamp) { (day) -> ([Contact]) in
             (try? database.contactsStorage.getContacts(for: day)) ?? []
         }
 

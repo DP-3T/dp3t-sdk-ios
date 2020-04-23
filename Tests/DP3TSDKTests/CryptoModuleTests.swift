@@ -183,7 +183,7 @@ final class CryptoModuleTest: XCTestCase {
 
         let matchedContacts = try! crypto2.checkContacts(secretKey: key,
                                                   onsetDate: DayDate(),
-                                                  bucketDate: DayDate(date: Date().addingTimeInterval(.day)),
+                                                  bucketDate: Date().addingTimeInterval(.day),
                                                   getContacts: { (_) -> ([Contact]) in
                                                     contacts
         })
@@ -211,7 +211,7 @@ final class CryptoModuleTest: XCTestCase {
 
         let matchedContacts = try! crypto2.checkContacts(secretKey: key,
                                                    onsetDate: DayDate(),
-                                                   bucketDate: DayDate(date: Date().addingTimeInterval(.day)),
+                                                   bucketDate: Date().addingTimeInterval(.day),
                                                    getContacts: { (_) -> ([Contact]) in
                                                      contacts
          })
@@ -228,7 +228,7 @@ final class CryptoModuleTest: XCTestCase {
 
         let matchedContacts = try! crypto.checkContacts(secretKey: key,
                                                   onsetDate: DayDate(date: Date().addingTimeInterval(-1 * .day)),
-                                                  bucketDate: DayDate(),
+                                                  bucketDate: Date(),
                                                   getContacts: { (_) -> ([Contact]) in
                                                     contacts
         })
