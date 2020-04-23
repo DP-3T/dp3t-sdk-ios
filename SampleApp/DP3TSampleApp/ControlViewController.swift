@@ -240,7 +240,19 @@ class ControlViewController: UIViewController {
     }
 
     @objc func sync() {
-        try! DP3TTracing.sync { _ in }
+        DP3TTracing.sync { [weak self] result in
+            switch result {
+            case let .failure(error):
+                let ac = UIAlertController.init(title: "Error",
+                                                message: error.description,
+                                                preferredStyle: .alert)
+                ac.addAction(.init(title: "Retry", style: .default) { _ in self?.sync() })
+                ac.addAction(.init(title: "Cancel", style: .destructive))
+                self?.present(ac, animated: true)
+            default:
+                break
+            }
+        }
     }
 
     @objc func setExposed() {
@@ -268,7 +280,9 @@ class ControlViewController: UIViewController {
         DP3TTracing.stopTracing()
         try? DP3TTracing.reset()
         NotificationCenter.default.post(name: Notification.Name("ClearData"), object: nil)
-        try! DP3TTracing.initialize(with: "org.dpppt.demo", enviroment: .dev, mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
+
+        initializeSDK()
+        
         DP3TTracing.delegate = navigationController?.tabBarController as? DP3TTracingDelegate
         DP3TTracing.status { result in
             switch result {
@@ -388,6 +402,27 @@ private extension TrackingState {
             return "inactive \(error.localizedDescription)"
         case .stopped:
             return "stopped"
+        }
+    }
+}
+
+extension DP3TTracingError {
+    var description: String {
+       switch self {
+        case .bluetoothTurnedOff:
+            return "bluetoothTurnedOff"
+        case let .caseSynchronizationError(errors: errors):
+            return "caseSynchronizationError \(errors.map{ $0.localizedDescription })"
+        case let .cryptographyError(error: error):
+            return "cryptographyError \(error)"
+        case let .databaseError(error: error):
+            return "databaseError \(error?.localizedDescription ?? "nil")"
+        case let .networkingError(error: error):
+            return "networkingError \(error?.localizedDescription ?? "nil")"
+        case .permissonError:
+            return "networkingError"
+        case let .timeInconsistency(shift: shift):
+            return "timeInconsistency by \(shift)"
         }
     }
 }

@@ -68,7 +68,9 @@ class DP3TDatabase {
         if let connection = connection_ {
             self.connection = connection
         } else {
-             self.connection = try Connection(DP3TDatabase.getDatabasePath(), readonly: false)
+            var filePath = DP3TDatabase.getDatabasePath()
+            self.connection = try Connection(filePath.absoluteString, readonly: false)
+            try? filePath.addExcludedFromBackupAttribute()
         }
         _knownCasesStorage = try KnownCasesStorage(database: connection)
         _handshakesStorage = try HandshakesStorage(database: connection)
@@ -111,7 +113,7 @@ class DP3TDatabase {
 
     /// delete Database
     func destroyDatabase() throws {
-        let path = DP3TDatabase.getDatabasePath()
+        let path = DP3TDatabase.getDatabasePath().absoluteString
         if FileManager.default.fileExists(atPath: path) {
             try FileManager.default.removeItem(atPath: path)
         }
@@ -119,15 +121,15 @@ class DP3TDatabase {
     }
 
     /// get database path
-    private static func getDatabasePath() -> String {
+    private static func getDatabasePath() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let documentsDirectory = paths[0]
-        return documentsDirectory.appendingPathComponent("DP3T_tracing_db").appendingPathExtension("sqlite").absoluteString
+        return documentsDirectory.appendingPathComponent("DP3T_tracing_db").appendingPathExtension("sqlite")
     }
 }
 
 extension DP3TDatabase: CustomDebugStringConvertible {
     var debugDescription: String {
-        return "DB at path <\(DP3TDatabase.getDatabasePath())>"
+        return "DB at path <\(DP3TDatabase.getDatabasePath().absoluteString)>"
     }
 }

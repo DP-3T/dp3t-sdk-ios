@@ -10,7 +10,7 @@ import Foundation
 /// Some constats used for configuring the bluetooth services
 enum BluetoothConstants {
     /// Predefined Service CBUUID
-    static var serviceCBUUID = CBUUID(string: "8c8494e3-bab5-1848-40a0-1b06991c0000")
+    static var serviceCBUUID = CBUUID(string: "FD6F")
 
     /// Predefined Characteristics CBUUID
     static var characteristicsCBUUID = CBUUID(string: "8c8494e3-bab5-1848-40a0-1b06991c0001")
@@ -24,4 +24,7 @@ enum BluetoothConstants {
     static var peripheralDisposeIntervalSinceDiscovery: TimeInterval = 30 * 60
 
     static var androidManufacturerId: UInt16 = 0xABBA
+
+    /// how many rssi value should be read if we connect to a device
+    static var rssiValueRequirement: Int = 3
 }

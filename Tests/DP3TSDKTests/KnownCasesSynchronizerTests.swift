@@ -30,7 +30,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: date)]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
         let session = MockSession(data: json, urlResponse: response, error: nil)
-        let applicationDescriptor = TracingApplicationDescriptor(appId: "ch.xy", description: "XY", backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
         return (ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session), session)
     }
 
@@ -38,7 +38,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         let matcher = MockMatcher()
         let (service, session) = getMockService()
-        let synchronizer = KnownCasesSynchronizer(appId: "ch.xy", database: database, matcher: matcher)
+        let appInfo = DP3TApplicationInfo.discovery("ch.xy", enviroment: .dev)
+        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo, database: database, matcher: matcher)
         let exposeeExpectation = expectation(description: "exposee")
         synchronizer.sync(service: service) { (result) in
             if case .success = result {
@@ -69,7 +70,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let key = Data(base64Encoded: b64Key)!
         let matcher = MockMatcher()
         let (service, _) = getMockService(array: "[{ \"key\": \"\(b64Key)\",\"onset\": \"2020-04-14\"}]")
-        let synchronizer = KnownCasesSynchronizer(appId: "ch.xy", database: database, matcher: matcher)
+        let appInfo = DP3TApplicationInfo.discovery("ch.xy", enviroment: .dev)
+        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo, database: database, matcher: matcher)
         let exposeeExpectation = expectation(description: "exposee")
         synchronizer.sync(service: service) { (result) in
 
@@ -92,7 +94,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let matcher = MockMatcher()
         let timestamp = Date().addingTimeInterval(NetworkingConstants.timeShiftThreshold * (-1))
         let (service, _) = getMockService(date: timestamp)
-        let synchronizer = KnownCasesSynchronizer(appId: "ch.xy", database: database, matcher: matcher)
+        let appInfo = DP3TApplicationInfo.discovery("ch.xy", enviroment: .dev)
+        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo, database: database, matcher: matcher)
         let exposeeExpectation = expectation(description: "exposee")
         synchronizer.sync(service: service) { (result) in
             switch result {
