@@ -116,6 +116,7 @@ class DP3TDatabase {
                 try loggingStorage.emptyStorage()
             #endif
             try contactsStorage.emptyStorage()
+            try matchedContactsStorage.emptyStorage()
         }
     }
 
