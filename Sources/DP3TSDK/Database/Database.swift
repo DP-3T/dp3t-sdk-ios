@@ -68,6 +68,13 @@ class DP3TDatabase {
             guard !isDestroyed else { fatalError("Database is destroyed") }
             return _logggingStorage
         }
+
+        /// secret keys storage
+        private let _secretKeysStorage: SecretKeysStorage
+        var secretKeysStorage: SecretKeysStorage {
+            guard !isDestroyed else { fatalError("Database is destroyed") }
+            return _secretKeysStorage
+        }
     #endif
 
     /// Initializer
@@ -87,6 +94,7 @@ class DP3TDatabase {
         _applicationStorage = try ApplicationStorage(database: connection)
         #if CALIBRATION
             _logggingStorage = try LoggingStorage(database: connection)
+            _secretKeysStorage = try SecretKeysStorage(database: connection)
         #endif
     }
 
@@ -114,6 +122,7 @@ class DP3TDatabase {
             try peripheralStorage.emptyStorage()
             #if CALIBRATION
                 try loggingStorage.emptyStorage()
+                try secretKeysStorage.emptyStorage()
             #endif
             try contactsStorage.emptyStorage()
             try matchedContactsStorage.emptyStorage()

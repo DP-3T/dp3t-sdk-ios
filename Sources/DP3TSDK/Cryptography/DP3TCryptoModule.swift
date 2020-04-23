@@ -13,6 +13,16 @@ class DP3TCryptoModule {
 
     private let store: SecureStorageProtocol
 
+    #if CALIBRATION
+    weak var debugSecretKeysStorageDelegate: SecretKeysStorageDelegate? {
+        didSet {
+            if let storage = self.store as? SecureStorage {
+                storage.debugSecretKeysStorageDelegate = debugSecretKeysStorageDelegate
+            }
+        }
+    }
+    #endif
+
     /// Initilized the module
     /// - Parameter store: storage to use to persist secretkeys and ephIDs
     init(store: SecureStorageProtocol = SecureStorage()) throws {
