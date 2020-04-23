@@ -40,6 +40,13 @@ class DP3TDatabase {
         return _contactsStorage
     }
 
+    /// contacts Storage
+    private let _matchedContactsStorage: MatchedContactsStorage
+    var matchedContactsStorage: MatchedContactsStorage {
+        guard !isDestroyed else { fatalError("Database is destroyed") }
+        return _matchedContactsStorage
+    }
+
     /// knowncase Storage
     private let _knownCasesStorage: KnownCasesStorage
     var knownCasesStorage: KnownCasesStorage {
@@ -75,6 +82,7 @@ class DP3TDatabase {
         _knownCasesStorage = try KnownCasesStorage(database: connection)
         _handshakesStorage = try HandshakesStorage(database: connection)
         _contactsStorage = try ContactsStorage(database: connection, knownCasesStorage: _knownCasesStorage)
+        _matchedContactsStorage = try MatchedContactsStorage(database: connection, knownCasesStorage: _knownCasesStorage)
         _peripheralStorage = try PeripheralStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
         #if CALIBRATION
