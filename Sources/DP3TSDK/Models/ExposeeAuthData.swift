@@ -6,8 +6,12 @@
 
 import Foundation
 
-/// Model for the authentication data provided by health institutes to verify test results
-struct ExposeeAuthData: Encodable {
-    /// Authentication data used to verify the test result (base64 encoded)
-    let value: String
+/// An option for authenticating the Exposee Api
+public enum ExposeeAuthMethod {
+    /// No authentication
+    case none
+    /// Send the authentication as part the JSON payload
+    case JSONPayload(token: String)
+    /// Send the authentication as a HTTP Header Authentication bearer token
+    case HTTPAuthorizationBearer(token: String)
 }

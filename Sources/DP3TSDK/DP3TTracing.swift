@@ -107,11 +107,11 @@ public enum DP3TTracing {
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    public static func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+    public static func iWasExposed(onset: Date, authentication: ExposeeAuthMethod, callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
-        instance.iWasExposed(onset: onset, authString: authString, callback: callback)
+        instance.iWasExposed(onset: onset, authentication: authentication, callback: callback)
     }
 
     /// reset the SDK

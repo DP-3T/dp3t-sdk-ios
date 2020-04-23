@@ -107,47 +107,11 @@ class ExposeeServiceClient {
     /// - Parameters:
     ///   - exposee: The exposee to add
     ///   - completion: The completion block
-    func addExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
-        exposeeEndpointRequest(exposee, action: .add) { result in
-            switch result {
-            case let .failure(error):
-                completion(.failure(.networkingError(error: error)))
-            case .success:
-                completion(.success(()))
-            }
-        }
-    }
+    ///   - authentication: The authentication to use for the request
+    func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
 
-    /// Removes an exposee
-    /// - Parameters:
-    ///   - exposee: The exposee to remove
-    ///   - completion: The completion block
-    func removeExposee(_ exposee: ExposeeModel, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
-        exposeeEndpointRequest(exposee, action: .remove) { result in
-            switch result {
-            case let .failure(error):
-                completion(.failure(.networkingError(error: error)))
-            case .success:
-                completion(.success(()))
-            }
-        }
-    }
-
-    private enum ExposeeEndpointAction { case add, remove }
-    /// Executes a managing exposee request
-    /// - Parameters:
-    ///   - exposee: The exposee to manage
-    ///   - action: The action to perform
-    ///   - completion: The completion block
-    private func exposeeEndpointRequest(_ exposee: ExposeeModel, action: ExposeeEndpointAction, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         // addExposee endpoint
-        let url: URL
-        switch action {
-        case .add:
-            url = managingExposeeEndpoint.addExposee()
-        case .remove:
-            url = managingExposeeEndpoint.removeExposee()
-        }
+        let url = managingExposeeEndpoint.addExposee()
 
         guard let payload = try? JSONEncoder().encode(exposee) else {
             completion(.failure(.networkingError(error: nil)))
@@ -159,6 +123,9 @@ class ExposeeServiceClient {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue(String(payload.count), forHTTPHeaderField: "Content-Length")
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
+        if case let ExposeeAuthMethod.HTTPAuthorizationBearer(token: token) = authentication {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         request.httpBody = payload
 
         let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
