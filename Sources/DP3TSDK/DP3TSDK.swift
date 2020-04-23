@@ -40,8 +40,7 @@ class DP3TSDK {
     /// the urlSession to use for networking
     private let urlSession: URLSession
 
-
-    private let backgroundTaskManager: DP3TBackgroundTaskManager = .init()
+    private let backgroundTaskManager: Any?
 
     /// delegate
     public weak var delegate: DP3TTracingDelegate?
@@ -93,6 +92,17 @@ class DP3TSDK {
                              infectionStatus: Default.shared.infectionStatus,
                              backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
+        if #available(iOS 13.0, *) {
+            let backgroundTaskManager = DP3TBackgroundTaskManager()
+            backgroundTaskManager.register()
+            self.backgroundTaskManager = backgroundTaskManager
+            #if CALIBRATION
+                backgroundTaskManager.logger = self
+            #endif
+        } else {
+            backgroundTaskManager = nil
+        }
+
         broadcaster.permissionDelegate = self
         discoverer.permissionDelegate = self
         discoverer.delegate = matcher
@@ -102,10 +112,7 @@ class DP3TSDK {
             broadcaster.logger = self
             discoverer.logger = self
             database.logger = self
-            backgroundTaskManager.logger = self
         #endif
-
-        backgroundTaskManager.register()
 
         NotificationCenter.default.addObserver(self, selector: #selector(backgroundRefreshStatusDidChange), name: UIApplication.backgroundRefreshStatusDidChangeNotification, object: nil)
     }
@@ -157,10 +164,6 @@ class DP3TSDK {
                 }
             }
         }
-    }
-
-    func performFetch(with completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        backgroundTaskManager.performFetch(with: completionHandler)
     }
 
     /// get the current status of the SDK

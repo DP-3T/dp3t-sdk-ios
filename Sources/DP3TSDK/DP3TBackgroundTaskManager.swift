@@ -10,7 +10,7 @@ import BackgroundTasks
 
 fileprivate class SyncOperation: Operation {
     override func main() {
-        try! DP3TTracing.sync { result in
+        DP3TTracing.sync { result in
             switch result {
             case .failure(_):
                 self.cancel()
@@ -21,6 +21,7 @@ fileprivate class SyncOperation: Operation {
     }
 }
 
+@available(iOS 13.0, *)
 class DP3TBackgroundTaskManager {
     static let taskIdentifier: String = "org.dpppt.synctask"
     
@@ -39,30 +40,14 @@ class DP3TBackgroundTaskManager {
     }
 
     func register() {
-        if #available(iOS 13.0, *) {
-            #if CALIBRATION
-            logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.register")
-            #endif
-            BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .global()) { (task) in
-                self.handleBackgroundTask(task)
-            }
-        } else {
-            UIApplication.shared.setMinimumBackgroundFetchInterval(DP3TBackgroundTaskManager.syncInterval)
+        #if CALIBRATION
+        logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.register")
+        #endif
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .global()) { (task) in
+            self.handleBackgroundTask(task)
         }
     }
 
-    func performFetch(with completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-        queue.addOperation(SyncOperation())
-        let lastOperation = queue.operations.last
-        lastOperation?.completionBlock = {
-            let success = !(lastOperation?.isCancelled ?? false)
-            completionHandler(success ? .newData : .failed)
-        }
-    }
-
-    @available(iOS 13.0, *)
     private func handleBackgroundTask(_ task: BGTask){
         #if CALIBRATION
         logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.handleBackgroundTask")
@@ -86,25 +71,22 @@ class DP3TBackgroundTaskManager {
     }
 
     private func scheduleBackgroundTask(){
-        if #available(iOS 13.0, *) {
-            let syncTask = BGAppRefreshTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
-            syncTask.earliestBeginDate = Date(timeIntervalSinceNow: DP3TBackgroundTaskManager.syncInterval)
+        let syncTask = BGAppRefreshTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
+        syncTask.earliestBeginDate = Date(timeIntervalSinceNow: DP3TBackgroundTaskManager.syncInterval)
+        #if CALIBRATION
+        logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.scheduleBackgroundTask earliestBeginDate: \(syncTask.earliestBeginDate!)")
+        #endif
+        do {
+            try BGTaskScheduler.shared.submit(syncTask)
+        } catch {
             #if CALIBRATION
-            logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.scheduleBackgroundTask earliestBeginDate: \(syncTask.earliestBeginDate!)")
+            logger?.log(type: .sdk ,"Unable to submit task: \(error.localizedDescription)")
             #endif
-            do {
-                try BGTaskScheduler.shared.submit(syncTask)
-            } catch {
-                #if CALIBRATION
-                logger?.log(type: .sdk ,"Unable to submit task: \(error.localizedDescription)")
-                #endif
-            }
-        } else {
-            // Fallback on earlier versions
         }
     }
 
-    @objc func didEnterBackground(){
+    @objc
+    private func didEnterBackground(){
         scheduleBackgroundTask()
     }
 

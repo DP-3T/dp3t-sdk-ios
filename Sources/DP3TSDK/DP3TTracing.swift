@@ -94,13 +94,6 @@ public enum DP3TTracing {
         }
     }
 
-    public static func performFetch(with completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        guard let instance = instance else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
-        instance.performFetch(with: completionHandler)
-    }
-
     /// get the current status of the SDK
     /// - Parameter callback: callback
     public static func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
