@@ -24,6 +24,9 @@ class ControlViewController: UIViewController {
 
     let shareButton = UIButton()
 
+    let uploadButton = UIButton()
+    private let uploadHelper = UploadDatabaseHelper()
+
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Controls"
@@ -225,6 +228,20 @@ class ControlViewController: UIViewController {
             shareButton.addTarget(self, action: #selector(shareDatabase), for: .touchUpInside)
             stackView.addArrangedSubview(shareButton)
         }
+        stackView.addSpacerView(12)
+
+        do {
+            if #available(iOS 13.0, *) {
+                uploadButton.setTitleColor(.systemBlue, for: .normal)
+                uploadButton.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                uploadButton.setTitleColor(.blue, for: .normal)
+                uploadButton.setTitleColor(.black, for: .highlighted)
+            }
+            uploadButton.setTitle("Upload Database", for: .normal)
+            uploadButton.addTarget(self, action: #selector(uploadDatabase), for: .touchUpInside)
+            stackView.addArrangedSubview(uploadButton)
+        }
 
         stackView.addArrangedSubview(UIView())
     }
@@ -274,6 +291,25 @@ class ControlViewController: UIViewController {
             popoverController.sourceView = shareButton
         }
         present(acv, animated: true)
+    }
+
+    @objc func uploadDatabase() {
+        let loading = UIAlertController(title: "Uploading", message: "Please wait", preferredStyle: .alert)
+        present(loading, animated: true)
+        
+        uploadHelper.uploadDatabase(fileUrl: Self.getDatabasePath()) { result in
+            let alert: UIAlertController
+            switch result {
+            case .success:
+                alert = UIAlertController(title: "Upload successful", message: nil, preferredStyle: .alert)
+            case .failure(let error):
+                alert = UIAlertController(title: "Upload failed", message: error.message, preferredStyle: .alert)
+            }
+            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+            loading.dismiss(animated: false) {
+                self.present(alert, animated: false)
+            }
+        }
     }
 
     @objc func reset() {

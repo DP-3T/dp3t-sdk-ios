@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DF07D09F2451DA6100CFD431 /* UploadDatabaseHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF07D09E2451DA6100CFD431 /* UploadDatabaseHelper.swift */; };
+		DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = DF07D0A52451E59200CFD431 /* Alamofire */; };
 		F812AC56243DF459005F26AE /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC55243DF459005F26AE /* RootViewController.swift */; };
 		F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC58243E02A1005F26AE /* ControlViewController.swift */; };
 		F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC5A243E02AF005F26AE /* ParametersViewController.swift */; };
@@ -22,6 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		DF07D09E2451DA6100CFD431 /* UploadDatabaseHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadDatabaseHelper.swift; sourceTree = "<group>"; };
 		F812AC55243DF459005F26AE /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		F812AC58243E02A1005F26AE /* ControlViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlViewController.swift; sourceTree = "<group>"; };
 		F812AC5A243E02AF005F26AE /* ParametersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParametersViewController.swift; sourceTree = "<group>"; };
@@ -42,6 +45,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */,
 				F812AC5F243E08BF005F26AE /* DP3TSDK_CALIBRATION in Frameworks */,
 				F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */,
 			);
@@ -75,6 +79,7 @@
 				F812AC55243DF459005F26AE /* RootViewController.swift */,
 				F8F528F2243E2090000ABACC /* LogsViewController.swift */,
 				F812AC58243E02A1005F26AE /* ControlViewController.swift */,
+				DF07D09E2451DA6100CFD431 /* UploadDatabaseHelper.swift */,
 				F812AC5A243E02AF005F26AE /* ParametersViewController.swift */,
 				F812AC5C243E02B9005F26AE /* HandshakeViewController.swift */,
 				F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */,
@@ -112,6 +117,7 @@
 			packageProductDependencies = (
 				F83BE14F242DDFF60043FA1E /* SnapKit */,
 				F812AC5E243E08BF005F26AE /* DP3TSDK_CALIBRATION */,
+				DF07D0A52451E59200CFD431 /* Alamofire */,
 			);
 			productName = CovidTracingTestApp;
 			productReference = F83BE136242DDC450043FA1E /* DP3TSampleApp.app */;
@@ -143,6 +149,7 @@
 			mainGroup = F83BE12D242DDC450043FA1E;
 			packageReferences = (
 				F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */,
+				DF07D0A42451E59200CFD431 /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			productRefGroup = F83BE137242DDC450043FA1E /* Products */;
 			projectDirPath = "";
@@ -178,6 +185,7 @@
 				F812AC56243DF459005F26AE /* RootViewController.swift in Sources */,
 				F8F528F3243E2090000ABACC /* LogsViewController.swift in Sources */,
 				F812AC5D243E02B9005F26AE /* HandshakeViewController.swift in Sources */,
+				DF07D09F2451DA6100CFD431 /* UploadDatabaseHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,6 +387,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		DF07D0A42451E59200CFD431 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.1.0;
+			};
+		};
 		F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit";
@@ -390,6 +406,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		DF07D0A52451E59200CFD431 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DF07D0A42451E59200CFD431 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
 		F812AC5E243E08BF005F26AE /* DP3TSDK_CALIBRATION */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DP3TSDK_CALIBRATION;
