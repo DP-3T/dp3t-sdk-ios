@@ -43,7 +43,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         var list = ProtoExposedList()
         var exposee = ProtoExposee()
         exposee.key = Data(base64Encoded: "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")!
-        exposee.onset = onset.millisecondsSince1970
+        exposee.keyDate = onset.millisecondsSince1970
         list.exposed.append(exposee)
         let data = try! list.serializedData()
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
@@ -78,7 +78,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         var list = ProtoExposedList()
         var exposee = ProtoExposee()
         exposee.key = Data(base64Encoded: "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")!
-        exposee.onset = onset.millisecondsSince1970
+        exposee.keyDate = onset.millisecondsSince1970
         list.exposed.append(exposee)
         let data = try! list.serializedData()
 
@@ -117,7 +117,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         var list = ProtoExposedList()
         var exposee = ProtoExposee()
         exposee.key = Data(base64Encoded: "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")!
-        exposee.onset = onset.millisecondsSince1970
+        exposee.keyDate = onset.millisecondsSince1970
         list.exposed.append(exposee)
         let data = try! list.serializedData()
 

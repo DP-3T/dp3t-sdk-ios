@@ -30,7 +30,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         list.exposed = array.map {
             var exposee = ProtoExposee()
             exposee.key = $0.key
-            exposee.onset = $0.onset.millisecondsSince1970
+            exposee.keyDate = $0.onset.millisecondsSince1970
             return exposee
         }
         let data = try! list.serializedData()
@@ -53,8 +53,12 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let batchesPerDay = Int(TimeInterval.day) / NetworkingConstants.batchLenght
         let batchIdentifiers = (0 ..< NetworkingConstants.daysToFetch).reversed().flatMap { days -> [Date] in
             let date = today.dayMin.addingTimeInterval(.day * Double(days) * -1)
-            return (0 ..< batchesPerDay).map { batch in
-                return date.addingTimeInterval(TimeInterval(batch * NetworkingConstants.batchLenght))
+            return (0 ..< batchesPerDay).compactMap { batch in
+                let batchDate = date.addingTimeInterval(TimeInterval(batch * NetworkingConstants.batchLenght))
+                if batchDate.timeIntervalSinceNow > 0 {
+                    return nil
+                }
+                return batchDate
             }
         }.map({String($0.millisecondsSince1970)})
 
