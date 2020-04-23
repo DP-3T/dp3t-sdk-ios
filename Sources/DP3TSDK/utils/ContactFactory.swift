@@ -12,6 +12,8 @@ enum ContactFactory {
     static let contactRssiThreshold: Double = -80.0
     //TODO: set correct value
     static let eventThreshold: Double = 0.8
+
+    
     /// Helper function to create contacts from handshakes
     /// - Parameters:
     ///   - contactThreshold: how many handshakes to have to be recognized as contact
@@ -43,15 +45,14 @@ enum ContactFactory {
 
             let epochMean = rssiValues.map{ $0.1 }.reduce(0.0, +) / Double(rssiValues.count)
 
-            guard epochMean < ContactFactory.contactRssiThreshold else { return nil }
-
             let epochStart = DP3TCryptoModule.getEpochStart(timestamp: firstValue.0)
+            let windowLenght = Int(CryptoConstants.secondsPerEpoch / TimeInterval.minute)
 
-            let windowMeans: [Double] = (0 ..< Int(CryptoConstants.secondsPerEpoch / TimeInterval.minute)).compactMap { (index) -> Double? in
+            let windowMeans: [Double] = (0 ..< windowLenght).compactMap { (index) -> Double? in
                 let start = epochStart.addingTimeInterval(TimeInterval(index) * .second)
                 let end = start.addingTimeInterval(.minute)
                 let values = rssiValues.filter { (timestamp, rssi) -> Bool in
-                    return timestamp > start && timestamp < end
+                    return timestamp > start && timestamp <= end
                 }.map{ $0.1 }
                 if values.isEmpty {
                     return nil
@@ -60,13 +61,31 @@ enum ContactFactory {
                 }
             }
 
-            let eventDetectors: [Double] = windowMeans.map{ $0 / epochMean }
+            var numberOfMatchingWindows = 0
 
-            for eventDetector in eventDetectors {
-                if eventDetector > ContactFactory.eventThreshold {
-                    let day = DayDate(date: firstValue.0)
-                    return Contact(identifier: nil, ephID: ephID, day: day, associatedKnownCase: nil)
+            for windowIndex in (0 ..< windowLenght) {
+                let start = epochStart.addingTimeInterval(Double(windowIndex) * .second)
+                let end = start.addingTimeInterval(.minute)
+                let values = rssiValues.filter { (timestamp, rssi) -> Bool in
+                    return timestamp > start && timestamp <= end
+                }.map{ $0.1 }
+                guard !values.isEmpty else { continue }
+                let windowMean = values.reduce(0.0, +) / Double(values.count)
+                let eventDetector = windowMean / epochMean
+
+                if eventDetector > ContactFactory.eventThreshold,
+                    windowMean < ContactFactory.contactRssiThreshold {
+                    numberOfMatchingWindows += 1
                 }
+            }
+
+            if numberOfMatchingWindows != 0 {
+                let day = DayDate(date: firstValue.0)
+                return Contact(identifier: nil,
+                               ephID: ephID,
+                               day: day,
+                               windowCount: numberOfMatchingWindows,
+                               associatedKnownCase: nil)
             }
 
             return nil
