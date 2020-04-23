@@ -14,7 +14,7 @@ func initializeSDK(){
     try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
                                 mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
     /// - passing the url:
-    //try! DP3TTracing.initialize(with: .manual(.init(appId: "org.dpppt.demo", backendBaseUrl: URL(string: "https://demo.dpppt.org/")!)),
+    //try! DP3TTracing.initialize(with: .manual(.init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: Data)),
     //                            mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
 }
 

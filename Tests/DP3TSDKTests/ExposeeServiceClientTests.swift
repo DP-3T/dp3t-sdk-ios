@@ -15,7 +15,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
         let session = MockSession(data: data, urlResponse: response, error: nil)
-        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
 
         let exposeeExpectation = expectation(description: "exposee")
@@ -49,7 +49,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
         let session = MockSession(data: data, urlResponse: response, error: nil)
-        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
 
         let exposeeExpectation = expectation(description: "exposee")
@@ -86,7 +86,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         //URLSession gives the cached reponse
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)!
         let session = MockSession(data: data, urlResponse: response, error: nil)
-        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
 
         let cachedResponse = CachedURLResponse(response: response, data: Data())
         let cache = MockUrlCache(response: cachedResponse)
@@ -130,7 +130,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         let cachedResponse = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: cachedHeaders)!
 
         let session = MockSession(data: data, urlResponse: response, error: nil)
-        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
 
         let cachedCacheResponse = CachedURLResponse(response: cachedResponse, data: Data())
         let cache = MockUrlCache(response: cachedCacheResponse)
@@ -164,7 +164,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: timeStamp)]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
         let session = MockSession(data: json, urlResponse: response, error: nil)
-        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
 
         let exposeeExpectation = expectation(description: "exposee")
@@ -195,7 +195,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
         let session = MockSession(data: json, urlResponse: response, error: nil)
-        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
 
         let exposeeExpectation = expectation(description: "exposee")

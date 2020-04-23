@@ -18,7 +18,8 @@ class ApplicationStorage {
     /// Column definitions
     let appIdColumn = Expression<String>("app_id")
     let descriptionColumn = Expression<String?>("description")
-    let backendBaseUrlColumn = Expression<URL>("backend_base_url")
+    let bucketBaseUrlColumn = Expression<URL>("bucket_base_url")
+    let reportBaseUrlColumn = Expression<URL>("report_base_url")
     let contactColumn = Expression<String?>("contact")
 
     /// Initializer
@@ -33,7 +34,8 @@ class ApplicationStorage {
         try database.run(table.create(ifNotExists: true) { t in
             t.column(appIdColumn, primaryKey: true)
             t.column(descriptionColumn)
-            t.column(backendBaseUrlColumn)
+            t.column(bucketBaseUrlColumn)
+            t.column(reportBaseUrlColumn)
             t.column(contactColumn)
         })
     }
@@ -44,7 +46,8 @@ class ApplicationStorage {
         let insert = table.insert(or: .replace,
                                   appIdColumn <- ad.appId,
                                   descriptionColumn <- ad.description,
-                                  backendBaseUrlColumn <- ad.backendBaseUrl,
+                                  bucketBaseUrlColumn <- ad.bucketBaseUrl,
+                                  reportBaseUrlColumn <- ad.reportBaseUrl,
                                   contactColumn <- ad.contact)
         try database.run(insert)
     }
@@ -59,7 +62,8 @@ class ApplicationStorage {
         return ApplicationDescriptor(appId: row[appIdColumn],
                                             description: row[descriptionColumn],
                                             jwtPublicKey: nil,
-                                            backendBaseUrl: row[backendBaseUrlColumn],
+                                            bucketBaseUrl: row[bucketBaseUrlColumn],
+                                            reportBaseUrl: row[reportBaseUrlColumn],
                                             contact: row[contactColumn])
     }
 
