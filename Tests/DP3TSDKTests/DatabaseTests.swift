@@ -21,7 +21,7 @@ final class DatabaseTests: XCTestCase {
     func testEmptyStorage(){
         let date = Date()
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
-        let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
         try! database.handshakesStorage.add(handshake: h1)
 
         try! database.emptyStorage()
@@ -31,15 +31,24 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testContactGeneration() {
-        let date = Date()
+        let date = Date().addingTimeInterval(-.day)
         let day = DayDate(date: date)
+        let epochStart = DP3TCryptoModule.getEpochStart(timestamp: date)
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
-        let h1 = HandshakeModel(identifier: nil, timestamp: Date().addingTimeInterval(-CryptoConstants.secondsPerEpoch), ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h1 = HandshakeModel(identifier: nil,
+                                timestamp: epochStart.addingTimeInterval(1),
+                                ephID: token,
+                                TXPowerlevel: nil,
+                                RSSI: -30)
 
         try! database.handshakesStorage.add(handshake: h1)
 
-        let h2 = HandshakeModel(identifier: nil, timestamp: Date().addingTimeInterval(-( CryptoConstants.secondsPerEpoch + 5)), ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h2 = HandshakeModel(identifier: nil,
+                                timestamp: epochStart.addingTimeInterval(2 * .minute),
+                                ephID: token,
+                                TXPowerlevel: nil,
+                                RSSI: -30)
         try! database.handshakesStorage.add(handshake: h2)
 
         try! database.generateContactsFromHandshakes()
@@ -51,13 +60,13 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testContactGenerationUnique() {
-        let ts = DP3TCryptoModule.getCurrentEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
+        let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
         let day = DayDate(date: ts)
 
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
-        let h1 = HandshakeModel(identifier: nil, timestamp: ts, ephID: token, TXPowerlevel: nil, RSSI: nil)
-        let h2 = HandshakeModel(identifier: nil, timestamp: ts.addingTimeInterval(10), ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h1 = HandshakeModel(identifier: nil, timestamp: ts, ephID: token, TXPowerlevel: nil, RSSI: -30)
+        let h2 = HandshakeModel(identifier: nil, timestamp: ts.addingTimeInterval(10), ephID: token, TXPowerlevel: nil, RSSI: -30)
 
         try! database.handshakesStorage.add(handshake: h1)
         try! database.handshakesStorage.add(handshake: h2)
@@ -70,18 +79,18 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testContactGenerationUniqueDifferentEpoch() {
-        let ts = DP3TCryptoModule.getCurrentEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
+        let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
         let day = DayDate(date: ts)
 
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
-        let h1 = HandshakeModel(identifier: nil, timestamp: ts, ephID: token, TXPowerlevel: nil, RSSI: nil)
-        let h11 = HandshakeModel(identifier: nil, timestamp: ts.addingTimeInterval(10), ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h1 = HandshakeModel(identifier: nil, timestamp: ts, ephID: token, TXPowerlevel: nil, RSSI: -30)
+        let h11 = HandshakeModel(identifier: nil, timestamp: ts.addingTimeInterval(10), ephID: token, TXPowerlevel: nil, RSSI: -30)
 
         let yesterday = ts.addingTimeInterval(-.day)
         let token2 = Data(base64Encoded: "MSjnTLwp9z6XIJxGklwPPw==")!
-        let h2 = HandshakeModel(identifier: nil, timestamp: yesterday, ephID: token2, TXPowerlevel: nil, RSSI: nil)
-        let h21 = HandshakeModel(identifier: nil, timestamp: yesterday.addingTimeInterval(10), ephID: token2, TXPowerlevel: nil, RSSI: nil)
+        let h2 = HandshakeModel(identifier: nil, timestamp: yesterday, ephID: token2, TXPowerlevel: nil, RSSI: -30)
+        let h21 = HandshakeModel(identifier: nil, timestamp: yesterday.addingTimeInterval(10), ephID: token2, TXPowerlevel: nil, RSSI: -30)
 
         try! database.handshakesStorage.add(handshake: h1)
         try! database.handshakesStorage.add(handshake: h11)
@@ -98,11 +107,11 @@ final class DatabaseTests: XCTestCase {
         let day = DayDate(date: date)
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
-        let h1 = HandshakeModel(identifier: nil, timestamp: Date(), ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h1 = HandshakeModel(identifier: nil, timestamp: Date(), ephID: token, TXPowerlevel: nil, RSSI: -30)
 
         try! database.handshakesStorage.add(handshake: h1)
 
-        let h2 = HandshakeModel(identifier: nil, timestamp: Date().addingTimeInterval(5), ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h2 = HandshakeModel(identifier: nil, timestamp: Date().addingTimeInterval(5), ephID: token, TXPowerlevel: nil, RSSI: -30)
         try! database.handshakesStorage.add(handshake: h2)
 
         try! database.generateContactsFromHandshakes()
@@ -117,7 +126,7 @@ final class DatabaseTests: XCTestCase {
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
-        let contact = Contact(identifier: nil, ephID: token, day: day, associatedKnownCase: nil)
+        let contact = Contact(identifier: nil, ephID: token, day: day, windowCount: 0, associatedKnownCase: nil)
         database.contactsStorage.add(contact: contact)
         var count = try! database.contactsStorage.count()
         XCTAssertEqual(count, 1)
@@ -132,7 +141,7 @@ final class DatabaseTests: XCTestCase {
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
-        let contact = Contact(identifier: nil, ephID: token, day: day, associatedKnownCase: nil)
+        let contact = Contact(identifier: nil, ephID: token, day: day, windowCount: 0, associatedKnownCase: nil)
         database.contactsStorage.add(contact: contact)
         var count = try! database.contactsStorage.count()
         XCTAssertEqual(count, 1)
@@ -146,7 +155,7 @@ final class DatabaseTests: XCTestCase {
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
-        let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
         try! database.handshakesStorage.add(handshake: h1)
         var count = try! database.handshakesStorage.count()
         XCTAssertEqual(count, 1)
@@ -160,7 +169,7 @@ final class DatabaseTests: XCTestCase {
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
-        let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
         try! database.handshakesStorage.add(handshake: h1)
         var count = try! database.handshakesStorage.count()
         XCTAssertEqual(count, 1)
@@ -173,9 +182,9 @@ final class DatabaseTests: XCTestCase {
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
         let date = Date()
 
-        let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
         try! database.handshakesStorage.add(handshake: h1)
-        let h2 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let h2 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
         try! database.handshakesStorage.add(handshake: h2)
         let handshakes = try! database.handshakesStorage.getAll()
         XCTAssertEqual(handshakes.count, 2)

@@ -8,6 +8,7 @@
 import XCTest
 
 final class ContactFactoryTests: XCTestCase {
+    /* TODO:
     func testShouldGrouping() {
         let token = Data(base64Encoded: "30+i6bJjzmOWMa0uUPH9LA==")!
         let date = Date()
@@ -52,5 +53,5 @@ final class ContactFactoryTests: XCTestCase {
         ("testShouldNotGroup", testShouldNotGroup),
         ("testShouldFilterOut", testShouldFilterOut),
         ("testShouldNotFilterOut", testShouldNotFilterOut)
-    ]
+    ]*/
 }

@@ -13,6 +13,16 @@ class DP3TCryptoModule {
 
     private let store: SecureStorageProtocol
 
+    #if CALIBRATION
+    weak var debugSecretKeysStorageDelegate: SecretKeysStorageDelegate? {
+        didSet {
+            if let storage = self.store as? SecureStorage {
+                storage.debugSecretKeysStorageDelegate = debugSecretKeysStorageDelegate
+            }
+        }
+    }
+    #endif
+
     /// Initilized the module
     /// - Parameter store: storage to use to persist secretkeys and ephIDs
     init(store: SecureStorageProtocol = SecureStorage()) throws {
@@ -128,9 +138,9 @@ class DP3TCryptoModule {
     }
 
     /// get the timestamp when the current epoch started
-    public static func getCurrentEpochStart() -> Date {
-        let currentDay = DayDate()
-        let counter = DP3TCryptoModule.getEpochCounter(day: currentDay, timestamp: Date())
+    public static func getEpochStart(timestamp: Date = Date()) -> Date {
+        let currentDay = DayDate(date: timestamp)
+        let counter = DP3TCryptoModule.getEpochCounter(day: currentDay, timestamp: timestamp)
         return currentDay.dayMin.addingTimeInterval(Double(counter * Int(CryptoConstants.secondsPerEpoch)))
     }
 

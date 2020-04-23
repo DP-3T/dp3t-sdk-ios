@@ -119,6 +119,7 @@ class DP3TSDK {
             broadcaster.logger = self
             discoverer.logger = self
             database.logger = self
+            crypto.debugSecretKeysStorageDelegate = database.secretKeysStorage
         #endif
 
         NotificationCenter.default.addObserver(self, selector: #selector(backgroundRefreshStatusDidChange), name: UIApplication.backgroundRefreshStatusDidChangeNotification, object: nil)

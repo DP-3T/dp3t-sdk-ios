@@ -11,6 +11,7 @@ struct Contact {
     let identifier: Int?
     let ephID: EphID
     let day: DayDate
+    let windowCount: Int
     let associatedKnownCase: Int?
 }
 
