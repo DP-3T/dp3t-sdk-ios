@@ -32,12 +32,12 @@ class Default {
     }
 
     /// Current infection status
-    var infectionStatus: InfectionStatus {
+    var didMarkAsInfected: Bool {
         get {
-            return InfectionStatus(rawValue: store.integer(forKey: "org.dpppt.InfectionStatus")) ?? .healthy
+            return store.bool(forKey: "org.dpppt.didMarkAsInfected")
         }
         set(newValue) {
-            store.set(newValue.rawValue, forKey: "org.dpppt.InfectionStatus")
+            store.set(newValue, forKey: "org.dpppt.didMarkAsInfected")
         }
     }
 }
