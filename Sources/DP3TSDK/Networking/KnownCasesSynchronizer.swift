@@ -120,10 +120,10 @@ class KnownCasesSynchronizer {
     /** Process all received day data. */
     private func processDayResults(callback: Callback?) {
         // TODO: Handle db errors
-        for (batchTimestamp, knownCases) in knownCases {
-            try? database.update(knownCases: knownCases, batchTimestamp: batchTimestamp)
+        for (_, knownCases) in knownCases {
+            try? database.update(knownCases: knownCases)
             for knownCase in knownCases {
-                try? matcher?.checkNewKnownCase(knownCase, batchTimestamp: batchTimestamp)
+                try? matcher?.checkNewKnownCase(knownCase)
             }
         }
 

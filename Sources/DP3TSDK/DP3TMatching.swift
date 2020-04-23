@@ -18,7 +18,7 @@ protocol DP3TMatcherDelegate: class {
 protocol DP3TMatcherProtocol: class {
     /// check for new known case
     /// - Parameter knownCase: known Case
-    func checkNewKnownCase(_ knownCase: KnownCaseModel, batchTimestamp: Date) throws
+    func checkNewKnownCase(_ knownCase: KnownCaseModel) throws
 }
 
 /// matcher for DP3T tokens
@@ -43,7 +43,7 @@ class DP3TMatcher: DP3TMatcherProtocol {
 
     /// check for new known case
     /// - Parameter knownCase: known Case
-    func checkNewKnownCase(_ knownCase: KnownCaseModel, batchTimestamp: Date) throws {
+    func checkNewKnownCase(_ knownCase: KnownCaseModel) throws {
         let contacts = try crypto.checkContacts(secretKey: knownCase.key,
                                                 onsetDate: DayDate(date: knownCase.onset),
                                                 bucketDate: knownCase.batchTimestamp) { (day) -> ([Contact]) in

@@ -40,10 +40,9 @@ class KnownCasesStorage {
 
     /// update the list of known cases
     /// - Parameter kcs: known cases
-    /// - Parameter batchTimestamp: batchTimestamp
-    func update(knownCases kcs: [KnownCaseModel], batchTimestamp: Date) throws {
+    func update(knownCases kcs: [KnownCaseModel]) throws {
         try database.transaction {
-            try kcs.forEach { try add(knownCase: $0, batchTimestamp: batchTimestamp) }
+            try kcs.forEach { try add(knownCase: $0) }
         }
     }
 
@@ -55,10 +54,9 @@ class KnownCasesStorage {
 
     /// add a known case
     /// - Parameter kc: known case
-    /// - Parameter batchTimestamp: batchTimestamp
-    private func add(knownCase kc: KnownCaseModel, batchTimestamp: Date) throws {
+    private func add(knownCase kc: KnownCaseModel) throws {
         let insert = table.insert(
-            batchTimestampColumn <- batchTimestamp,
+            batchTimestampColumn <- kc.batchTimestamp,
             onsetColumn <- kc.onset,
             keyColumn <- kc.key
         )
