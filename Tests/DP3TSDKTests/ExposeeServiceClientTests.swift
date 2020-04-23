@@ -7,18 +7,22 @@
 @testable import DP3TSDK
 import XCTest
 
+
 final class ExposeeServiceClientTests: XCTestCase {
     func testExposeeEmpty() {
-        let json = "{\"exposed\": []}".data(using: .utf8)
+        let list = ProtoExposedList()
+        let data = try! list.serializedData()
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
-        let session = MockSession(data: json, urlResponse: response, error: nil)
+        let session = MockSession(data: data, urlResponse: response, error: nil)
         let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
 
         let exposeeExpectation = expectation(description: "exposee")
-        synchronizer.getExposee(dayIdentifier: "01.01.1970") { (result) in
-            XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains("http://xy.ch/v1/exposed/01.01.1970"))
+        let batchTimestamp = Date()
+        synchronizer.getExposee(batchTimestamp: batchTimestamp) { (result) in
+            let timestampIdentifier = String(batchTimestamp.millisecondsSince1970)
+            XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains("http://xy.ch/v1/exposed/\(timestampIdentifier)"))
             switch result {
             case let .failure(error):
                 XCTFail(error.localizedDescription)
@@ -35,24 +39,31 @@ final class ExposeeServiceClientTests: XCTestCase {
     }
 
     func testExposeeSingle() {
-        let model = "{ \"key\": \"k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=\",\"onset\": \"2020-04-14\"}"
-        let json = "{\"exposed\": [\(model)]}".data(using: .utf8)
+        let onset = Date().addingTimeInterval(10000)
+        var list = ProtoExposedList()
+        var exposee = ProtoExposee()
+        exposee.key = Data(base64Encoded: "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")!
+        exposee.onset = onset.millisecondsSince1970
+        list.exposed.append(exposee)
+        let data = try! list.serializedData()
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
-        let session = MockSession(data: json, urlResponse: response, error: nil)
+        let session = MockSession(data: data, urlResponse: response, error: nil)
         let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
 
         let exposeeExpectation = expectation(description: "exposee")
-        synchronizer.getExposee(dayIdentifier: "01.01.1970") { (result) in
-            XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains("http://xy.ch/v1/exposed/01.01.1970"))
+        let batchTimestamp = Date()
+        synchronizer.getExposee(batchTimestamp: batchTimestamp) { (result) in
+            let timestampIdentifier = String(batchTimestamp.millisecondsSince1970)
+            XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains("http://xy.ch/v1/exposed/\(timestampIdentifier)"))
             switch result {
             case let .failure(error):
                 XCTFail(error.localizedDescription)
             case let .success(knownCases):
                 XCTAssert(knownCases != nil)
                 XCTAssertEqual(knownCases!.first!.key.base64EncodedString(), "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")
-                XCTAssertEqual(knownCases!.first!.onset, "2020-04-14")
+                XCTAssertEqual(Int(knownCases!.first!.onset.timeIntervalSince1970), Int(onset.timeIntervalSince1970))
             }
             exposeeExpectation.fulfill()
         }
@@ -63,12 +74,18 @@ final class ExposeeServiceClientTests: XCTestCase {
     }
 
     func testWithSameEtagExposeeSingle() {
-        let model = "{ \"key\": \"k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=\",\"onset\": \"2020-04-14\"}"
-        let json = "{\"exposed\": [\(model)]}".data(using: .utf8)
+        let onset = Date().addingTimeInterval(10000)
+        var list = ProtoExposedList()
+        var exposee = ProtoExposee()
+        exposee.key = Data(base64Encoded: "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")!
+        exposee.onset = onset.millisecondsSince1970
+        list.exposed.append(exposee)
+        let data = try! list.serializedData()
+
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
         //URLSession gives the cached reponse
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)!
-        let session = MockSession(data: json, urlResponse: response, error: nil)
+        let session = MockSession(data: data, urlResponse: response, error: nil)
         let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
 
         let cachedResponse = CachedURLResponse(response: response, data: Data())
@@ -77,8 +94,10 @@ final class ExposeeServiceClientTests: XCTestCase {
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session,  urlCache: cache)
 
         let exposeeExpectation = expectation(description: "exposee")
-        synchronizer.getExposee(dayIdentifier: "01.01.1970") { (result) in
-            XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains("http://xy.ch/v1/exposed/01.01.1970"))
+        let batchTimestamp = Date()
+        synchronizer.getExposee(batchTimestamp: batchTimestamp) { (result) in
+            let timestampIdentifier = String(batchTimestamp.millisecondsSince1970)
+            XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains("http://xy.ch/v1/exposed/\(timestampIdentifier)"))
             switch result {
             case let .failure(error):
                 XCTFail(error.localizedDescription)
@@ -94,8 +113,14 @@ final class ExposeeServiceClientTests: XCTestCase {
     }
 
     func testWithDifferentEtagExposeeSingle() {
-        let model = "{ \"key\": \"k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=\",\"onset\": \"2020-04-14\"}"
-        let json = "{\"exposed\": [\(model)]}".data(using: .utf8)
+        let onset = Date().addingTimeInterval(10000)
+        var list = ProtoExposedList()
+        var exposee = ProtoExposee()
+        exposee.key = Data(base64Encoded: "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")!
+        exposee.onset = onset.millisecondsSince1970
+        list.exposed.append(exposee)
+        let data = try! list.serializedData()
+
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
         //URLSession gives the cached reponse
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)!
@@ -104,7 +129,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         //URLSession gives the cached reponse
         let cachedResponse = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: cachedHeaders)!
 
-        let session = MockSession(data: json, urlResponse: response, error: nil)
+        let session = MockSession(data: data, urlResponse: response, error: nil)
         let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
 
         let cachedCacheResponse = CachedURLResponse(response: cachedResponse, data: Data())
@@ -113,15 +138,17 @@ final class ExposeeServiceClientTests: XCTestCase {
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session,  urlCache: cache)
 
         let exposeeExpectation = expectation(description: "exposee")
-        synchronizer.getExposee(dayIdentifier: "01.01.1970") { (result) in
-            XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains("http://xy.ch/v1/exposed/01.01.1970"))
+        let batchTimestamp = Date()
+        synchronizer.getExposee(batchTimestamp: batchTimestamp) { (result) in
+            let timestampIdentifier = String(batchTimestamp.millisecondsSince1970)
+            XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains("http://xy.ch/v1/exposed/\(timestampIdentifier)"))
             switch result {
             case let .failure(error):
                 XCTFail(error.localizedDescription)
             case let .success(knownCases):
                 XCTAssert(knownCases != nil)
                 XCTAssertEqual(knownCases!.first!.key.base64EncodedString(), "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")
-                XCTAssertEqual(knownCases!.first!.onset, "2020-04-14")
+                XCTAssertEqual(Int(knownCases!.first!.onset.timeIntervalSince1970), Int(onset.timeIntervalSince1970))
             }
             exposeeExpectation.fulfill()
         }
@@ -141,7 +168,8 @@ final class ExposeeServiceClientTests: XCTestCase {
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
 
         let exposeeExpectation = expectation(description: "exposee")
-        synchronizer.getExposee(dayIdentifier: "01.01.1970") { (result) in
+        let batchTimestamp = Date()
+        synchronizer.getExposee(batchTimestamp: batchTimestamp) { (result) in
             switch result {
             case let .failure(error):
                 switch error {
@@ -162,11 +190,34 @@ final class ExposeeServiceClientTests: XCTestCase {
         }
     }
 
+    func testSettingAcceptHeaderProtobuf() {
+        let json = "{\"exposed\": []}".data(using: .utf8)
+        let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
+        let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
+        let session = MockSession(data: json, urlResponse: response, error: nil)
+        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", backendBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+        let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
+
+        let exposeeExpectation = expectation(description: "exposee")
+        let batchTimestamp = Date()
+        synchronizer.getExposee(batchTimestamp: batchTimestamp) { (result) in
+            let headers = session.requests.first!.allHTTPHeaderFields!
+            XCTAssertEqual(headers["Accept"]!, "application/protobuf")
+            exposeeExpectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1) { (error) in
+            XCTAssertNotNil(exposeeExpectation)
+        }
+    }
+
     static var allTests = [
         ("testExposeeEmpty", testExposeeEmpty),
         ("testExposeeSingle", testExposeeSingle),
         ("testWithSameEtagExposeeSingle", testWithSameEtagExposeeSingle),
         ("testWithDifferentEtagExposeeSingle", testWithDifferentEtagExposeeSingle),
-        ("testTimeInconsistency", testTimeInconsistency)
+        ("testTimeInconsistency", testTimeInconsistency),
+        ("testSettingAcceptHeaderProtobuf", testSettingAcceptHeaderProtobuf)
     ]
 }
+

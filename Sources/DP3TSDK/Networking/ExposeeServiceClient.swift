@@ -41,12 +41,13 @@ class ExposeeServiceClient {
 
     /// Get all exposee for a known day
     /// - Parameters:
-    ///   - dayIdentifier: The day identifier
+    ///   - batchTimestamp: The batch timestamp
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(dayIdentifier: String, completion: @escaping (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void) {
-        let url = exposeeEndpoint.getExposee(forDay: dayIdentifier)
-        let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
+    func getExposee(batchTimestamp: Date, completion: @escaping (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void) {
+        let url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
+        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
+        request.setValue("application/protobuf", forHTTPHeaderField: "Accept")
 
         var existingEtag: String?
         if  let cache = urlCache.cachedResponse(for: request),
@@ -91,12 +92,13 @@ class ExposeeServiceClient {
                 return
             }
             do {
-                let decoder = JSONDecoder()
-
-                let dayData = try decoder.decode(KnownCasesResponse.self, from: responseData)
-
-                completion(.success(dayData.exposed))
+                let protoList = try ProtoExposedList(serializedData: responseData)
+                let transformed: [KnownCaseModel] = protoList.exposed.map {
+                    KnownCaseModel(proto: $0, batchTimestamp: batchTimestamp)
+                }
+                completion(.success(transformed))
             } catch {
+                print(error.localizedDescription)
                 completion(.failure(.networkingError(error: error)))
             }
         })
