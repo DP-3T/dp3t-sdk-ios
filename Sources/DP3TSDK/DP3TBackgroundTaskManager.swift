@@ -21,6 +21,10 @@ fileprivate class SyncOperation: Operation {
     }
 }
 
+/// Background task registration should only happen once per run
+/// If the SDK gets destroyed and initialized again this would cause a crash
+fileprivate var didRegisterBackgroundTask: Bool = false
+
 @available(iOS 13.0, *)
 class DP3TBackgroundTaskManager {
     static let taskIdentifier: String = "org.dpppt.synctask"
@@ -41,6 +45,8 @@ class DP3TBackgroundTaskManager {
 
     /// Register a background task
     func register() {
+        guard !didRegisterBackgroundTask else { return }
+        didRegisterBackgroundTask = true
         #if CALIBRATION
         logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.register")
         #endif
