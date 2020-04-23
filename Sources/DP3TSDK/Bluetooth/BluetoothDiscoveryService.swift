@@ -9,21 +9,20 @@ import Foundation
 import UIKit.UIApplication
 
 /// struct used for storing peripheral information at runtime
-struct PeripheralMetaData {
-    var rssiValues: [Double] = []
+struct PeripheralMetaData: CustomDebugStringConvertible {
+    var rssiReadings: Int = 0
+    var rssiValues: [Date : Double] = [:] {
+        didSet {
+            rssiReadings += max(rssiValues.count - oldValue.count, 0)
+        }
+    }
     var TXPowerlevel: Double?
     var ephID: EphID?
+    var discovery: Date = Date()
+    var lastConnection: Date?
 
-    /// Calculated median of rssi values
-    var rssi: Double? {
-        guard !rssiValues.isEmpty else { return nil }
-        let sortedValues = rssiValues.sorted()
-        let count = sortedValues.count
-        if sortedValues.count % 2 != 0 {
-            return Double(sortedValues[count / 2])
-        } else {
-            return Double(sortedValues[count / 2] + sortedValues[count / 2 - 1]) / 2.0
-        }
+    var debugDescription: String {
+        "<Peripheral rssiReadings:\(rssiReadings) discovery: \(discovery) lastConnection \(lastConnection.debugDescription)"
     }
 }
 
@@ -199,7 +198,8 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
             try? delegate?.didDiscover(data: data,
                                        TXPowerlevel: txPowerlevel,
-                                       RSSI: Double(truncating: RSSI))
+                                       RSSI: Double(truncating: RSSI),
+                                       timestamp: Date())
 
             #if CALIBRATION
                 logger?.log(type: .receiver, "Found service data \(data.hexEncodedString)")
@@ -213,7 +213,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
             pendingPeripherals[peripheral] = .init()
 
-            pendingPeripherals[peripheral]?.rssiValues.append(Double(truncating: RSSI))
+            pendingPeripherals[peripheral]?.rssiValues[Date()] = Double(truncating: RSSI)
 
             pendingPeripherals[peripheral]?.TXPowerlevel = txPowerlevel
 
@@ -256,21 +256,30 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
     /// Cancel the connection only if we have retreived all data we need
     func cancelPeripheralConnectionIfNeeded(_ peripheral: CBPeripheral){
         guard let metaData = pendingPeripherals[peripheral] else { return }
+        guard let ephID = metaData.ephID else {
+            if metaData.rssiReadings < BluetoothConstants.rssiValueRequirement {
+                peripheral.readRSSI()
+            }
+            return
+        }
+
+        for (timestamp, rssi) in metaData.rssiValues {
+            try? delegate?.didDiscover(data: ephID,
+                                       TXPowerlevel: metaData.TXPowerlevel,
+                                       RSSI: rssi,
+                                       timestamp: timestamp)
+        }
+
+        pendingPeripherals[peripheral]?.rssiValues.removeAll()
 
         /// only cancel connection if we have 5 rsssiValues and received the ephID
-        if let ephID = metaData.ephID, metaData.rssiValues.count >= BluetoothConstants.rssiValueRequirement{
+        if metaData.rssiReadings >= BluetoothConstants.rssiValueRequirement {
             #if CALIBRATION
             logger?.log(type: .receiver, "cancelling connection to: \(peripheral)")
             #endif
-
+            pendingPeripherals[peripheral]?.rssiReadings = 0
+            pendingPeripherals[peripheral]?.ephID = nil
             manager?.cancelPeripheralConnection(peripheral)
-
-            try? delegate?.didDiscover(data: ephID,
-                                       TXPowerlevel: metaData.TXPowerlevel,
-                                       RSSI: metaData.rssi)
-            //remove rssi readings
-            pendingPeripherals[peripheral]?.rssiValues.removeAll()
-
         } else {
             peripheral.readRSSI()
         }
@@ -398,7 +407,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             logger?.log(type: .receiver, " didReadRSSI for \(peripheral) -> rssi: \(RSSI)")
         #endif
 
-        pendingPeripherals[peripheral]?.rssiValues.append(Double(truncating: RSSI))
+        pendingPeripherals[peripheral]?.rssiValues[Date()] = Double(truncating: RSSI)
 
         cancelPeripheralConnectionIfNeeded(peripheral)
     }

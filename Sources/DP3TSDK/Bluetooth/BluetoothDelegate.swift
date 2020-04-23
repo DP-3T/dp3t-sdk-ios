@@ -12,8 +12,9 @@ protocol BluetoothDiscoveryDelegate: class {
     /// - Parameters:
     ///   - data: The data received
     ///   - TXPowerlevel: The TX Power level of both connection devices
-    ///   - RSSI: The RSSI of both connection devices
-    func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double?) throws
+    ///   - RSSI: The RSSI value
+    ///   - timestamp: timestamp when the rssi reading happend
+    func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double, timestamp: Date) throws
 }
 
 /// A delegate that can react to bluetooth permission requests
