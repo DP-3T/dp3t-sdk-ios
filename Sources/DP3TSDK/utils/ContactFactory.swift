@@ -64,7 +64,7 @@ enum ContactFactory {
                 let eventDetector = windowMean / epochMean
 
                 if eventDetector > ContactFactory.eventThreshold,
-                    windowMean < ContactFactory.contactRssiThreshold {
+                    windowMean > ContactFactory.contactRssiThreshold {
                     numberOfMatchingWindows += 1
                 }
             }
