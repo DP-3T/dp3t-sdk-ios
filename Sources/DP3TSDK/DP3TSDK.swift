@@ -91,7 +91,7 @@ class DP3TSDK {
         synchronizer = KnownCasesSynchronizer(appInfo: appInfo, database: database, matcher: matcher)
         applicationSynchronizer = ApplicationSynchronizer(appInfo: appInfo, storage: database.applicationStorage, urlSession: urlSession)
         broadcaster = BluetoothBroadcastService(crypto: crypto)
-        discoverer = BluetoothDiscoveryService(storage: database.peripheralStorage)
+        discoverer = BluetoothDiscoveryService()
         state = TracingState(numberOfHandshakes: (try? database.handshakesStorage.count()) ?? 0,
                              numberOfContacts: (try? database.contactsStorage.count()) ?? 0,
                              trackingState: .stopped,
