@@ -17,7 +17,7 @@ class MatchedContactsStorage {
 
     /// Column definitions
     let idColumn = Expression<Int>("id")
-    let reportDateColumn = Expression<Date>("report_date")
+    let reportDateColumn = Expression<Int64>("report_date")
     let associatedKnownCaseIdColumn = Expression<Int>("known_case_id")
 
     /// Initializer
@@ -49,7 +49,7 @@ class MatchedContactsStorage {
     /// - Parameter matchedContact: the known case that matched to a contact to add
     func add(matchedContact: MatchedContact) throws {
         let insert = table.insert(
-            reportDateColumn <- matchedContact.reportDate,
+            reportDateColumn <- matchedContact.reportDate.millisecondsSince1970,
             associatedKnownCaseIdColumn <- matchedContact.identifier
         )
         try database.run(insert)
@@ -68,7 +68,7 @@ class MatchedContactsStorage {
         var matchedContacts = [MatchedContact]()
         for row in try database.prepare(table) {
             let matchedContact = MatchedContact(identifier: row[associatedKnownCaseIdColumn],
-                                                reportDate: row[reportDateColumn])
+                                                reportDate: Date(milliseconds: row[reportDateColumn]))
             matchedContacts.append(matchedContact)
         }
 
@@ -78,7 +78,7 @@ class MatchedContactsStorage {
     /// Deletes contacts older than CryptoConstants.numberOfDaysToKeepData
     func deleteExpiredMatchedContacts() throws {
         let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepMatchedContacts) * TimeInterval.day)
-        let deleteQuery = table.filter(reportDateColumn < thresholdDate)
+        let deleteQuery = table.filter(reportDateColumn < thresholdDate.millisecondsSince1970)
         try database.run(deleteQuery.delete())
     }
 

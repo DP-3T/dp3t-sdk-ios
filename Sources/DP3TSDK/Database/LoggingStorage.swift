@@ -51,7 +51,7 @@ import SQLite
 
         /// Column definitions
         let idColumn = Expression<Int>("id")
-        let timestampColumn = Expression<Date>("timestamp")
+        let timestampColumn = Expression<Int64>("timestamp")
         let typeColumn = Expression<Int>("type")
         let messageColumn = Expression<String>("message")
 
@@ -76,7 +76,7 @@ import SQLite
         func log(type: LogType, message: String) throws -> LogEntry {
             let timestamp = Date()
             let insert = table.insert(
-                timestampColumn <- timestamp,
+                timestampColumn <- timestamp.millisecondsSince1970,
                 typeColumn <- type.rawValue,
                 messageColumn <- message
             )
@@ -111,7 +111,7 @@ import SQLite
 
             var logs: [LogEntry] = []
             for row in try database.prepare(query) {
-                logs.append(LogEntry(id: row[idColumn], timestamp: row[timestampColumn], type: LogType(rawValue: row[typeColumn]) ?? .none, message: row[messageColumn]))
+                logs.append(LogEntry(id: row[idColumn], timestamp: Date(milliseconds: row[timestampColumn]), type: LogType(rawValue: row[typeColumn]) ?? .none, message: row[messageColumn]))
             }
 
             var nextRequest: LogRequest?
