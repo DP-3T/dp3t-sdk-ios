@@ -48,19 +48,22 @@ class DP3TMatcher: DP3TMatcherProtocol {
         let onset = dateFormatter.date(from: knownCase.onset)!
         let bucketDayDate = dateFormatter.date(from: bucketDay)!
 
-        let contacts = try crypto.checkContacts(secretKey: knownCase.key,
+        let matchingContacts = try crypto.checkContacts(secretKey: knownCase.key,
                                                 onsetDate: DayDate(date: onset),
                                                 bucketDate: DayDate(date: bucketDayDate)) { (day) -> ([Contact]) in
             (try? database.contactsStorage.getContacts(for: day)) ?? []
         }
 
-        if !contacts.isEmpty,
+        if !matchingContacts.isEmpty,
             let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
-            try contacts.forEach { (contact) in
+
+            try matchingContacts.forEach { (contact) in
                 guard let contactId = contact.identifier else { return }
                 try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
             }
 
+            let matchedContact = MatchedContact(identifier: knownCaseId, reportDate: bucketDayDate)
+            try database.matchedContactsStorage.add(matchedContact: matchedContact)
             delegate.didFindMatch()
         }
     }
