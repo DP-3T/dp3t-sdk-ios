@@ -47,7 +47,7 @@ class ExposeeServiceClient {
     func getExposee(batchTimestamp: Date, completion: @escaping (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void) {
         let url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
-        request.setValue("application/protobuf", forHTTPHeaderField: "Accept")
+        request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
 
         var existingEtag: String?
         if  let cache = urlCache.cachedResponse(for: request),

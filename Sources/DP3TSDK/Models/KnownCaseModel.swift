@@ -27,7 +27,7 @@ struct KnownCaseModel: Codable, Equatable {
     init(proto: ProtoExposee, batchTimestamp: Date) {
         self.init(id: nil,
                   key: proto.key,
-                  onset: Date(milliseconds: proto.onset),
+                  onset: Date(milliseconds: proto.keyDate),
                   batchTimestamp: batchTimestamp)
     }
 }

@@ -53,8 +53,12 @@ class KnownCasesSynchronizer {
         let batchesPerDay = Int(TimeInterval.day) / NetworkingConstants.batchLenght
         let batchTimestamps = (0 ..< NetworkingConstants.daysToFetch).reversed().flatMap { days -> [Date] in
             let date = today.dayMin.addingTimeInterval(.day * Double(days) * -1)
-            return (0 ..< batchesPerDay).map { batch in
-                return date.addingTimeInterval(TimeInterval(batch * NetworkingConstants.batchLenght))
+            return (0 ..< batchesPerDay).compactMap { batch in
+                let batchDate = date.addingTimeInterval(TimeInterval(batch * NetworkingConstants.batchLenght))
+                if batchDate.timeIntervalSinceNow > 0 {
+                    return nil
+                }
+                return batchDate
             }
         }
 

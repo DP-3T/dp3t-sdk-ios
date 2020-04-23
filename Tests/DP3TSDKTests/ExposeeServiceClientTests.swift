@@ -202,7 +202,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         let batchTimestamp = Date()
         synchronizer.getExposee(batchTimestamp: batchTimestamp) { (result) in
             let headers = session.requests.first!.allHTTPHeaderFields!
-            XCTAssertEqual(headers["Accept"]!, "application/protobuf")
+            XCTAssertEqual(headers["Accept"]!, "application/x-protobuf")
             exposeeExpectation.fulfill()
         }
 
