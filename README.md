@@ -109,7 +109,7 @@ let url = URL(string: "https://example.com/your/api/")!
 try DP3TTracing.initialize(with: .manual(.init(appId: "com.example.your.app", 
                                                bucketBaseUrl: url,
                                                reportBaseUrl: url,
-                                               jwtPublicKey: data))
+                                               jwtPublicKey: data)))
 ```
 
 ##### 
