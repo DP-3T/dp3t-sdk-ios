@@ -58,6 +58,7 @@ class ApplicationStorage {
         }
         return ApplicationDescriptor(appId: row[appIdColumn],
                                             description: row[descriptionColumn],
+                                            jwtPublicKey: nil,
                                             backendBaseUrl: row[backendBaseUrlColumn],
                                             contact: row[contactColumn])
     }

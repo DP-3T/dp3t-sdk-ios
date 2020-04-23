@@ -6,6 +6,7 @@
 
 import Foundation
 import UIKit
+import SwiftJWT
 
 /// The client for managing and fetching exposee
 class ExposeeServiceClient {
@@ -19,6 +20,8 @@ class ExposeeServiceClient {
     private let urlSession: URLSession
 
     private let urlCache: URLCache
+
+    private let jwtVerifier: JWTVerifier?
 
     /// The user agent to send with the requests
     private var userAgent: String {
@@ -37,6 +40,11 @@ class ExposeeServiceClient {
         self.urlCache = urlCache
         exposeeEndpoint = ExposeeEndpoint(baseURL: descriptor.backendBaseUrl)
         managingExposeeEndpoint = ManagingExposeeEndpoint(baseURL: descriptor.backendBaseUrl)
+        if #available(iOS 11.0, *), let jwtPublicKey = descriptor.jwtPublicKey {
+            jwtVerifier = JWTVerifier.es256(publicKey: jwtPublicKey)
+        } else {
+            jwtVerifier = nil
+        }
     }
 
     /// Get all exposee for a known day
@@ -55,7 +63,10 @@ class ExposeeServiceClient {
             let etag = response.etag {
             existingEtag = etag
         }
-        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { [weak self] data, response, error in
+            guard let self = self else {
+                return
+            }
             // Compare new Etag with old one
             // We only need to process changed lists
             if let httpResponse = response as? HTTPURLResponse,
@@ -78,15 +89,53 @@ class ExposeeServiceClient {
                 completion(.failure(.networkingError(error: nil)))
                 return
             }
-            guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
+            guard let httpResponse = response as? HTTPURLResponse else {
                 completion(.failure(.networkingError(error: nil)))
                 return
             }
+            let statusCode = httpResponse.statusCode
             if statusCode == 404 {
                 // 404 not found response means there is no data for this day
                 completion(.success([]))
                 return
             }
+            
+            // Validate JWT
+            if let verifier = self.jwtVerifier {
+                guard let jwtString = httpResponse.value(for: "Signature") else {
+                    completion(.failure(.jwtSignitureError))
+                    return
+                }
+
+                do {
+                    let jwt = try JWT<ExposeeClaims>(jwtString: jwtString, verifier: verifier)
+                    let validationResult = jwt.validateClaims(leeway: 10)
+                    guard validationResult == .success else {
+                        completion(.failure(.jwtSignitureError))
+                        return
+                    }
+                    // Verify the batch time
+                    let batchReleaseTimeRaw = jwt.claims.batchReleaseTime
+                    let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
+                    guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
+                        completion(.failure(.jwtSignitureError))
+                        return
+                    }
+
+                    // Verify the hash
+                    let claimContentHash = Data(base64Encoded: jwt.claims.contentHash)
+                    let computedContentHash = Crypto.sha256(responseData)
+                    guard claimContentHash == computedContentHash else {
+                        completion(.failure(.jwtSignitureError))
+                        return
+                    }
+
+                } catch {
+                    completion(.failure(.jwtSignitureError))
+                    return
+                }
+            }
+
             guard statusCode == 200 else {
                 completion(.failure(.networkingError(error: nil)))
                 return
@@ -214,5 +263,21 @@ internal extension HTTPURLResponse {
             //https://bugs.swift.org/browse/SR-2429
             return (allHeaderFields as NSDictionary)[key] as? String
         }
+    }
+}
+
+fileprivate struct ExposeeClaims: Claims {
+    let iss: String
+    let iat: Date
+    let exp: Date
+    let contentHash: String
+    let batchReleaseTime: String
+    let hashAlg: String
+
+    enum CodingKeys: String, CodingKey {
+        case contentHash = "content-hash"
+        case batchReleaseTime = "batch-release-time"
+        case hashAlg = "hash-alg"
+        case iss, iat, exp
     }
 }
