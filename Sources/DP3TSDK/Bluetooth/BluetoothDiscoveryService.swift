@@ -46,11 +46,6 @@ class BluetoothDiscoveryService: NSObject {
     /// A list of peripherals pending for retriving info
     private var pendingPeripherals: [CBPeripheral: PeripheralMetaData] = [:] {
         didSet {
-            if pendingPeripherals.isEmpty {
-                endBackgroundTask()
-            } else {
-                beginBackgroundTask()
-            }
             #if CALIBRATION
             logger?.log(type: .receiver, "updatedPeripherals: \n\(pendingPeripherals)")
             #endif
@@ -60,32 +55,6 @@ class BluetoothDiscoveryService: NSObject {
     /// A list of peripherals that are about to be discarded
     private var peripheralsToDiscard: [CBPeripheral]?
 
-    /// Identifier of the background task
-    private var backgroundTask: UIBackgroundTaskIdentifier?
-
-    /// Starts a background task
-    private func beginBackgroundTask() {
-        guard backgroundTask == nil else { return }
-        #if CALIBRATION
-            logger?.log(type: .receiver, "Starting Background Task")
-        #endif
-        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "org.dpppt.bluetooth.backgroundtask") {
-            self.endBackgroundTask()
-            #if CALIBRATION
-                self.logger?.log(type: .receiver, "Background Task ended")
-            #endif
-        }
-    }
-
-    /// Terminates a Backgroundtask if one is running
-    private func endBackgroundTask() {
-        guard let identifier = backgroundTask else { return }
-        #if CALIBRATION
-            logger?.log(type: .receiver, "Terminating background Task id: \(identifier)")
-        #endif
-        UIApplication.shared.endBackgroundTask(identifier)
-        backgroundTask = nil
-    }
 
     /// Update all services
     private func updateServices() {
@@ -130,7 +99,6 @@ class BluetoothDiscoveryService: NSObject {
         manager?.stopScan()
         manager = nil
         pendingPeripherals.removeAll()
-        endBackgroundTask()
     }
 }
 
