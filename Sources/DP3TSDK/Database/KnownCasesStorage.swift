@@ -17,8 +17,8 @@ class KnownCasesStorage {
 
     /// Column definitions
     let idColumn = Expression<Int>("id")
-    let batchTimestampColumn = Expression<Date>("batchTimestamp")
-    let onsetColumn = Expression<Date>("onset")
+    let batchTimestampColumn = Expression<Int64>("batchTimestamp")
+    let onsetColumn = Expression<Int64>("onset")
     let keyColumn = Expression<Data>("key")
 
     /// Initializer
@@ -56,8 +56,8 @@ class KnownCasesStorage {
     /// - Parameter kc: known case
     private func add(knownCase kc: KnownCaseModel) throws {
         let insert = table.insert(
-            batchTimestampColumn <- kc.batchTimestamp,
-            onsetColumn <- kc.onset,
+            batchTimestampColumn <- kc.batchTimestamp.millisecondsSince1970,
+            onsetColumn <- kc.onset.millisecondsSince1970,
             keyColumn <- kc.key
         )
 
@@ -75,8 +75,8 @@ class KnownCasesStorage {
         for row in try database.prepare(table) {
             let model = KnownCaseModel(id: row[idColumn],
                                        key: row[keyColumn],
-                                       onset: row[onsetColumn],
-                                       batchTimestamp: row[batchTimestampColumn])
+                                       onset: Date(milliseconds: row[onsetColumn]),
+                                       batchTimestamp: Date(milliseconds: row[batchTimestampColumn]))
             if !block(model) {
                 break
             }

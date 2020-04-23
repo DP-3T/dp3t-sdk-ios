@@ -17,7 +17,7 @@ class ContactsStorage {
 
     /// Column definitions
     let idColumn = Expression<Int>("id")
-    let dateColumn = Expression<Date>("date")
+    let dateColumn = Expression<Int64>("date")
     let ephIDColumn = Expression<EphID>("ephID")
     let windowCountColumn = Expression<Int>("windowsCount")
     let associatedKnownCaseColumn = Expression<Int?>("associated_known_case")
@@ -53,7 +53,7 @@ class ContactsStorage {
     /// - Parameter contact: the Contact to add
     func add(contact: Contact) {
         let insert = table.insert(
-            dateColumn <- Date(timeIntervalSince1970: contact.day.timestamp),
+            dateColumn <- Date(timeIntervalSince1970: contact.day.timestamp).millisecondsSince1970,
             ephIDColumn <- contact.ephID,
             windowCountColumn <- contact.windowCount,
             associatedKnownCaseColumn <- contact.associatedKnownCase
@@ -65,7 +65,7 @@ class ContactsStorage {
     /// Deletes contacts older than CryptoConstants.numberOfDaysToKeepData
     func deleteOldContacts() throws {
         let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day)
-        let deleteQuery = table.filter(dateColumn < thresholdDate)
+        let deleteQuery = table.filter(dateColumn < thresholdDate.millisecondsSince1970)
         try database.run(deleteQuery.delete())
     }
 
@@ -89,8 +89,8 @@ class ContactsStorage {
         try deleteOldContacts()
 
         // extend dayMin and dayMax by given overlappintTimeInterval
-        let dayMin: Date = day.dayMin.addingTimeInterval(-overlappingTimeInverval)
-        let dayMax: Date = day.dayMax.addingTimeInterval(overlappingTimeInverval)
+        let dayMin = day.dayMin.addingTimeInterval(-overlappingTimeInverval).millisecondsSince1970
+        let dayMax = day.dayMax.addingTimeInterval(overlappingTimeInverval).millisecondsSince1970
 
         let query = table.filter(dayMin...dayMax ~= dateColumn)
 
@@ -99,7 +99,7 @@ class ContactsStorage {
             guard row[associatedKnownCaseColumn] == nil else { continue }
             let model = Contact(identifier: row[idColumn],
                                 ephID: row[ephIDColumn],
-                                day: DayDate(date: row[dateColumn]),
+                                day: DayDate(date: Date(milliseconds: row[dateColumn])),
                                 windowCount: row[windowCountColumn],
                                 associatedKnownCase: row[associatedKnownCaseColumn])
             contacts.append(model)

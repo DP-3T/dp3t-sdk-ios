@@ -17,7 +17,7 @@ class HandshakesStorage {
 
     /// Column definitions
     let idColumn = Expression<Int>("id")
-    let timestampColumn = Expression<Date>("timestamp")
+    let timestampColumn = Expression<Int64>("timestamp")
     let ephIDColumn = Expression<EphID>("ephID")
     let TXPowerlevelColumn = Expression<Double?>("tx_power_level")
     let RSSIColumn = Expression<Double?>("rssi")
@@ -51,7 +51,7 @@ class HandshakesStorage {
     /// - Parameter h: handshake
     func add(handshake h: HandshakeModel) throws {
         let insert = table.insert(
-            timestampColumn <- h.timestamp,
+            timestampColumn <- h.timestamp.millisecondsSince1970,
             ephIDColumn <- h.ephID,
             TXPowerlevelColumn <- h.TXPowerlevel,
             RSSIColumn <- h.RSSI
@@ -62,7 +62,7 @@ class HandshakesStorage {
     /// Deletes handshakes older than CryptoConstants.numberOfDaysToKeepData
     func deleteOldHandshakes() throws {
         let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day)
-        let deleteQuery = table.filter(timestampColumn < thresholdDate)
+        let deleteQuery = table.filter(timestampColumn < thresholdDate.millisecondsSince1970)
         try database.run(deleteQuery.delete())
     }
 
@@ -81,9 +81,9 @@ class HandshakesStorage {
     /// - Returns: the handshakes
     func getAll(olderThan date: Date = Date()) throws -> [HandshakeModel] {
         var handshakes = [HandshakeModel]()
-        for row in try database.prepare(table.filter(timestampColumn < date)) {
+        for row in try database.prepare(table.filter(timestampColumn < date.millisecondsSince1970)) {
             let model = HandshakeModel(identifier: row[idColumn],
-                                       timestamp: row[timestampColumn],
+                                       timestamp: Date(milliseconds: row[timestampColumn]),
                                        ephID: row[ephIDColumn],
                                        TXPowerlevel: row[TXPowerlevelColumn],
                                        RSSI: row[RSSIColumn])
@@ -126,7 +126,7 @@ extension HandshakesStorage {
 
         var handshakes = [HandshakeModel]()
         for row in try database.prepare(query) {
-            let model = HandshakeModel(timestamp: row[timestampColumn],
+            let model = HandshakeModel(timestamp: Date(milliseconds: row[timestampColumn]),
                                        ephID: row[ephIDColumn],
                                        TXPowerlevel: row[TXPowerlevelColumn],
                                        RSSI: row[RSSIColumn])
