@@ -138,9 +138,9 @@ class DP3TCryptoModule {
     }
 
     /// get the timestamp when the current epoch started
-    public static func getCurrentEpochStart() -> Date {
-        let currentDay = DayDate()
-        let counter = DP3TCryptoModule.getEpochCounter(day: currentDay, timestamp: Date())
+    public static func getEpochStart(timestamp: Date = Date()) -> Date {
+        let currentDay = DayDate(date: timestamp)
+        let counter = DP3TCryptoModule.getEpochCounter(day: currentDay, timestamp: timestamp)
         return currentDay.dayMin.addingTimeInterval(Double(counter * Int(CryptoConstants.secondsPerEpoch)))
     }
 

@@ -51,7 +51,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testContactGenerationUnique() {
-        let ts = DP3TCryptoModule.getCurrentEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
+        let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
         let day = DayDate(date: ts)
 
 
@@ -70,7 +70,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testContactGenerationUniqueDifferentEpoch() {
-        let ts = DP3TCryptoModule.getCurrentEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
+        let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
         let day = DayDate(date: ts)
 
 

@@ -103,7 +103,7 @@ class DP3TDatabase {
     /// - Throws: if error happens
     func generateContactsFromHandshakes() throws {
         try handshakesStorage.deleteOldHandshakes()
-        let epochStart = DP3TCryptoModule.getCurrentEpochStart()
+        let epochStart = DP3TCryptoModule.getEpochStart()
         let handshakes = try handshakesStorage.getAll(olderThan: epochStart)
         let contacts = ContactFactory.contacts(from: handshakes)
         contacts.forEach(contactsStorage.add(contact:))
