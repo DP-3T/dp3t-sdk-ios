@@ -18,9 +18,9 @@ class KnownCasesSynchronizer {
     private let database: KnownCasesStorage
 
     // keep track of errors and successes with regard to individual requests (networking or database errors)
-    private var errors = [(String, DP3TTracingError)]()
+    private var errors = [(Date, DP3TTracingError)]()
     // a list of temporary known cases
-    private var knownCases = [String: [KnownCaseModel]]()
+    private var knownCases = [Date: [KnownCaseModel]]()
 
     // keep track of the number of issued and fulfilled requests
     private var numberOfIssuedRequests: Int = 0
@@ -48,16 +48,23 @@ class KnownCasesSynchronizer {
     ///   - service: The service to use for synchronization
     ///   - callback: The callback once the task if finished
     func sync(service: ExposeeServiceClient, callback: Callback?) {
-        // compute day identifiers (formatted dates) for the last 14 days
-        let dayIdentifierFormatter = NetworkingConstants.dayIdentifierFormatter
-        let dayIdentifiers = (0 ..< NetworkingConstants.daysToFetch).reversed().map { days -> String in
-            let date = Calendar.current.date(byAdding: .day, value: -1 * days, to: Date())!
-            return dayIdentifierFormatter.string(from: date)
+        // compute batch time stamps for the last 14 days
+        let today = DayDate()
+        let batchesPerDay = Int(TimeInterval.day) / NetworkingConstants.batchLenght
+        let batchTimestamps = (0 ..< NetworkingConstants.daysToFetch).reversed().flatMap { days -> [Date] in
+            let date = today.dayMin.addingTimeInterval(.day * Double(days) * -1)
+            return (0 ..< batchesPerDay).compactMap { batch in
+                let batchDate = date.addingTimeInterval(TimeInterval(batch * NetworkingConstants.batchLenght))
+                if batchDate.timeIntervalSinceNow > 0 {
+                    return nil
+                }
+                return batchDate
+            }
         }
 
-        for dayIdentifier in dayIdentifiers {
-            service.getExposee(dayIdentifier: dayIdentifier,
-                               completion: dayResultHandler(dayIdentifier, callback: callback))
+        for batchTimestamp in batchTimestamps {
+            service.getExposee(batchTimestamp: batchTimestamp,
+                               completion: dayResultHandler(batchTimestamp, callback: callback))
         }
     }
 
@@ -65,15 +72,15 @@ class KnownCasesSynchronizer {
     /// - Parameters:
     ///   - dayIdentifier: The day identifier
     ///   - callback: The callback once the task is finished
-    private func dayResultHandler(_ dayIdentifier: String, callback: Callback?) -> (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void {
+    private func dayResultHandler(_ batchTimestamp: Date, callback: Callback?) -> (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void {
         numberOfIssuedRequests += 1
         return { result in
             switch result {
             case let .failure(error):
-                self.errors.append((dayIdentifier, error))
+                self.errors.append((batchTimestamp, error))
             case let .success(data):
                 if let data = data {
-                    self.knownCases[dayIdentifier] = data
+                    self.knownCases[batchTimestamp] = data
                 }
             }
             self.numberOfFulfilledRequests += 1
@@ -117,10 +124,10 @@ class KnownCasesSynchronizer {
     /** Process all received day data. */
     private func processDayResults(callback: Callback?) {
         // TODO: Handle db errors
-        for (day, knownCases) in knownCases {
-            try? database.update(knownCases: knownCases, day: day)
+        for (_, knownCases) in knownCases {
+            try? database.update(knownCases: knownCases)
             for knownCase in knownCases {
-                try? matcher?.checkNewKnownCase(knownCase, bucketDay: day)
+                try? matcher?.checkNewKnownCase(knownCase)
             }
         }
 

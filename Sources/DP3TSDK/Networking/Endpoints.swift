@@ -27,9 +27,10 @@ struct ExposeeEndpoint {
     }
 
     /// Get the URL for the exposed people endpoint at a day
-    /// - Parameter forDay: The day to fetch
-    func getExposee(forDay: String) -> URL {
-        baseURLVersionned.appendingPathComponent("exposed").appendingPathComponent(forDay)
+    /// - Parameter batchTimestamp: batchTimestamp
+    func getExposee(batchTimestamp: Date) -> URL {
+        let milliseconds = batchTimestamp.millisecondsSince1970
+        return baseURLVersionned.appendingPathComponent("exposed").appendingPathComponent(String(milliseconds))
     }
 }
 

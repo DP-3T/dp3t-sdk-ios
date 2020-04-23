@@ -18,7 +18,7 @@ protocol DP3TMatcherDelegate: class {
 protocol DP3TMatcherProtocol: class {
     /// check for new known case
     /// - Parameter knownCase: known Case
-    func checkNewKnownCase(_ knownCase: KnownCaseModel, bucketDay: String) throws
+    func checkNewKnownCase(_ knownCase: KnownCaseModel) throws
 }
 
 /// matcher for DP3T tokens
@@ -43,14 +43,10 @@ class DP3TMatcher: DP3TMatcherProtocol {
 
     /// check for new known case
     /// - Parameter knownCase: known Case
-    func checkNewKnownCase(_ knownCase: KnownCaseModel, bucketDay: String) throws {
-        let dateFormatter = NetworkingConstants.dayIdentifierFormatter
-        let onset = dateFormatter.date(from: knownCase.onset)!
-        let bucketDayDate = dateFormatter.date(from: bucketDay)!
-
+    func checkNewKnownCase(_ knownCase: KnownCaseModel) throws {
         let matchingContacts = try crypto.checkContacts(secretKey: knownCase.key,
-                                                onsetDate: DayDate(date: onset),
-                                                bucketDate: DayDate(date: bucketDayDate)) { (day) -> ([Contact]) in
+                                                onsetDate: DayDate(date: knownCase.onset),
+                                                bucketDate: knownCase.batchTimestamp) { (day) -> ([Contact]) in
             (try? database.contactsStorage.getContacts(for: day)) ?? []
         }
 
@@ -62,7 +58,7 @@ class DP3TMatcher: DP3TMatcherProtocol {
                 try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
             }
 
-            let matchedContact = MatchedContact(identifier: knownCaseId, reportDate: bucketDayDate)
+            let matchedContact = MatchedContact(identifier: knownCaseId, reportDate: DayDate(date: knownCase.batchTimestamp).dayMin)
             try database.matchedContactsStorage.add(matchedContact: matchedContact)
             delegate.didFindMatch()
         }

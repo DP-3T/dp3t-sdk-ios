@@ -142,11 +142,11 @@ class DP3TCryptoModule {
     ///   - getContacts: a callback to retreive contacts for a given day
     /// - Throws: throws if a error occurs
     /// - Returns: all contacts that match
-    internal func checkContacts(secretKey: Data, onsetDate: DayDate, bucketDate: DayDate, getContacts: (DayDate) -> ([Contact])) throws -> [Contact] {
+    internal func checkContacts(secretKey: Data, onsetDate: DayDate, bucketDate: Date, getContacts: (DayDate) -> ([Contact])) throws -> [Contact] {
         var dayToTest: DayDate = onsetDate
         var secretKeyForDay: Data = secretKey
         var matchingContacts: [Contact] = []
-        while dayToTest <= bucketDate {
+        while dayToTest.timestamp <= bucketDate.timeIntervalSince1970 {
             let contactsOnDay = getContacts(dayToTest)
             guard !contactsOnDay.isEmpty else {
                 dayToTest = dayToTest.getNext()

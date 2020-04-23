@@ -13,20 +13,21 @@ struct KnownCaseModel: Codable, Equatable {
     /// The private key of the case
     let key: Data
     /// The day the known case was set as exposed
-    let onset: String
+    let onset: Date
+    /// The batch timestamp when the known case was published
+    let batchTimestamp: Date
 
-    enum CodingKeys: String, CodingKey {
-        case id, key, onset
+    init(id: Int?, key: Data, onset: Date, batchTimestamp: Date) {
+        self.id = id
+        self.key = key
+        self.onset = onset
+        self.batchTimestamp = batchTimestamp
     }
-}
 
-// MARK: Codable implementation
-
-extension KnownCaseModel {
-    init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        id = nil
-        key = try values.decode(Data.self, forKey: .key)
-        onset = try values.decode(String.self, forKey: .onset)
+    init(proto: ProtoExposee, batchTimestamp: Date) {
+        self.init(id: nil,
+                  key: proto.key,
+                  onset: Date(milliseconds: proto.keyDate),
+                  batchTimestamp: batchTimestamp)
     }
 }

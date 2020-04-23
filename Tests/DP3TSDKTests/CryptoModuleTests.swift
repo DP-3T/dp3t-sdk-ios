@@ -184,7 +184,7 @@ final class CryptoModuleTest: XCTestCase {
 
         let matchedContacts = try! crypto2.checkContacts(secretKey: key,
                                                   onsetDate: DayDate(),
-                                                  bucketDate: DayDate(date: Date().addingTimeInterval(.day)),
+                                                  bucketDate: Date().addingTimeInterval(.day),
                                                   getContacts: { (_) -> ([Contact]) in
                                                     contacts
         })
@@ -212,7 +212,7 @@ final class CryptoModuleTest: XCTestCase {
 
         let matchedContacts = try! crypto2.checkContacts(secretKey: key,
                                                    onsetDate: DayDate(),
-                                                   bucketDate: DayDate(date: Date().addingTimeInterval(.day)),
+                                                   bucketDate: Date().addingTimeInterval(.day),
                                                    getContacts: { (_) -> ([Contact]) in
                                                      contacts
          })
@@ -229,7 +229,7 @@ final class CryptoModuleTest: XCTestCase {
 
         let matchedContacts = try! crypto.checkContacts(secretKey: key,
                                                   onsetDate: DayDate(date: Date().addingTimeInterval(-1 * .day)),
-                                                  bucketDate: DayDate(),
+                                                  bucketDate: Date(),
                                                   getContacts: { (_) -> ([Contact]) in
                                                     contacts
         })
@@ -327,7 +327,7 @@ final class CryptoModuleTest: XCTestCase {
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(2 * .day)))
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(3 * .day)))
 
-        let (day, key) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(-10 * .day)))!
+        let (day, _) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(-10 * .day)))!
 
         XCTAssertEqual(day, DayDate())
     }

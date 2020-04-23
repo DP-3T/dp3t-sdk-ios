@@ -17,8 +17,8 @@ class KnownCasesStorage {
 
     /// Column definitions
     let idColumn = Expression<Int>("id")
-    let dayColumn = Expression<String>("day")
-    let onsetColumn = Expression<String>("onset")
+    let batchTimestampColumn = Expression<Date>("batchTimestamp")
+    let onsetColumn = Expression<Date>("onset")
     let keyColumn = Expression<Data>("key")
 
     /// Initializer
@@ -32,7 +32,7 @@ class KnownCasesStorage {
     private func createTable() throws {
         try database.run(table.create(ifNotExists: true) { t in
             t.column(idColumn, primaryKey: .autoincrement)
-            t.column(dayColumn)
+            t.column(batchTimestampColumn)
             t.column(onsetColumn)
             t.column(keyColumn)
         })
@@ -40,14 +40,9 @@ class KnownCasesStorage {
 
     /// update the list of known cases
     /// - Parameter kcs: known cases
-    /// - Parameter day: day identifier
-    func update(knownCases kcs: [KnownCaseModel], day: String) throws {
-        // Remove old values
-        let casesToRemove = table.filter(dayColumn == day)
-        try database.run(casesToRemove.delete())
-
+    func update(knownCases kcs: [KnownCaseModel]) throws {
         try database.transaction {
-            try kcs.forEach { try add(knownCase: $0, day: day) }
+            try kcs.forEach { try add(knownCase: $0) }
         }
     }
 
@@ -59,10 +54,9 @@ class KnownCasesStorage {
 
     /// add a known case
     /// - Parameter kc: known case
-    /// - Parameter day: day identifier
-    private func add(knownCase kc: KnownCaseModel, day: String) throws {
+    private func add(knownCase kc: KnownCaseModel) throws {
         let insert = table.insert(
-            dayColumn <- day,
+            batchTimestampColumn <- kc.batchTimestamp,
             onsetColumn <- kc.onset,
             keyColumn <- kc.key
         )
@@ -79,7 +73,10 @@ class KnownCasesStorage {
     /// - Parameter block: execution block should return false to break looping
     func loopThrough(block: (KnownCaseModel) -> Bool) throws {
         for row in try database.prepare(table) {
-            let model = KnownCaseModel(id: row[idColumn], key: row[keyColumn], onset: row[onsetColumn])
+            let model = KnownCaseModel(id: row[idColumn],
+                                       key: row[keyColumn],
+                                       onset: row[onsetColumn],
+                                       batchTimestamp: row[batchTimestampColumn])
             if !block(model) {
                 break
             }

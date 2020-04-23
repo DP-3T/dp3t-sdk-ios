@@ -18,4 +18,6 @@ enum NetworkingConstants {
     static let daysToFetch: Int = 14
     /// allowed client time inconsistency
     static let timeShiftThreshold: TimeInterval = 30 * .second
+    // 2 Hour batches
+    static let batchLenght: Int = Int(TimeInterval.day / 12.0)
 }
