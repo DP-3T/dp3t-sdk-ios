@@ -228,8 +228,8 @@ class DP3TSDK {
                         }
                     }
                     let dateFormatter = NetworkingConstants.dayIdentifierFormatter
-                    if let key = try self.crypto.getSecretKeyForPublishing(onsetDate: onset) {
-                        let model = ExposeeModel(key: key, onset: dateFormatter.string(from: onset), authData: ExposeeAuthData(value: authString))
+                    if let (day, key) = try self.crypto.getSecretKeyForPublishing(onsetDate: onset) {
+                        let model = ExposeeModel(key: key, onset: dateFormatter.string(from: day.dayMin), authData: ExposeeAuthData(value: authString))
                         service.addExposee(model, completion: block)
                     }
                 } catch let error as DP3TTracingError {

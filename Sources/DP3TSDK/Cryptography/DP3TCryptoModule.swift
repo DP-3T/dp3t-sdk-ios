@@ -174,17 +174,17 @@ class DP3TCryptoModule {
     /// - Parameter onsetDate: the day
     /// - Throws: throws if a error happens
     /// - Returns: the secret key
-    internal func getSecretKeyForPublishing(onsetDate: Date) throws -> Data? {
+    internal func getSecretKeyForPublishing(onsetDate: Date) throws -> (DayDate, Data)? {
         let keys = try store.getSecretKeys()
         let day = DayDate(date: onsetDate)
         for key in keys {
             if key.day == day {
-                return key.keyData
+                return (key.day, key.keyData)
             }
         }
         if let last = keys.last,
             day < last.day {
-            return last.keyData
+            return (last.day, last.keyData)
         }
         return nil
     }
