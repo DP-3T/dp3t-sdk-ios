@@ -53,6 +53,8 @@ class DP3TBackgroundTaskManager {
         logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.handleBackgroundTask")
         #endif
 
+        scheduleBackgroundTask()
+
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
 
@@ -66,8 +68,6 @@ class DP3TBackgroundTaskManager {
         lastOperation?.completionBlock = {
             task.setTaskCompleted(success: !(lastOperation?.isCancelled ?? false))
         }
-
-        scheduleBackgroundTask()
     }
 
     private func scheduleBackgroundTask(){
