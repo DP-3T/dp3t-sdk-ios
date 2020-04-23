@@ -16,7 +16,7 @@ enum BluetoothConstants {
     static var characteristicsCBUUID = CBUUID(string: "8c8494e3-bab5-1848-40a0-1b06991c0001")
 
     /// The delay after what we reconnect to a device
-    static var peripheralReconnectDelay: Int = 2 * Int(TimeInterval.minute)
+    static var peripheralReconnectDelay: Int = Int(TimeInterval.minute)
 
     /// If we weren't able to connect to a peripheral since x seconds we dont keep track of it
     /// This is needed because peripheralId's are roatating
