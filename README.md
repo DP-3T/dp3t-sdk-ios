@@ -107,7 +107,9 @@ try DP3TTracing.initialize(with: .discovery("com.example.your.app", enviroment: 
 ```swift
 let url = URL(string: "https://example.com/your/api/")!
 try DP3TTracing.initialize(with: .manual(.init(appId: "com.example.your.app", 
-                                               backendBaseUrl: url))
+                                               bucketBaseUrl: url,
+                                               reportBaseUrl: url,
+                                               jwtPublicKey: data)))
 ```
 
 ##### 
