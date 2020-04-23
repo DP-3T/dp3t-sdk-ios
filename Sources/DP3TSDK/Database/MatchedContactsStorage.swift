@@ -34,8 +34,9 @@ class MatchedContactsStorage {
         try database.run(table.create(ifNotExists: true) { t in
             t.column(idColumn, primaryKey: .autoincrement)
             t.column(reportDateColumn)
-            //TODO: PP-139: setnull? does it matter?
-            t.foreignKey(associatedKnownCaseIdColumn, references: knownCasesStorage.table, knownCasesStorage.idColumn, delete: .setNull)
+            t.column(associatedKnownCaseIdColumn)
+            t.foreignKey(associatedKnownCaseIdColumn, references: knownCasesStorage.table, knownCasesStorage.idColumn, delete: .noAction)
+            t.unique([idColumn])
         })
     }
 
