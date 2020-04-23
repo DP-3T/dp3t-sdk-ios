@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import UIKit.UIApplication
 
 /// The infection status of the user
 public enum InfectionStatus {
@@ -57,4 +58,6 @@ public struct TracingState {
     public var lastSync: Date?
     /// The infection status of the user
     public var infectionStatus: InfectionStatus
+    /// Indicates if the user has enabled backgorundRefresh
+    public var backgroundRefreshState: UIBackgroundRefreshStatus
 }

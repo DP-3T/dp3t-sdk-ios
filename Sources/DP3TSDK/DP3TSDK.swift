@@ -40,6 +40,10 @@ class DP3TSDK {
     /// the urlSession to use for networking
     private let urlSession: URLSession
 
+    /// The background task manager. This is marked as Any? because it is only available as of iOS 13 and properties cannot be
+    /// marked with @available without causing the whole class to be restricted also.
+    private let backgroundTaskManager: Any?
+
     /// delegate
     public weak var delegate: DP3TTracingDelegate?
 
@@ -92,7 +96,19 @@ class DP3TSDK {
                              numberOfContacts: (try? database.contactsStorage.count()) ?? 0,
                              trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
-                             infectionStatus: InfectionStatus.getInfectionState(with: database))
+                             infectionStatus: InfectionStatus.getInfectionState(with: database),
+                             backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
+
+        if #available(iOS 13.0, *) {
+            let backgroundTaskManager = DP3TBackgroundTaskManager()
+            self.backgroundTaskManager = backgroundTaskManager
+            #if CALIBRATION
+            backgroundTaskManager.logger = self
+            #endif
+            backgroundTaskManager.register()
+        } else {
+            backgroundTaskManager = nil
+        }
 
         broadcaster.permissionDelegate = self
         discoverer.permissionDelegate = self
@@ -104,6 +120,8 @@ class DP3TSDK {
             discoverer.logger = self
             database.logger = self
         #endif
+
+        NotificationCenter.default.addObserver(self, selector: #selector(backgroundRefreshStatusDidChange), name: UIApplication.backgroundRefreshStatusDidChangeNotification, object: nil)
     }
 
     /// start tracing
@@ -280,6 +298,10 @@ class DP3TSDK {
             return try database.loggingStorage.getLogs(request)
         }
     #endif
+
+    @objc func backgroundRefreshStatusDidChange() {
+        state.backgroundRefreshState = UIApplication.shared.backgroundRefreshStatus
+    }
 }
 
 // MARK: DP3TMatcherDelegate implementation
@@ -320,7 +342,9 @@ extension DP3TSDK: BluetoothPermissionDelegate {
         func log(type: LogType, _ string: String) {
             os_log("%@: %@", type.description, string)
             if let entry = try? database.loggingStorage.log(type: type, message: string) {
-                delegate?.didAddLog(entry)
+                DispatchQueue.main.async {
+                    self.delegate?.didAddLog(entry)
+                }
             }
         }
     }

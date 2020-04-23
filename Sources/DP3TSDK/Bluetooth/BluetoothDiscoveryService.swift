@@ -93,7 +93,7 @@ class BluetoothDiscoveryService: NSObject {
     private func endBackgroundTask() {
         guard let identifier = backgroundTask else { return }
         #if CALIBRATION
-            logger?.log(type: .receiver, "Terminating background Task")
+            logger?.log(type: .receiver, "Terminating background Task id: \(identifier)")
         #endif
         UIApplication.shared.endBackgroundTask(identifier)
         backgroundTask = nil

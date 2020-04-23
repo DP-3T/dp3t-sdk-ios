@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import UIKit.UIApplication
 
 /// A delegate for the DP3T tracing
 public protocol DP3TTracingDelegate: AnyObject {
