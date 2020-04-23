@@ -7,7 +7,7 @@ let package = Package(
     name: "DP3TSDK",
     platforms: [
         // Add support for all platforms starting from a specific version.
-        .iOS(.v10),
+        .iOS(.v13),
     ],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
@@ -30,11 +30,11 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "DP3TSDK",
-            dependencies: ["SQLite", "SwiftProtobuf"]
+            dependencies: ["SQLite", "SwiftProtobuf", "SwiftJWT"]
         ),
         .target(
             name: "DP3TSDK_CALIBRATION",
-            dependencies: ["SQLite", "SwiftProtobuf"],
+            dependencies: ["SQLite", "SwiftProtobuf", "SwiftJWT"],
             swiftSettings: [.define("CALIBRATION")]
         ),
         .testTarget(

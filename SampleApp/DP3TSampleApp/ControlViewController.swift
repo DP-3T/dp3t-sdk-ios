@@ -459,6 +459,8 @@ extension DP3TTracingError {
             return "networkingError"
         case let .timeInconsistency(shift: shift):
             return "timeInconsistency by \(shift)"
+       case .jwtSignitureError:
+            return "JWT verification failed"
         }
     }
 }

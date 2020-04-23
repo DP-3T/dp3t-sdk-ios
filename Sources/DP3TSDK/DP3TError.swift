@@ -11,6 +11,9 @@ public enum DP3TTracingError: Error {
     /// Networking Error
     case networkingError(error: Error?)
 
+    /// JWT Signiture Error
+    case jwtSignitureError
+
     /// Error happend during known case synchronization
     case caseSynchronizationError(errors: [Error])
 
