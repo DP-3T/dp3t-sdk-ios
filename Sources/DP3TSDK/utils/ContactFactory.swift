@@ -18,10 +18,8 @@ enum ContactFactory {
     static let windowDuration: TimeInterval = .minute
 
     /// Helper function to create contacts from handshakes
-    /// - Parameters:
-    ///   - contactThreshold: how many handshakes to have to be recognized as contact
     /// - Returns: list of contacts
-    static func contacts(from handshakes: [HandshakeModel], contactThreshold: Int = CryptoConstants.contactsThreshold) -> [Contact] {
+    static func contacts(from handshakes: [HandshakeModel]) -> [Contact] {
         var groupedHandshakes = [EphID: [HandshakeModel]]()
 
         // group handhakes by id
@@ -34,7 +32,6 @@ enum ContactFactory {
         }
 
         let contacts: [Contact] = groupedHandshakes.compactMap { element -> Contact? in
-            //filter result to only contain ephIDs which have been seen more than contactThreshold times
             let ephID = element.key
             let handshakes = element.value
 
@@ -54,7 +51,7 @@ enum ContactFactory {
             var numberOfMatchingWindows = 0
 
             for windowIndex in (0 ..< windowLenght) {
-                let start = epochStart.addingTimeInterval(Double(windowIndex) * .second)
+                let start = epochStart.addingTimeInterval(Double(windowIndex) * ContactFactory.windowDuration)
                 let end = start.addingTimeInterval(.minute)
                 let values = rssiValues.filter { (timestamp, rssi) -> Bool in
                     return timestamp > start && timestamp <= end

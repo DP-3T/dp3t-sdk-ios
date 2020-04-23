@@ -8,14 +8,13 @@
 import XCTest
 
 final class ContactFactoryTests: XCTestCase {
-    /* TODO:
     func testShouldGrouping() {
         let token = Data(base64Encoded: "30+i6bJjzmOWMa0uUPH9LA==")!
-        let date = Date()
-        let handshake1 = HandshakeModel(identifier: 0, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: nil)
-        let handshake2 = HandshakeModel(identifier: 1, timestamp: date.addingTimeInterval(1), ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let date = DP3TCryptoModule.getEpochStart().addingTimeInterval(.minute * 30)
+        let handshake1 = HandshakeModel(identifier: 0, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
+        let handshake2 = HandshakeModel(identifier: 1, timestamp: date.addingTimeInterval(1), ephID: token, TXPowerlevel: nil, RSSI: -30)
         let handshakes = [handshake1, handshake2]
-        let contacts = ContactFactory.contacts(from: handshakes, contactThreshold: 0)
+        let contacts = ContactFactory.contacts(from: handshakes)
         XCTAssertEqual(contacts.count, 1)
         XCTAssertEqual(contacts.first?.day , DayDate(date: date))
         XCTAssertEqual(contacts.first?.ephID, token)
@@ -24,27 +23,41 @@ final class ContactFactoryTests: XCTestCase {
     func testShouldNotGroup(){
         let token1 = Data(base64Encoded: "30+i6bJjzmOWMa0uUPH9LA==")!
         let token2 = Data(base64Encoded: "/B9V3P3dk6g73AuO2iEgzQ==")!
-        let handshake1 = HandshakeModel(identifier: 0, timestamp: Date(), ephID: token1, TXPowerlevel: nil, RSSI: nil)
-        let handshake2 = HandshakeModel(identifier: 1, timestamp: Date().addingTimeInterval(1), ephID: token2, TXPowerlevel: nil, RSSI: nil)
+        let date = DP3TCryptoModule.getEpochStart()
+
+        let handshake1 = HandshakeModel(identifier: 0,
+                                        timestamp: date.addingTimeInterval(1),
+                                        ephID: token1,
+                                        TXPowerlevel: nil,
+                                        RSSI: -30)
+
+        let handshake2 = HandshakeModel(identifier: 1,
+                                        timestamp: date.addingTimeInterval(.minute * 3),
+                                        ephID: token2,
+                                        TXPowerlevel: nil,
+                                        RSSI: -30)
+
         let handshakes = [handshake1, handshake2]
-        let contacts = ContactFactory.contacts(from: handshakes, contactThreshold: 0)
+        let contacts = ContactFactory.contacts(from: handshakes)
         XCTAssertEqual(contacts.count, 2)
     }
 
     func testShouldFilterOut(){
         let token = Data(base64Encoded: "30+i6bJjzmOWMa0uUPH9LA==")!
-        let handshake1 = HandshakeModel(identifier: 0, timestamp: Date(), ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let date = DP3TCryptoModule.getEpochStart().addingTimeInterval(.minute * 30)
+        let handshake1 = HandshakeModel(identifier: 0, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
         let handshakes = [handshake1]
-        let contacts = ContactFactory.contacts(from: handshakes, contactThreshold: 1)
+        let contacts = ContactFactory.contacts(from: handshakes)
         XCTAssertTrue(contacts.isEmpty)
     }
 
     func testShouldNotFilterOut(){
         let token = Data(base64Encoded: "30+i6bJjzmOWMa0uUPH9LA==")!
-        let handshake1 = HandshakeModel(identifier: 0, timestamp: Date(), ephID: token, TXPowerlevel: nil, RSSI: nil)
-        let handshake2 = HandshakeModel(identifier: 1, timestamp: Date().addingTimeInterval(1), ephID: token, TXPowerlevel: nil, RSSI: nil)
+        let date = DP3TCryptoModule.getEpochStart().addingTimeInterval(.minute * 30)
+        let handshake1 = HandshakeModel(identifier: 0, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
+        let handshake2 = HandshakeModel(identifier: 1, timestamp: date.addingTimeInterval(1), ephID: token, TXPowerlevel: nil, RSSI: -30)
         let handshakes = [handshake1, handshake2]
-        let contacts = ContactFactory.contacts(from: handshakes, contactThreshold: 0)
+        let contacts = ContactFactory.contacts(from: handshakes)
         XCTAssertEqual(contacts.count, 1)
     }
 
@@ -53,5 +66,5 @@ final class ContactFactoryTests: XCTestCase {
         ("testShouldNotGroup", testShouldNotGroup),
         ("testShouldFilterOut", testShouldFilterOut),
         ("testShouldNotFilterOut", testShouldNotFilterOut)
-    ]*/
+    ]
 }
