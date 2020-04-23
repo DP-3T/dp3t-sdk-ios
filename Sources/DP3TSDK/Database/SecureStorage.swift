@@ -23,6 +23,16 @@ protocol SecureStorageProtocol {
 /// used for storing SecretKeys and EphIDs in the Keychain
 class SecureStorage: SecureStorageProtocol {
 
+    #if CALIBRATION
+        weak var debugSecretKeysStorageDelegate: SecretKeysStorageDelegate? {
+            didSet {
+                if let secretKeys = try? self.getSecretKeys() {
+                    try? debugSecretKeysStorageDelegate?.update(secretKeys: secretKeys)
+                }
+            }
+        }
+    #endif
+
     private let keychain: Keychain
 
     private let secretKeyKey: Keychain.Key<[SecretKey]> = .init(key: "org.dpppt.keylist")
@@ -100,6 +110,9 @@ class SecureStorage: SecureStorageProtocol {
         let result = keychain.set(object, for: secretKeyKey)
         switch result {
         case .success(_):
+            #if CALIBRATION
+                try debugSecretKeysStorageDelegate?.update(secretKeys: object)
+            #endif
             return
         case let .failure(error):
             throw error
