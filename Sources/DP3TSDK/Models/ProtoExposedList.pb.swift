@@ -24,6 +24,8 @@ struct ProtoExposedList {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  var batchReleaseTime: Int64 = 0
+
   var exposed: [ProtoExposee] = []
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -38,7 +40,7 @@ struct ProtoExposee {
 
   var key: Data = SwiftProtobuf.Internal.emptyData
 
-  var onset: Int64 = 0
+  var keyDate: Int64 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -50,26 +52,32 @@ struct ProtoExposee {
 extension ProtoExposedList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "ProtoExposedList"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "exposed"),
+    1: .same(proto: "batchReleaseTime"),
+    2: .same(proto: "exposed"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       switch fieldNumber {
-      case 1: try decoder.decodeRepeatedMessageField(value: &self.exposed)
+      case 1: try decoder.decodeSingularInt64Field(value: &self.batchReleaseTime)
+      case 2: try decoder.decodeRepeatedMessageField(value: &self.exposed)
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.batchReleaseTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.batchReleaseTime, fieldNumber: 1)
+    }
     if !self.exposed.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.exposed, fieldNumber: 1)
+      try visitor.visitRepeatedMessageField(value: self.exposed, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ProtoExposedList, rhs: ProtoExposedList) -> Bool {
+    if lhs.batchReleaseTime != rhs.batchReleaseTime {return false}
     if lhs.exposed != rhs.exposed {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -80,14 +88,14 @@ extension ProtoExposee: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   static let protoMessageName: String = "ProtoExposee"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     2: .same(proto: "key"),
-    3: .same(proto: "onset"),
+    3: .same(proto: "keyDate"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       switch fieldNumber {
       case 2: try decoder.decodeSingularBytesField(value: &self.key)
-      case 3: try decoder.decodeSingularInt64Field(value: &self.onset)
+      case 3: try decoder.decodeSingularInt64Field(value: &self.keyDate)
       default: break
       }
     }
@@ -97,15 +105,15 @@ extension ProtoExposee: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if !self.key.isEmpty {
       try visitor.visitSingularBytesField(value: self.key, fieldNumber: 2)
     }
-    if self.onset != 0 {
-      try visitor.visitSingularInt64Field(value: self.onset, fieldNumber: 3)
+    if self.keyDate != 0 {
+      try visitor.visitSingularInt64Field(value: self.keyDate, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ProtoExposee, rhs: ProtoExposee) -> Bool {
     if lhs.key != rhs.key {return false}
-    if lhs.onset != rhs.onset {return false}
+    if lhs.keyDate != rhs.keyDate {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
