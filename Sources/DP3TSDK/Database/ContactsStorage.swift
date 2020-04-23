@@ -86,8 +86,6 @@ class ContactsStorage {
     /// - Throws: if a database error happens
     /// - Returns: list of contacts
     func getContacts(for day: DayDate, overlappingTimeInverval: TimeInterval = 0, contactThreshold: Int = 1) throws -> [Contact] {
-        try deleteOldContacts()
-
         // extend dayMin and dayMax by given overlappintTimeInterval
         let dayMin = day.dayMin.addingTimeInterval(-overlappingTimeInverval).millisecondsSince1970
         let dayMax = day.dayMax.addingTimeInterval(overlappingTimeInverval).millisecondsSince1970
