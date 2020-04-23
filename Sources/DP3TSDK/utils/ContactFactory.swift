@@ -51,19 +51,6 @@ enum ContactFactory {
             let epochStart = DP3TCryptoModule.getEpochStart(timestamp: firstValue.0)
             let windowLenght = Int(CryptoConstants.secondsPerEpoch / ContactFactory.windowDuration)
 
-            let windowMeans: [Double] = (0 ..< windowLenght).compactMap { (index) -> Double? in
-                let start = epochStart.addingTimeInterval(TimeInterval(index) * .second)
-                let end = start.addingTimeInterval(.minute)
-                let values = rssiValues.filter { (timestamp, rssi) -> Bool in
-                    return timestamp > start && timestamp <= end
-                }.map{ $0.1 }
-                if values.isEmpty {
-                    return nil
-                } else {
-                    return values.reduce(0.0, +) / Double(values.count)
-                }
-            }
-
             var numberOfMatchingWindows = 0
 
             for windowIndex in (0 ..< windowLenght) {
