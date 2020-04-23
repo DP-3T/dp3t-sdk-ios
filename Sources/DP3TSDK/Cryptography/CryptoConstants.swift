@@ -21,4 +21,5 @@ enum CryptoConstants {
     static let broadcastKey: Data = "broadcast key".data(using: .utf8)!
     static let timeZone: TimeZone = TimeZone(identifier: "UTC")!
     static let contactsThreshold: Int = 1
+    static let numberOfDaysToKeepMatchedContacts = 10
 }

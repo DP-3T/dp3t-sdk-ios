@@ -61,7 +61,12 @@ class DP3TSDK {
     /// keeps track of  SDK state
     private var state: TracingState {
         didSet {
-            Default.shared.infectionStatus = state.infectionStatus
+            switch state.infectionStatus {
+            case .infected:
+                Default.shared.didMarkAsInfected = true
+            default:
+                Default.shared.didMarkAsInfected = false
+            }
             Default.shared.lastSync = state.lastSync
             DispatchQueue.main.async {
                 self.delegate?.DP3TTracingStateChanged(self.state)
@@ -87,7 +92,7 @@ class DP3TSDK {
                              numberOfContacts: (try? database.contactsStorage.count()) ?? 0,
                              trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
-                             infectionStatus: Default.shared.infectionStatus)
+                             infectionStatus: InfectionStatus.getInfectionState(with: database))
 
         broadcaster.permissionDelegate = self
         discoverer.permissionDelegate = self
@@ -227,15 +232,15 @@ class DP3TSDK {
                             callback(result)
                         }
                     }
-
-                    if let key = try self.crypto.getSecretKeyForPublishing(onsetDate: onset) {
+                    
+                    if let (day, key) = try self.crypto.getSecretKeyForPublishing(onsetDate: onset) {
                         let authData: String?
                         if case let ExposeeAuthMethod.JSONPayload(token: token) = authentication {
                             authData = token
                         } else {
                             authData = nil
                         }
-                        let model = ExposeeModel(key: key, onset: onset, authData: authData)
+                        let model = ExposeeModel(key: key, onset: day, authData: authData)
                         service.addExposee(model, authentication: authentication, completion: block)
                     }
                 } catch let error as DP3TTracingError {
@@ -255,7 +260,7 @@ class DP3TSDK {
     func reset() throws {
         stopTracing()
         Default.shared.lastSync = nil
-        Default.shared.infectionStatus = .healthy
+        Default.shared.didMarkAsInfected = false
         try database.emptyStorage()
         try database.destroyDatabase()
         crypto.reset()
@@ -281,7 +286,7 @@ class DP3TSDK {
 
 extension DP3TSDK: DP3TMatcherDelegate {
     func didFindMatch() {
-        state.infectionStatus = .exposed
+        state.infectionStatus = InfectionStatus.getInfectionState(with: database)
     }
 
     func handShakeAdded(_ handshake: HandshakeModel) {
