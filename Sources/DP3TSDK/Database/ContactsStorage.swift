@@ -19,6 +19,7 @@ class ContactsStorage {
     let idColumn = Expression<Int>("id")
     let dateColumn = Expression<Date>("date")
     let ephIDColumn = Expression<EphID>("ephID")
+    let windowCountColumn = Expression<Int>("windowsCount")
     let associatedKnownCaseColumn = Expression<Int?>("associated_known_case")
 
     /// Initializer
@@ -37,6 +38,7 @@ class ContactsStorage {
             t.column(dateColumn)
             t.column(ephIDColumn)
             t.column(associatedKnownCaseColumn)
+            t.column(windowCountColumn)
             t.foreignKey(associatedKnownCaseColumn, references: knownCasesStorage.table, knownCasesStorage.idColumn, delete: .setNull)
             t.unique(dateColumn,ephIDColumn)
         })
@@ -53,6 +55,7 @@ class ContactsStorage {
         let insert = table.insert(
             dateColumn <- Date(timeIntervalSince1970: contact.day.timestamp),
             ephIDColumn <- contact.ephID,
+            windowCountColumn <- contact.windowCount,
             associatedKnownCaseColumn <- contact.associatedKnownCase
         )
         // can fail if contact already exists
@@ -97,6 +100,7 @@ class ContactsStorage {
             let model = Contact(identifier: row[idColumn],
                                 ephID: row[ephIDColumn],
                                 day: DayDate(date: row[dateColumn]),
+                                windowCount: row[windowCountColumn],
                                 associatedKnownCase: row[associatedKnownCaseColumn])
             contacts.append(model)
         }

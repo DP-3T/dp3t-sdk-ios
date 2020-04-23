@@ -50,8 +50,9 @@ class DP3TMatcher: DP3TMatcherProtocol {
             (try? database.contactsStorage.getContacts(for: day)) ?? []
         }
 
-        if !matchingContacts.isEmpty,
-            let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
+        let totalWindowCount = matchingContacts.map{ $0.windowCount }.reduce(0,+)
+        if totalWindowCount > ContactFactory.numberOfWindowsForExposure,
+           let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
 
             try matchingContacts.forEach { (contact) in
                 guard let contactId = contact.identifier else { return }
@@ -68,9 +69,9 @@ class DP3TMatcher: DP3TMatcherProtocol {
 // MARK: BluetoothDiscoveryDelegate implementation
 
 extension DP3TMatcher: BluetoothDiscoveryDelegate {
-    func didDiscover(data: EphID, TXPowerlevel: Double?, RSSI: Double?) throws {
+    func didDiscover(data: EphID, TXPowerlevel: Double?, RSSI: Double, timestamp: Date) throws {
         // Do no realtime matching
-        let handshake = HandshakeModel(timestamp: Date(),
+        let handshake = HandshakeModel(timestamp: timestamp,
                                        ephID: data,
                                        TXPowerlevel: TXPowerlevel,
                                        RSSI: RSSI)
