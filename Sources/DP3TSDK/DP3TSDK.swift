@@ -40,6 +40,8 @@ class DP3TSDK {
     /// the urlSession to use for networking
     private let urlSession: URLSession
 
+    /// The background task manager. This is marked as Any? because it is only available as of iOS 13 and properties cannot be
+    /// marked with @available without causing the whole class to be restricted also.
     private let backgroundTaskManager: Any?
 
     /// delegate

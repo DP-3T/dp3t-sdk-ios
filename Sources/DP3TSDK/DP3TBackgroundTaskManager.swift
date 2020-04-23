@@ -39,6 +39,7 @@ class DP3TBackgroundTaskManager {
                                                object: nil)
     }
 
+    /// Register a background task
     func register() {
         #if CALIBRATION
         logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.register")
