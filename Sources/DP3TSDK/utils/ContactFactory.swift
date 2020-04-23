@@ -13,7 +13,10 @@ enum ContactFactory {
     //TODO: set correct value
     static let eventThreshold: Double = 0.8
 
-    
+    static let numberOfWindowsForExposure: Int = 10
+
+    static let windowDuration: TimeInterval = .minute
+
     /// Helper function to create contacts from handshakes
     /// - Parameters:
     ///   - contactThreshold: how many handshakes to have to be recognized as contact
@@ -46,7 +49,7 @@ enum ContactFactory {
             let epochMean = rssiValues.map{ $0.1 }.reduce(0.0, +) / Double(rssiValues.count)
 
             let epochStart = DP3TCryptoModule.getEpochStart(timestamp: firstValue.0)
-            let windowLenght = Int(CryptoConstants.secondsPerEpoch / TimeInterval.minute)
+            let windowLenght = Int(CryptoConstants.secondsPerEpoch / ContactFactory.windowDuration)
 
             let windowMeans: [Double] = (0 ..< windowLenght).compactMap { (index) -> Double? in
                 let start = epochStart.addingTimeInterval(TimeInterval(index) * .second)

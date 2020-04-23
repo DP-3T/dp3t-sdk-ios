@@ -51,6 +51,8 @@ class DP3TMatcher: DP3TMatcherProtocol {
         }
 
         if !matchingContacts.isEmpty,
+            let totalWindowCount = matchingContacts.map{ $0.windowCount }.reduce(0,+),
+            totalWindowCount > ContactFactory.numberOfWindowsForExposure
             let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
 
             try matchingContacts.forEach { (contact) in
