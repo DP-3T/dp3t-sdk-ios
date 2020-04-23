@@ -168,8 +168,8 @@ class DP3TSDK {
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
-        setExposed(onset: onset, authString: authString, callback: callback)
+    func iWasExposed(onset: Date, authentication: ExposeeAuthMethod, callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+        setExposed(onset: onset, authentication: authentication, callback: callback)
     }
 
     /// used to construct a new tracing service client
@@ -212,7 +212,7 @@ class DP3TSDK {
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    private func setExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+    private func setExposed(onset: Date, authentication: ExposeeAuthMethod, callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         getATracingServiceClient(forceRefresh: false) { [weak self] result in
             guard let self = self else {
                 return
@@ -232,10 +232,16 @@ class DP3TSDK {
                             callback(result)
                         }
                     }
-                    let dateFormatter = NetworkingConstants.dayIdentifierFormatter
+                    
                     if let (day, key) = try self.crypto.getSecretKeyForPublishing(onsetDate: onset) {
-                        let model = ExposeeModel(key: key, onset: dateFormatter.string(from: day.dayMin), authData: ExposeeAuthData(value: authString))
-                        service.addExposee(model, completion: block)
+                        let authData: String?
+                        if case let ExposeeAuthMethod.JSONPayload(token: token) = authentication {
+                            authData = token
+                        } else {
+                            authData = nil
+                        }
+                        let model = ExposeeModel(key: key, onset: day, authData: authData)
+                        service.addExposee(model, authentication: authentication, completion: block)
                     }
                 } catch let error as DP3TTracingError {
                     DispatchQueue.main.async {

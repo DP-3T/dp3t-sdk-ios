@@ -256,7 +256,7 @@ class ControlViewController: UIViewController {
     }
 
     @objc func setExposed() {
-        DP3TTracing.iWasExposed(onset: Date(), authString: "123456") { _ in
+        DP3TTracing.iWasExposed(onset: Date(), authentication: .none) { _ in
             DP3TTracing.status { result in
                 switch result {
                 case let .success(state):
