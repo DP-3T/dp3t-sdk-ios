@@ -94,11 +94,11 @@ class DP3TSDK {
 
         if #available(iOS 13.0, *) {
             let backgroundTaskManager = DP3TBackgroundTaskManager()
-            backgroundTaskManager.register()
             self.backgroundTaskManager = backgroundTaskManager
             #if CALIBRATION
                 backgroundTaskManager.logger = self
             #endif
+            backgroundTaskManager.register()
         } else {
             backgroundTaskManager = nil
         }
