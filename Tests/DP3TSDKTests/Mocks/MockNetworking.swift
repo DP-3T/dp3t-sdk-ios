@@ -20,9 +20,7 @@ class MockTask: URLSessionDataTask {
   }
 
   override func resume() {
-    DispatchQueue.main.async {
-        self.completionHandler?(self.data_, self.urlResponse_, self.error_)
-    }
+    self.completionHandler?(self.data_, self.urlResponse_, self.error_)
   }
 }
 
