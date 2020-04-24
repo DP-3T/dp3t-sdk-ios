@@ -31,6 +31,17 @@ class Default {
         }
     }
 
+    /// Last batch release time which was loaded
+    /// If nil .now should be used since it is not neccessary to load all past batches
+    var lastLoadedBatchReleaseTime: Date? {
+        get {
+            return store.object(forKey: "org.dpppt.lastLoadedBatchReleaseTime") as? Date
+        }
+        set(newValue) {
+            store.set(newValue, forKey: "org.dpppt.lastLoadedBatchReleaseTime")
+        }
+    }
+
     /// Current infection status
     var didMarkAsInfected: Bool {
         get {
