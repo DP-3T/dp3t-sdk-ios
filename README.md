@@ -69,7 +69,7 @@ DP3T-SDK is available through [Swift Package Manager](https://swift.org/package-
   ```swift
 
   dependencies: [
-      .package(url: "https://github.com/DP-3T/dp3t-sdk-ios.git", branch: "develop")
+      .package(url: "https://github.com/DP-3T/dp3t-sdk-ios.git", .branch("develop"))
   ]
 
   ```
