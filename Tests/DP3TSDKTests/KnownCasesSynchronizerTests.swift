@@ -41,38 +41,51 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         return (ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session), session)
     }
 
-    func testSyncMakesAllRequests() {
+    func testFirstLaunchNoRequests() {
 
+        let defaults = MockDefaults()
         let matcher = MockMatcher()
         let (service, session) = getMockService()
         let appInfo = DP3TApplicationInfo.discovery("ch.xy", enviroment: .dev)
-        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo, database: database, matcher: matcher)
+        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo,
+                                                  database: database,
+                                                  matcher: matcher,
+                                                  defaults: defaults)
         let exposeeExpectation = expectation(description: "exposee")
-
-        let today = DayDate()
-        let batchesPerDay = Int(TimeInterval.day) / NetworkingConstants.batchLenght
-        let batchIdentifiers = (0 ..< NetworkingConstants.daysToFetch).reversed().flatMap { days -> [Date] in
-            let date = today.dayMin.addingTimeInterval(.day * Double(days) * -1)
-            return (0 ..< batchesPerDay).compactMap { batch in
-                let batchDate = date.addingTimeInterval(TimeInterval(batch * NetworkingConstants.batchLenght))
-                if batchDate.timeIntervalSinceNow > 0 {
-                    return nil
-                }
-                return batchDate
-            }
-        }.map({String($0.millisecondsSince1970)})
 
         synchronizer.sync(service: service) { (result) in
             if case .success = result {
-                for identifier in batchIdentifiers {
-                    XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains { (url) -> Bool in
-                        url.contains(identifier)
-                    })
-                }
+                XCTAssertEqual(session.requests, [])
             } else {
                 XCTFail()
             }
+            exposeeExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 1) { (error) in
+          XCTAssertNotNil(exposeeExpectation)
+        }
 
+    }
+
+    func testNotFirstLaunch() {
+
+        let defaults = MockDefaults()
+        defaults.lastLoadedBatchReleaseTime = Date().addingTimeInterval(NetworkingConstants.batchLenght * 100 * (-1))
+        let matcher = MockMatcher()
+        let (service, session) = getMockService()
+        let appInfo = DP3TApplicationInfo.discovery("ch.xy", enviroment: .dev)
+        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo,
+                                                  database: database,
+                                                  matcher: matcher,
+                                                  defaults: defaults)
+        let exposeeExpectation = expectation(description: "exposee")
+
+        synchronizer.sync(service: service) { (result) in
+            if case .success = result {
+                XCTAssertEqual(session.requests.count, 100)
+            } else {
+                XCTFail()
+            }
             exposeeExpectation.fulfill()
         }
         waitForExpectations(timeout: 1) { (error) in
@@ -84,11 +97,18 @@ final class KnownCasesSynchronizerTests: XCTestCase {
     func testCallingOfMatcher(){
         let b64Key = "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI="
         let key = Data(base64Encoded: b64Key)!
+        let defaults = MockDefaults()
+        let now = Date().timeIntervalSince1970
+        let ts = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+        defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: ts - NetworkingConstants.batchLenght)
         let matcher = MockMatcher()
         let knownCase = KnownCaseModel(id: nil, key: key, onset: Date(), batchTimestamp: Date())
         let (service, _) = getMockService(array: [knownCase])
         let appInfo = DP3TApplicationInfo.discovery("ch.xy", enviroment: .dev)
-        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo, database: database, matcher: matcher)
+        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo,
+                                                  database: database,
+                                                  matcher: matcher,
+                                                  defaults: defaults)
         let exposeeExpectation = expectation(description: "exposee")
         synchronizer.sync(service: service) { (result) in
 
@@ -108,11 +128,20 @@ final class KnownCasesSynchronizerTests: XCTestCase {
     }
 
     func testTimeIncosistencyForeward(){
+
+        let defaults = MockDefaults()
+        let now = Date().timeIntervalSince1970
+        let ts = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+        defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: ts - NetworkingConstants.batchLenght)
+        
         let matcher = MockMatcher()
         let timestamp = Date().addingTimeInterval(NetworkingConstants.timeShiftThreshold * (-1))
         let (service, _) = getMockService(date: timestamp)
         let appInfo = DP3TApplicationInfo.discovery("ch.xy", enviroment: .dev)
-        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo, database: database, matcher: matcher)
+        let synchronizer = KnownCasesSynchronizer(appInfo: appInfo,
+                                                  database: database,
+                                                  matcher: matcher,
+                                                  defaults: defaults)
         let exposeeExpectation = expectation(description: "exposee")
         synchronizer.sync(service: service) { (result) in
             switch result {
@@ -135,7 +164,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
     }
 
     static var allTests = [
-        ("testSyncMakesAllRequests", testSyncMakesAllRequests),
+        ("testFirstLaunchNoRequests", testFirstLaunchNoRequests),
+        ("testNotFirstLaunch", testNotFirstLaunch),
         ("testCallingOfMatcher", testCallingOfMatcher),
         ("testTimeIncosistencyForeward", testTimeIncosistencyForeward)
     ]

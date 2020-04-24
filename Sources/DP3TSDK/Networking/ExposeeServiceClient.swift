@@ -47,109 +47,83 @@ class ExposeeServiceClient {
         }
     }
 
-    /// Get all exposee for a known day
+    /// Get all exposee for a known day synchronously
     /// - Parameters:
     ///   - batchTimestamp: The batch timestamp
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(batchTimestamp: Date, completion: @escaping (Result<[KnownCaseModel]?, DP3TTracingError>) -> Void) {
+    func getExposeeSynchronously(batchTimestamp: Date) -> Result<[KnownCaseModel]?, DP3TTracingError> {
         let url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
 
-        var existingEtag: String?
-        if  let cache = urlCache.cachedResponse(for: request),
-            let response = cache.response as? HTTPURLResponse,
-            let etag = response.etag {
-            existingEtag = etag
+        let (data, response, error) = urlSession.synchronousDataTask(with: request)
+
+        if let httpResponse = response as? HTTPURLResponse,
+           let date = httpResponse.date,
+                      abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
+                return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
         }
-        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
-            // We want to have a strong reference on self
-            // Compare new Etag with old one
-            // We only need to process changed lists
-            if let httpResponse = response as? HTTPURLResponse,
-                let etag = httpResponse.etag {
-                if etag == existingEtag {
-                    completion(.success(nil))
-                    return
-                } else if let date = httpResponse.date,
-                          abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
-                    completion(.failure(.timeInconsistency(shift: Date().timeIntervalSince(date))))
-                    return
-                }
+
+        guard error == nil else {
+            return .failure(.networkingError(error: error))
+        }
+        guard let responseData = data else {
+            return .failure(.networkingError(error: nil))
+        }
+        guard let httpResponse = response as? HTTPURLResponse else {
+            return .failure(.networkingError(error: nil))
+        }
+        let statusCode = httpResponse.statusCode
+        if statusCode == 404 {
+            // 404 not found response means there is no data for this day
+            return .success([])
+        }
+
+        // Validate JWT
+        if let verifier = self.jwtVerifier {
+            guard let jwtString = httpResponse.value(for: "Signature") else {
+                return .failure(.jwtSignitureError)
             }
 
-            guard error == nil else {
-                completion(.failure(.networkingError(error: error)))
-                return
-            }
-            guard let responseData = data else {
-                completion(.failure(.networkingError(error: nil)))
-                return
-            }
-            guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(.networkingError(error: nil)))
-                return
-            }
-            let statusCode = httpResponse.statusCode
-            if statusCode == 404 {
-                // 404 not found response means there is no data for this day
-                completion(.success([]))
-                return
-            }
-            
-            // Validate JWT
-            if let verifier = self.jwtVerifier {
-                guard let jwtString = httpResponse.value(for: "Signature") else {
-                    completion(.failure(.jwtSignitureError))
-                    return
-                }
-
-                do {
-                    let jwt = try JWT<ExposeeClaims>(jwtString: jwtString, verifier: verifier)
-                    let validationResult = jwt.validateClaims(leeway: 10)
-                    guard validationResult == .success else {
-                        completion(.failure(.jwtSignitureError))
-                        return
-                    }
-                    // Verify the batch time
-                    let batchReleaseTimeRaw = jwt.claims.batchReleaseTime
-                    let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
-                    guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
-                        completion(.failure(.jwtSignitureError))
-                        return
-                    }
-
-                    // Verify the hash
-                    let claimContentHash = Data(base64Encoded: jwt.claims.contentHash)
-                    let computedContentHash = Crypto.sha256(responseData)
-                    guard claimContentHash == computedContentHash else {
-                        completion(.failure(.jwtSignitureError))
-                        return
-                    }
-
-                } catch {
-                    completion(.failure(.jwtSignitureError))
-                    return
-                }
-            }
-
-            guard statusCode == 200 else {
-                completion(.failure(.networkingError(error: nil)))
-                return
-            }
             do {
-                let protoList = try ProtoExposedList(serializedData: responseData)
-                let transformed: [KnownCaseModel] = protoList.exposed.map {
-                    KnownCaseModel(proto: $0, batchTimestamp: batchTimestamp)
+                let jwt = try JWT<ExposeeClaims>(jwtString: jwtString, verifier: verifier)
+                let validationResult = jwt.validateClaims(leeway: 10)
+                guard validationResult == .success else {
+                    return .failure(.jwtSignitureError)
                 }
-                completion(.success(transformed))
+                // Verify the batch time
+                let batchReleaseTimeRaw = jwt.claims.batchReleaseTime
+                let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
+                guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
+                    return .failure(.jwtSignitureError)
+                }
+
+                // Verify the hash
+                let claimContentHash = Data(base64Encoded: jwt.claims.contentHash)
+                let computedContentHash = Crypto.sha256(responseData)
+                guard claimContentHash == computedContentHash else {
+                    return .failure(.jwtSignitureError)
+                }
+
             } catch {
-                print(error.localizedDescription)
-                completion(.failure(.networkingError(error: error)))
+                return .failure(.jwtSignitureError)
             }
-        })
-        task.resume()
+        }
+
+        guard statusCode == 200 else {
+            return .failure(.networkingError(error: nil))
+        }
+        do {
+            let protoList = try ProtoExposedList(serializedData: responseData)
+            let transformed: [KnownCaseModel] = protoList.exposed.map {
+                KnownCaseModel(proto: $0, batchTimestamp: batchTimestamp)
+            }
+            return .success(transformed)
+        } catch {
+            print(error.localizedDescription)
+            return .failure(.networkingError(error: error))
+        }
     }
 
     /// Adds an exposee
@@ -239,10 +213,6 @@ class ExposeeServiceClient {
 }
 
 internal extension HTTPURLResponse {
-    var etag: String? {
-        return value(for: "etag")
-    }
-
     static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, dd MMMM yyyy HH:mm:ss ZZZ"
@@ -277,5 +247,29 @@ fileprivate struct ExposeeClaims: Claims {
         case batchReleaseTime = "batch-release-time"
         case hashAlg = "hash-alg"
         case iss, iat, exp
+    }
+}
+
+
+fileprivate extension URLSession {
+    func synchronousDataTask(with request: URLRequest) -> (Data?, URLResponse?, Error?) {
+        var data: Data?
+        var response: URLResponse?
+        var error: Error?
+
+        let semaphore = DispatchSemaphore(value: 0)
+
+        let dataTask = self.dataTask(with: request) {
+            data = $0
+            response = $1
+            error = $2
+
+            semaphore.signal()
+        }
+        dataTask.resume()
+
+        _ = semaphore.wait(timeout: .distantFuture)
+
+        return (data, response, error)
     }
 }

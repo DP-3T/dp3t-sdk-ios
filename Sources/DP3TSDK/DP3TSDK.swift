@@ -286,6 +286,7 @@ class DP3TSDK {
     /// reset the SDK
     func reset() throws {
         stopTracing()
+        Default.shared.lastLoadedBatchReleaseTime = nil
         Default.shared.lastSync = nil
         Default.shared.didMarkAsInfected = false
         try database.emptyStorage()
