@@ -57,25 +57,12 @@ class ExposeeServiceClient {
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
 
-        var existingEtag: String?
-        if  let cache = urlCache.cachedResponse(for: request),
-            let response = cache.response as? HTTPURLResponse,
-            let etag = response.etag {
-            existingEtag = etag
-        }
-
         let (data, response, error) = urlSession.synchronousDataTask(with: request)
 
-        // Compare new Etag with old one
-        // We only need to process changed lists
         if let httpResponse = response as? HTTPURLResponse,
-            let etag = httpResponse.etag {
-            if etag == existingEtag {
-                return .success(nil)
-            } else if let date = httpResponse.date,
+           let date = httpResponse.date,
                       abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
                 return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
-            }
         }
 
         guard error == nil else {
@@ -226,10 +213,6 @@ class ExposeeServiceClient {
 }
 
 internal extension HTTPURLResponse {
-    var etag: String? {
-        return value(for: "etag")
-    }
-
     static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, dd MMMM yyyy HH:mm:ss ZZZ"
