@@ -166,5 +166,9 @@ public enum DP3TTracing {
                 BluetoothConstants.peripheralReconnectDelay = newValue
             }
         }
+
+        public static func getSecretKeyRepresentationForToday() throws -> String {
+            try instance.getSecretKeyRepresentationForToday()
+        }
     #endif
 }

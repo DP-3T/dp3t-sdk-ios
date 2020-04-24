@@ -191,6 +191,14 @@ class DP3TSDK {
         setExposed(onset: onset, authentication: authentication, callback: callback)
     }
 
+    #if CALIBRATION
+    func getSecretKeyRepresentationForToday() throws -> String {
+        let key = try crypto.getCurrentSK()
+        let keyRepresentation = key.base64EncodedString()
+        return "****** ****** " + String(keyRepresentation.suffix(6))
+    }
+    #endif
+
     /// used to construct a new tracing service client
     private func getATracingServiceClient(forceRefresh: Bool, callback: @escaping (Result<ExposeeServiceClient, DP3TTracingError>) -> Void) {
         if forceRefresh == false, let cachedTracingServiceClient = cachedTracingServiceClient {
