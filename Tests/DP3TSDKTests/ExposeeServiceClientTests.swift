@@ -61,38 +61,6 @@ final class ExposeeServiceClientTests: XCTestCase {
         }
     }
 
-    func testWithSameEtagExposeeSingle() {
-        let onset = Date().addingTimeInterval(10000)
-        var list = ProtoExposedList()
-        var exposee = ProtoExposee()
-        exposee.key = Data(base64Encoded: "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")!
-        exposee.keyDate = onset.millisecondsSince1970
-        list.exposed.append(exposee)
-        let data = try! list.serializedData()
-
-        let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
-        //URLSession gives the cached reponse
-        let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)!
-        let session = MockSession(data: data, urlResponse: response, error: nil)
-        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
-
-        let cachedResponse = CachedURLResponse(response: response, data: Data())
-        let cache = MockUrlCache(response: cachedResponse)
-
-        let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session,  urlCache: cache)
-
-        let batchTimestamp = Date()
-        let result = synchronizer.getExposeeSynchronously(batchTimestamp: batchTimestamp)
-        let timestampIdentifier = String(batchTimestamp.millisecondsSince1970)
-        XCTAssert(session.requests.compactMap(\.url?.absoluteString).contains("http://xy.ch/v1/exposed/\(timestampIdentifier)"))
-        switch result {
-        case let .failure(error):
-            XCTFail(error.localizedDescription)
-        case let .success(knownCases):
-            XCTAssert(knownCases == nil)
-        }
-    }
-
     func testWithDifferentEtagExposeeSingle() {
         let onset = Date().addingTimeInterval(10000)
         var list = ProtoExposedList()
@@ -176,7 +144,6 @@ final class ExposeeServiceClientTests: XCTestCase {
     static var allTests = [
         ("testExposeeEmpty", testExposeeEmpty),
         ("testExposeeSingle", testExposeeSingle),
-        ("testWithSameEtagExposeeSingle", testWithSameEtagExposeeSingle),
         ("testWithDifferentEtagExposeeSingle", testWithDifferentEtagExposeeSingle),
         ("testTimeInconsistency", testTimeInconsistency),
         ("testSettingAcceptHeaderProtobuf", testSettingAcceptHeaderProtobuf)
