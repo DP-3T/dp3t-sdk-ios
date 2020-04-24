@@ -58,7 +58,6 @@ class KnownCasesSynchronizer {
 
     private func internalSync(service: ExposeeServiceClient, callback: Callback?){
         let now = Date().timeIntervalSince1970
-        let currentBucketEnd = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
 
         var nextBatch: TimeInterval!
         if let lastBatch = defaults.lastLoadedBatchReleaseTime,
