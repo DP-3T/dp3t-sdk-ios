@@ -6,8 +6,23 @@
 
 import Foundation
 
+protocol DefaultStorage {
+    /// stores if this is the first launch of the SDK
+    var isFirstLaunch: Bool { get set }
+
+    /// Last date a backend sync happend
+    var lastSync: Date? { get set }
+
+    /// Last batch release time which was loaded
+    /// If nil .now should be used since it is not neccessary to load all past batches
+    var lastLoadedBatchReleaseTime: Date? { get set }
+
+    /// Current infection status
+    var didMarkAsInfected: Bool { get set }
+}
+
 /// UserDefaults Storage Singleton
-class Default {
+class Default: DefaultStorage {
     static var shared = Default()
     var store = UserDefaults.standard
 
