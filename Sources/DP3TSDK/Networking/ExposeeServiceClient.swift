@@ -63,10 +63,8 @@ class ExposeeServiceClient {
             let etag = response.etag {
             existingEtag = etag
         }
-        let task = urlSession.dataTask(with: request, completionHandler: { [weak self] data, response, error in
-            guard let self = self else {
-                return
-            }
+        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
+            // We want to have a strong reference on self
             // Compare new Etag with old one
             // We only need to process changed lists
             if let httpResponse = response as? HTTPURLResponse,

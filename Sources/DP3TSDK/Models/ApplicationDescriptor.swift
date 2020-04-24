@@ -21,7 +21,7 @@ public struct ApplicationDescriptor: Codable {
     /// A description of the service
     internal var description: String?
 
-    public init(appId: String, bucketBaseUrl: URL, reportBaseUrl: URL, jwtPublicKey: Data) {
+    public init(appId: String, bucketBaseUrl: URL, reportBaseUrl: URL, jwtPublicKey: Data?) {
         self.init(appId: appId, description: nil, jwtPublicKey: jwtPublicKey, bucketBaseUrl: bucketBaseUrl, reportBaseUrl: reportBaseUrl, contact: nil)
     }
 
