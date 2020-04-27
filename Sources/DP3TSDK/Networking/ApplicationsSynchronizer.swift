@@ -43,10 +43,8 @@ class ApplicationSynchronizer {
                     callback(.failure(DP3TTracingError.databaseError(error: error)))
                 }
             case let .failure(error):
-                callback(.failure(DP3TTracingError.networkingError(error: error)))
+                callback(.failure(.networkingError(error: error)))
             }
         }
-
-
     }
 }

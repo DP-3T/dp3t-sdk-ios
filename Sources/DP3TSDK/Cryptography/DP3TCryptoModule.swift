@@ -180,23 +180,27 @@ class DP3TCryptoModule {
         return matchingContacts
     }
 
-    /// retreives the secret key to publich for a given day
+    /// retreives the secret key to publish for a given day
     /// - Parameter onsetDate: the day
     /// - Throws: throws if a error happens
-    /// - Returns: the secret key
-    internal func getSecretKeyForPublishing(onsetDate: Date) throws -> (DayDate, Data)? {
+    /// - Returns: the secret key and the date
+    internal func getSecretKeyForPublishing(onsetDate: Date) throws -> (DayDate, Data) {
         let keys = try store.getSecretKeys()
+        guard keys.isEmpty == false else {
+            fatalError("No Secret keys were found in storage")
+        }
         let day = DayDate(date: onsetDate)
-        for key in keys {
-            if key.day == day {
-                return (key.day, key.keyData)
+        var lastIndexChecked: Int = 0
+        while lastIndexChecked < (keys.count - 1) {
+            let key = keys[lastIndexChecked]
+            if key.day <= day {
+                break
             }
+            lastIndexChecked += 1
         }
-        if let last = keys.last,
-            day < last.day {
-            return (last.day, last.keyData)
-        }
-        return nil
+
+        let key = keys[lastIndexChecked]
+        return (key.day, key.keyData)
     }
 
     /// reset data

@@ -454,13 +454,9 @@ extension DP3TTracingError {
         case let .databaseError(error: error):
             return "databaseError \(error?.localizedDescription ?? "nil")"
         case let .networkingError(error: error):
-            return "networkingError \(error?.localizedDescription ?? "nil")"
+            return "networkingError \(error.localizedDescription)"
         case .permissonError:
             return "networkingError"
-        case let .timeInconsistency(shift: shift):
-            return "timeInconsistency by \(shift)"
-       case .jwtSignitureError:
-            return "JWT verification failed"
         }
     }
 }
