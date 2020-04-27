@@ -30,6 +30,15 @@ class Default {
         }
     }
 
+    var batchLenght: Double {
+           get {
+               return (store.object(forKey: "org.dpppt.sampleapp.batchLenght") as? Double) ?? 60 * 60 * 2
+           }
+           set(newValue) {
+               store.set(newValue, forKey: "org.dpppt.sampleapp.batchLenght")
+           }
+       }
+
     enum TracingMode: Int {
         case none = 0
         case active = 1

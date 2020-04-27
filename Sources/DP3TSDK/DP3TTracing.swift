@@ -167,6 +167,15 @@ public enum DP3TTracing {
             }
         }
 
+        public static var batchLenght: TimeInterval {
+            get {
+                return NetworkingConstants.batchLenght
+            }
+            set {
+                NetworkingConstants.batchLenght = newValue
+            }
+        }
+
         public static func getSecretKeyRepresentationForToday() throws -> String {
             try instance.getSecretKeyRepresentationForToday()
         }

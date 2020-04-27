@@ -11,6 +11,7 @@ class ParametersViewController: UIViewController {
     let stackView = UIStackView()
 
     let reconnectionDelayInput = UITextField()
+    let batchLenghtInput = UITextField()
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -68,6 +69,36 @@ class ParametersViewController: UIViewController {
             stackView.addArrangedSubview(button)
         }
 
+        do {
+            let label = UILabel()
+            label.text = "Set buckets batch lenght (seconds)"
+            stackView.addArrangedSubview(label)
+
+            batchLenghtInput.text = "\(Default.shared.batchLenght)"
+            batchLenghtInput.delegate = self
+            batchLenghtInput.font = UIFont.systemFont(ofSize: 15)
+            batchLenghtInput.borderStyle = UITextField.BorderStyle.roundedRect
+            batchLenghtInput.autocorrectionType = UITextAutocorrectionType.no
+            batchLenghtInput.keyboardType = UIKeyboardType.numberPad
+            batchLenghtInput.returnKeyType = UIReturnKeyType.done
+            batchLenghtInput.clearButtonMode = UITextField.ViewMode.whileEditing
+            batchLenghtInput.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
+            batchLenghtInput.delegate = self
+            stackView.addArrangedSubview(batchLenghtInput)
+
+            let button = UIButton()
+            if #available(iOS 13.0, *) {
+                button.setTitleColor(.systemBlue, for: .normal)
+                button.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                button.setTitleColor(.blue, for: .normal)
+                button.setTitleColor(.black, for: .highlighted)
+            }
+            button.setTitle("Update", for: .normal)
+            button.addTarget(self, action: #selector(batchLenghtUpdate), for: .touchUpInside)
+            stackView.addArrangedSubview(button)
+        }
+
         stackView.addArrangedView(UIView())
     }
 
@@ -78,6 +109,15 @@ class ParametersViewController: UIViewController {
         reconnectionDelayInput.text = "\(Default.shared.reconnectionDelay)"
         DP3TTracing.reconnectionDelay = Default.shared.reconnectionDelay
         reconnectionDelayInput.resignFirstResponder()
+    }
+
+    @objc func batchLenghtUpdate() {
+        let lenght = batchLenghtInput.text ?? "7200"
+        let double = Double(lenght) ?? 7200.0
+        Default.shared.batchLenght = double
+        batchLenghtInput.text = "\(Default.shared.batchLenght)"
+        DP3TTracing.batchLenght = Default.shared.batchLenght
+        batchLenghtInput.resignFirstResponder()
     }
 }
 
