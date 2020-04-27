@@ -354,7 +354,7 @@ class ControlViewController: UIViewController {
         var elements: [String] = []
         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
             let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String{
-            elements.append("Version: \(version)(\(build))")
+            elements.append("Version: App: \(version)(\(build)) SDK: \(DP3TTracing.frameworkVersion)")
         }
         elements.append("tracking State: \(state.trackingState.stringValue)")
         switch state.backgroundRefreshState {
