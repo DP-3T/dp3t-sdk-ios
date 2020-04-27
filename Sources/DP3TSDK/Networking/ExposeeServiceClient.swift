@@ -56,8 +56,8 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         self.descriptor = descriptor
         self.urlSession = urlSession
         self.urlCache = urlCache
-        exposeeEndpoint = ExposeeEndpoint(baseURL: descriptor.reportBaseUrl)
-        managingExposeeEndpoint = ManagingExposeeEndpoint(baseURL: descriptor.bucketBaseUrl)
+        exposeeEndpoint = ExposeeEndpoint(baseURL: descriptor.bucketBaseUrl)
+        managingExposeeEndpoint = ManagingExposeeEndpoint(baseURL: descriptor.reportBaseUrl)
         if #available(iOS 11.0, *), let jwtPublicKey = descriptor.jwtPublicKey {
             jwtVerifier = JWTVerifier.es256(publicKey: jwtPublicKey)
         } else {
