@@ -86,6 +86,13 @@ class ContactsStorage {
     /// - Throws: if a database error happens
     /// - Returns: list of contacts
     func getContacts(for day: DayDate, overlappingTimeInverval: TimeInterval = 0, contactThreshold: Int = 1) throws -> [Contact] {
+
+        // if the day is older than .numberOfDaysToKeepData we can skip fetching contacts from the databae
+        // since we dont keep them so long anyway
+        if day.dayMin.timeIntervalSinceNow > TimeInterval(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day {
+            return []
+        }
+
         // extend dayMin and dayMax by given overlappintTimeInterval
         let dayMin = day.dayMin.addingTimeInterval(-overlappingTimeInverval).millisecondsSince1970
         let dayMax = day.dayMax.addingTimeInterval(overlappingTimeInverval).millisecondsSince1970
