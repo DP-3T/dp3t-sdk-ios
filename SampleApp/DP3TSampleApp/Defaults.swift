@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DP3TSDK_CALIBRATION
 
 /// UserDefaults Storage Singleton
 class Default {
@@ -23,7 +24,7 @@ class Default {
 
     var reconnectionDelay: Int {
         get {
-            return (store.object(forKey: "org.dpppt.sampleapp.reconnectionDelay") as? Int) ?? 60 * 2
+            return (store.object(forKey: "org.dpppt.sampleapp.reconnectionDelay") as? Int) ?? DP3TTracing.reconnectionDelay
         }
         set(newValue) {
             store.set(newValue, forKey: "org.dpppt.sampleapp.reconnectionDelay")
@@ -32,7 +33,7 @@ class Default {
 
     var batchLenght: Double {
            get {
-               return (store.object(forKey: "org.dpppt.sampleapp.batchLenght") as? Double) ?? 60 * 60 * 2
+            return (store.object(forKey: "org.dpppt.sampleapp.batchLenght") as? Double) ?? DP3TTracing.batchLenght
            }
            set(newValue) {
                store.set(newValue, forKey: "org.dpppt.sampleapp.batchLenght")
