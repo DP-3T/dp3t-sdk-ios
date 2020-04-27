@@ -11,6 +11,7 @@ import UIKit
 func initializeSDK(){
     /// Can be initialized either by:
     /// - using the discovery:
+    DP3TTracing.batchLenght = Default.shared.batchLenght
     try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
                                 mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
     /// - passing the url:

@@ -14,10 +14,8 @@ enum NetworkingConstants {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }()
-    /// number of days to fetch for matching
-    static let daysToFetch: Int = 14
     /// allowed client time inconsistency
     static let timeShiftThreshold: TimeInterval = 30 * .second
     // 2 Hour batches
-    static let batchLenght: TimeInterval = TimeInterval.day / 12.0
+    static var batchLenght: TimeInterval = TimeInterval.day / 12.0
 }
