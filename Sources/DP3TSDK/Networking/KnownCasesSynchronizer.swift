@@ -59,17 +59,23 @@ class KnownCasesSynchronizer {
     private func internalSync(service: ExposeeServiceClient, callback: Callback?){
         let now = Date().timeIntervalSince1970
 
-        var nextBatch: TimeInterval!
-        if let lastBatch = defaults.lastLoadedBatchReleaseTime,
-            lastBatch < Date(){
-            nextBatch = lastBatch.timeIntervalSince1970
+        var lastBatch: TimeInterval!
+        if let storedLastBatch = defaults.lastLoadedBatchReleaseTime,
+            storedLastBatch < Date(){
+            lastBatch = storedLastBatch.timeIntervalSince1970
         } else {
-            nextBatch = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+            lastBatch = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
         }
 
-        let batchesToLoad = Int((now - nextBatch) / NetworkingConstants.batchLenght)
+        let batchesToLoad = Int((now - lastBatch) / NetworkingConstants.batchLenght)
 
-        nextBatch += NetworkingConstants.batchLenght
+        // if there is no batch to load make sure to store the lastBatch
+        // so we know where to start next time
+        if batchesToLoad == 0 {
+            defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: lastBatch)
+        }
+
+        let nextBatch = lastBatch + NetworkingConstants.batchLenght
 
         for batchIndex in (0 ..< batchesToLoad) {
             let currentReleaseTime = Date(timeIntervalSince1970: nextBatch + NetworkingConstants.batchLenght * TimeInterval(batchIndex))
