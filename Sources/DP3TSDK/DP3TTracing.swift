@@ -7,6 +7,9 @@
 import Foundation
 import UIKit.UIApplication
 
+/// The current version of the SDK
+static let version: String = "0.1.8"
+
 /// A delegate for the DP3T tracing
 public protocol DP3TTracingDelegate: AnyObject {
     /// The state has changed
@@ -27,8 +30,11 @@ public protocol DP3TTracingDelegate: AnyObject {
 #endif
 
 
+/// The mode in which the SDK is initialized
 public enum DP3TApplicationInfo {
+    /// Using the discovery services from Github. https://github.com/DP-3T/dp3t-discovery
     case discovery(_ appId: String, enviroment: Enviroment = .prod)
+    /// Manually by specifying all the necessary information
     case manual(_ appInfo: ApplicationDescriptor)
 }
 
