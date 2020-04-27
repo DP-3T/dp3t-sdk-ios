@@ -44,11 +44,11 @@ class KnownCasesSynchronizer {
     ///   - callback: The callback once the task if finished
     /// - Returns: the operation which can be used to cancel the sync
     @discardableResult
-    func sync(service: ExposeeServiceClient, callback: Callback?) -> Operation {
+    func sync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?) -> Operation {
         let queue = OperationQueue()
 
         let operation = BlockOperation {
-            self.internalSync(service: service, callback: callback)
+            self.internalSync(service: service, now: now, callback: callback)
         }
 
         queue.addOperation(operation)
@@ -56,18 +56,18 @@ class KnownCasesSynchronizer {
         return operation
     }
 
-    private func internalSync(service: ExposeeServiceClient, callback: Callback?){
-        let now = Date().timeIntervalSince1970
+    private func internalSync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?){
+        let nowTimestamp = now.timeIntervalSince1970
 
         var lastBatch: TimeInterval!
         if let storedLastBatch = defaults.lastLoadedBatchReleaseTime,
             storedLastBatch < Date(){
             lastBatch = storedLastBatch.timeIntervalSince1970
         } else {
-            lastBatch = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+            lastBatch = nowTimestamp - nowTimestamp.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
         }
 
-        let batchesToLoad = Int((now - lastBatch) / NetworkingConstants.batchLenght)
+        let batchesToLoad = Int((nowTimestamp - lastBatch) / NetworkingConstants.batchLenght)
 
         // if there is no batch to load make sure to store the lastBatch
         // so we know where to start next time

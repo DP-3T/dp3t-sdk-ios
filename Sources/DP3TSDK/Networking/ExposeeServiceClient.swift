@@ -8,8 +8,26 @@ import Foundation
 import UIKit
 import SwiftJWT
 
+protocol ExposeeServiceClientProtocol {
+    typealias ExposeeResult = Result<[KnownCaseModel]?, DP3TTracingError>
+    typealias ExposeeCompletion = Result<Void, DP3TTracingError>
+    /// Get all exposee for a known day synchronously
+    /// - Parameters:
+    ///   - batchTimestamp: The batch timestamp
+    ///   - completion: The completion block
+    /// - returns: array of objects or nil if they were already cached
+    func getExposeeSynchronously(batchTimestamp: Date) -> ExposeeResult
+
+    /// Adds an exposee
+    /// - Parameters:
+    ///   - exposee: The exposee to add
+    ///   - completion: The completion block
+    ///   - authentication: The authentication to use for the request
+    func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (ExposeeCompletion) -> Void)
+}
+
 /// The client for managing and fetching exposee
-class ExposeeServiceClient {
+class ExposeeServiceClient: ExposeeServiceClientProtocol {
     /// The descriptor to use for the fetch
     private let descriptor: ApplicationDescriptor
     /// The endpoint for getting exposee
