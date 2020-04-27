@@ -44,11 +44,11 @@ class KnownCasesSynchronizer {
     ///   - callback: The callback once the task if finished
     /// - Returns: the operation which can be used to cancel the sync
     @discardableResult
-    func sync(service: ExposeeServiceClient, callback: Callback?) -> Operation {
+    func sync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?) -> Operation {
         let queue = OperationQueue()
 
         let operation = BlockOperation {
-            self.internalSync(service: service, callback: callback)
+            self.internalSync(service: service, now: now, callback: callback)
         }
 
         queue.addOperation(operation)
@@ -56,20 +56,32 @@ class KnownCasesSynchronizer {
         return operation
     }
 
-    private func internalSync(service: ExposeeServiceClient, callback: Callback?){
-        let now = Date().timeIntervalSince1970
+    /// Stores the first SDK launch date
+    @discardableResult
+    static func initializeSynchronizerIfNeeded(defaults: DefaultStorage = Default.shared) -> Date {
+        guard defaults.lastLoadedBatchReleaseTime == nil else { return defaults.lastLoadedBatchReleaseTime! }
+        let nowTimestamp = Date().timeIntervalSince1970
+        let lastBatch = Date(timeIntervalSince1970: nowTimestamp - nowTimestamp.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght))
+        var mutableDefaults = defaults
+        mutableDefaults.lastLoadedBatchReleaseTime = lastBatch
+        return lastBatch
+    }
 
-        var nextBatch: TimeInterval!
-        if let lastBatch = defaults.lastLoadedBatchReleaseTime,
-            lastBatch < Date(){
-            nextBatch = lastBatch.timeIntervalSince1970
+    private func internalSync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?){
+        let nowTimestamp = now.timeIntervalSince1970
+
+        var lastBatch: TimeInterval!
+        if let storedLastBatch = defaults.lastLoadedBatchReleaseTime,
+            storedLastBatch < Date(){
+            lastBatch = storedLastBatch.timeIntervalSince1970
         } else {
-            nextBatch = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+            assert(false, "This should never happen if initializeSynchronizerIfNeeded gets called on SDK init")
+            lastBatch = KnownCasesSynchronizer.initializeSynchronizerIfNeeded().timeIntervalSince1970
         }
 
-        let batchesToLoad = Int((now - nextBatch) / NetworkingConstants.batchLenght)
+        let batchesToLoad = Int((nowTimestamp - lastBatch) / NetworkingConstants.batchLenght)
 
-        nextBatch += NetworkingConstants.batchLenght
+        let nextBatch = lastBatch + NetworkingConstants.batchLenght
 
         for batchIndex in (0 ..< batchesToLoad) {
             let currentReleaseTime = Date(timeIntervalSince1970: nextBatch + NetworkingConstants.batchLenght * TimeInterval(batchIndex))
