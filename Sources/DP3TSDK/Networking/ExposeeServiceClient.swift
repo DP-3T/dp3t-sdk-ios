@@ -116,6 +116,11 @@ class ExposeeServiceClient {
         }
         do {
             let protoList = try ProtoExposedList(serializedData: responseData)
+
+            guard protoList.batchReleaseTime == batchTimestamp.millisecondsSince1970 else {
+                return .failure(.networkingError(error: nil))
+            }
+
             let transformed: [KnownCaseModel] = protoList.exposed.map {
                 KnownCaseModel(proto: $0, batchTimestamp: batchTimestamp)
             }
