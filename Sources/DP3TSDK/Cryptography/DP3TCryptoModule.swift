@@ -154,9 +154,6 @@ class DP3TCryptoModule {
     /// - Returns: all contacts that match
     internal func checkContacts(secretKey: Data, onsetDate: DayDate, bucketDate: Date, getContacts: (DayDate) -> ([Contact])) throws -> [Contact] {
         var dayToTest: DayDate = onsetDate
-        if -dayToTest.dayMin.timeIntervalSinceNow > TimeInterval(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day {
-            dayToTest = DayDate(date: Date().addingTimeInterval(TimeInterval(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day * (-1)))
-        }
         var secretKeyForDay: Data = secretKey
         var matchingContacts: [Contact] = []
         while dayToTest.timestamp <= bucketDate.timeIntervalSince1970 {
