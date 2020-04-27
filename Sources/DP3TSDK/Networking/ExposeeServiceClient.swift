@@ -9,8 +9,8 @@ import UIKit
 import SwiftJWT
 
 protocol ExposeeServiceClientProtocol {
-    typealias ExposeeResult = Result<[KnownCaseModel]?, DP3TTracingError>
-    typealias ExposeeCompletion = Result<Void, DP3TTracingError>
+    typealias ExposeeResult = Result<[KnownCaseModel]?, DP3TNetworkingError>
+    typealias ExposeeCompletion = Result<Void, DP3TNetworkingError>
     /// Get all exposee for a known day synchronously
     /// - Parameters:
     ///   - batchTimestamp: The batch timestamp
@@ -70,73 +70,76 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - batchTimestamp: The batch timestamp
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date) -> Result<[KnownCaseModel]?, DP3TTracingError> {
+    func getExposeeSynchronously(batchTimestamp: Date) -> Result<[KnownCaseModel]?, DP3TNetworkingError> {
         let url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
 
         let (data, response, error) = urlSession.synchronousDataTask(with: request)
 
-        if let httpResponse = response as? HTTPURLResponse,
-           let date = httpResponse.date,
-                      abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
+        guard error == nil else {
+            return .failure(.networkSessionError(error: error!))
+        }
+        guard let httpResponse = response as? HTTPURLResponse else {
+            return .failure(.notHTTPResponse)
+        }
+
+        if let date = httpResponse.date,
+            abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
                 return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
         }
 
-        guard error == nil else {
-            return .failure(.networkingError(error: error))
-        }
-        guard let responseData = data else {
-            return .failure(.networkingError(error: nil))
-        }
-        guard let httpResponse = response as? HTTPURLResponse else {
-            return .failure(.networkingError(error: nil))
-        }
-        let statusCode = httpResponse.statusCode
-        if statusCode == 404 {
+        let httpStatus = httpResponse.statusCode
+        switch httpStatus {
+        case 200:
+            break
+        case 404:
             // 404 not found response means there is no data for this day
             return .success([])
+        default:
+            return .failure(.HTTPFailureResponse(status: httpStatus))
+        }
+
+        guard let responseData = data else {
+            return .failure(.noDataReturned)
         }
 
         // Validate JWT
         if let verifier = self.jwtVerifier {
             guard let jwtString = httpResponse.value(for: "Signature") else {
-                return .failure(.jwtSignitureError)
+                return .failure(.jwtSignitureError(code: 1, debugDescription: "No Signature field found in the header of the response. If the app specifies a JWT public key certificate for verification use, the server must send a `Signature` header field"))
             }
 
             do {
                 let jwt = try JWT<ExposeeClaims>(jwtString: jwtString, verifier: verifier)
                 let validationResult = jwt.validateClaims(leeway: 10)
                 guard validationResult == .success else {
-                    return .failure(.jwtSignitureError)
+                    return .failure(.jwtSignitureError(code: 2, debugDescription: "JWT signiture don't match"))
                 }
                 // Verify the batch time
                 let batchReleaseTimeRaw = jwt.claims.batchReleaseTime
                 let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
                 guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
-                    return .failure(.jwtSignitureError)
+                    return .failure(.jwtSignitureError(code: 3, debugDescription: "Batch release time missmatch"))
                 }
 
                 // Verify the hash
                 let claimContentHash = Data(base64Encoded: jwt.claims.contentHash)
                 let computedContentHash = Crypto.sha256(responseData)
                 guard claimContentHash == computedContentHash else {
-                    return .failure(.jwtSignitureError)
+                    return .failure(.jwtSignitureError(code: 4, debugDescription: "Content Hash missmatch"))
                 }
 
             } catch {
-                return .failure(.jwtSignitureError)
+                return .failure(.jwtSignitureError(code: 5, debugDescription: "Generic JWC framework error \(error.localizedDescription)"))
             }
         }
 
-        guard statusCode == 200 else {
-            return .failure(.networkingError(error: nil))
-        }
         do {
             let protoList = try ProtoExposedList(serializedData: responseData)
 
             guard protoList.batchReleaseTime == batchTimestamp.millisecondsSince1970 else {
-                return .failure(.networkingError(error: nil))
+                return .failure(.batchReleaseTimeMissmatch)
             }
 
             let transformed: [KnownCaseModel] = protoList.exposed.map {
@@ -144,8 +147,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             }
             return .success(transformed)
         } catch {
-            print(error.localizedDescription)
-            return .failure(.networkingError(error: error))
+            return .failure(.couldNotParseData(error: error, origin: 1))
         }
     }
 
@@ -154,13 +156,13 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - exposee: The exposee to add
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
-    func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+    func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
 
         // addExposee endpoint
         let url = managingExposeeEndpoint.addExposee()
 
         guard let payload = try? JSONEncoder().encode(exposee) else {
-            completion(.failure(.networkingError(error: nil)))
+            completion(.failure(.couldNotEncodeBody))
             return
         }
 
@@ -176,23 +178,20 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
         let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
-                completion(.failure(.networkingError(error: error)))
+                completion(.failure(.networkSessionError(error: error!)))
                 return
             }
-            guard let responseData = data else {
-                completion(.failure(.networkingError(error: nil)))
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(.failure(.notHTTPResponse))
                 return
             }
-            guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                completion(.failure(.networkingError(error: nil)))
-                return
-            }
+
+            let statusCode = httpResponse.statusCode
             guard statusCode == 200 else {
-                completion(.failure(.networkingError(error: nil)))
+                completion(.failure(.HTTPFailureResponse(status: statusCode)))
                 return
             }
-            // string response
-            _ = String(data: responseData, encoding: .utf8)
+
             completion(.success(()))
         })
         task.resume()
@@ -202,32 +201,36 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     /// - Parameters:
     ///   - enviroment: The environment to use
     ///   - completion: The completion block
-    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[ApplicationDescriptor], DP3TTracingError>) -> Void) {
+    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[ApplicationDescriptor], DP3TNetworkingError>) -> Void) {
         let url = enviroment.discoveryEndpoint
         let request = URLRequest(url: url)
 
         let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
-                completion(.failure(.networkingError(error: error)))
+                completion(.failure(.networkSessionError(error: error!)))
                 return
             }
-            guard let responseData = data else {
-                completion(.failure(.networkingError(error: nil)))
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(.failure(.notHTTPResponse))
                 return
             }
-            guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                completion(.failure(.networkingError(error: nil)))
-                return
-            }
+
+            let statusCode = httpResponse.statusCode
             guard statusCode == 200 else {
-                completion(.failure(.networkingError(error: nil)))
+                completion(.failure(.HTTPFailureResponse(status: statusCode)))
                 return
             }
+
+            guard let responseData = data else {
+                completion(.failure(.noDataReturned))
+                return
+            }
+            
             do {
                 let discoveryResponse = try JSONDecoder().decode(DiscoveryServiceResponse.self, from: responseData)
                 return completion(.success(discoveryResponse.applications))
             } catch {
-                completion(.failure(.networkingError(error: error)))
+                completion(.failure(.couldNotParseData(error: error, origin: 2)))
                 return
             }
         })

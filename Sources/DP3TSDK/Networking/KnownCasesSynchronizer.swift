@@ -36,7 +36,7 @@ class KnownCasesSynchronizer {
     }
 
     /// A callback result of async operations
-    typealias Callback = (Result<Void, DP3TTracingError>) -> Void
+    typealias Callback = (Result<Void, DP3TNetworkingError>) -> Void
 
     /// Synchronizes the local database with the remote one
     /// - Parameters:

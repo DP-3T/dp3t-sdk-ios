@@ -167,10 +167,15 @@ class DP3TSDK {
                 return
             case let .success(service):
                 self?.synchronizer.sync(service: service) { [weak self] result in
-                    if case .success = result {
-                        self?.state.lastSync = Date()
+                    DispatchQueue.main.async {
+                        switch result{
+                        case .success:
+                            self?.state.lastSync = Date()
+                            callback?(.success(()))
+                        case .failure(let error):
+                            callback?(.failure(.networkingError(error: error)))
+                        }
                     }
-                    callback?(result)
                 }
             }
         }
@@ -253,24 +258,25 @@ class DP3TSDK {
                 }
             case let .success(service):
                 do {
-                    let block: ((Result<Void, DP3TTracingError>) -> Void) = { [weak self] result in
-                        if case .success = result {
-                            self?.state.infectionStatus = .infected
-                        }
-                        DispatchQueue.main.async {
-                            callback(result)
-                        }
+                    let (day, key) = try self.crypto.getSecretKeyForPublishing(onsetDate: onset)
+
+                    let authData: String?
+                    if case let ExposeeAuthMethod.JSONPayload(token: token) = authentication {
+                        authData = token
+                    } else {
+                        authData = nil
                     }
-                    
-                    if let (day, key) = try self.crypto.getSecretKeyForPublishing(onsetDate: onset) {
-                        let authData: String?
-                        if case let ExposeeAuthMethod.JSONPayload(token: token) = authentication {
-                            authData = token
-                        } else {
-                            authData = nil
+                    let model = ExposeeModel(key: key, onset: day, authData: authData)
+                    service.addExposee(model, authentication: authentication) { [weak self] result in
+                        DispatchQueue.main.async {
+                            switch result {
+                            case .success:
+                                self?.state.infectionStatus = .infected
+                                callback(.success(()))
+                            case let .failure(error):
+                                callback(.failure(.networkingError(error: error)))
+                            }
                         }
-                        let model = ExposeeModel(key: key, onset: day, authData: authData)
-                        service.addExposee(model, authentication: authentication, completion: block)
                     }
                 } catch let error as DP3TTracingError {
                     DispatchQueue.main.async {

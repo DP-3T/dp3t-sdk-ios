@@ -12,7 +12,7 @@ final class CryptoModuleTest: XCTestCase {
     func testGenerateEphIDs() {
         let store = KeyStoreMock()
         let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
-        let allEphsOfToday = try! DP3TCryptoModule.createEphIDs(secretKey: crypto.getSecretKeyForPublishing(onsetDate: Date())!.1)
+        let allEphsOfToday = try! DP3TCryptoModule.createEphIDs(secretKey: crypto.getSecretKeyForPublishing(onsetDate: Date()).1)
         let currentEphID = try! crypto.getCurrentEphID()
         var matchingCount = 0
         for ephID in allEphsOfToday {
@@ -172,7 +172,7 @@ final class CryptoModuleTest: XCTestCase {
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(2 * .day)))
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(3 * .day)))
 
-        let (day, key) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date()))!
+        let (day, key) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date()))
 
         XCTAssertEqual(day, DayDate())
 
@@ -200,7 +200,7 @@ final class CryptoModuleTest: XCTestCase {
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(2 * .day)))
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(3 * .day)))
 
-        let key = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(.day)))!.1
+        let key = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(.day))).1
 
 
         let date = Date()
@@ -324,12 +324,20 @@ final class CryptoModuleTest: XCTestCase {
         let crypto1: DP3TCryptoModule = try! DP3TCryptoModule(store: store1)
         let _ = try! crypto1.getCurrentEphID()
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(1 * .day)))
-        _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(2 * .day)))
         _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(3 * .day)))
+        _ = try! crypto1.getCurrentSK(day: DayDate(date: Date().addingTimeInterval(5 * .day)))
 
-        let (day, _) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(-10 * .day)))!
+        let (dayPast, _) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(-10 * .day)))
+        XCTAssertEqual(dayPast, DayDate())
 
-        XCTAssertEqual(day, DayDate())
+        let (dayFutur, _) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(10 * .day)))
+        XCTAssertEqual(dayFutur, DayDate(date: Date().addingTimeInterval(5 * .day)))
+
+        let (dayEqual, _) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(3 * .day)))
+        XCTAssertEqual(dayEqual, DayDate(date: Date().addingTimeInterval(3 * .day)))
+
+        let (dayIntermediate, _) = (try! crypto1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(4 * .day)))
+        XCTAssertEqual(dayIntermediate, DayDate(date: Date().addingTimeInterval(4 * .day)))
     }
 
     static var allTests = [
