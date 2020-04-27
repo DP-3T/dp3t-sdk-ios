@@ -99,6 +99,8 @@ class DP3TSDK {
                              infectionStatus: InfectionStatus.getInfectionState(with: database),
                              backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
+        KnownCasesSynchronizer.initializeSynchronizerIfNeeded()
+        
         if #available(iOS 13.0, *) {
             let backgroundTaskManager = DP3TBackgroundTaskManager()
             self.backgroundTaskManager = backgroundTaskManager

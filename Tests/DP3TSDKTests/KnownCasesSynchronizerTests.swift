@@ -56,6 +56,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                                   defaults: defaults)
         let exposeeExpectation = expectation(description: "exposee")
 
+        KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
         synchronizer.sync(service: service) { (result) in
             if case .success = result {
                 XCTAssertEqual(service.requests, 0)
@@ -89,6 +90,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                                   defaults: defaults)
         let exposeeExpectation = expectation(description: "exposee")
 
+        KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
         synchronizer.sync(service: service) { (result) in
             if case .success = result {
                 XCTAssertEqual(service.requests, 100)
@@ -117,6 +119,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                                   defaults: defaults)
         var exposeeExpectation = expectation(description: "exposee")
 
+        KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
         synchronizer.sync(service: service) { (result) in
             if case .success = result {
                 XCTAssertEqual(service.requests, 0)
@@ -167,6 +170,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                                   matcher: matcher,
                                                   defaults: defaults)
         let exposeeExpectation = expectation(description: "exposee")
+        KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
         synchronizer.sync(service: service) { (result) in
 
             if case .success = result {
