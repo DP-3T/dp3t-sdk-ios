@@ -52,7 +52,7 @@ class DP3TSDK {
         private(set) var identifierPrefix: String {
             get {
                 switch DP3TMode.current {
-                case let .calibration(identifierPrefix):
+                case let .calibration(identifierPrefix, _):
                     return identifierPrefix
                 default:
                     fatalError("identifierPrefix is only usable in calibration mode")
@@ -358,8 +358,19 @@ extension DP3TSDK: BluetoothPermissionDelegate {
 #if CALIBRATION
     extension DP3TSDK: LoggingDelegate {
         func log(type: LogType, _ string: String) {
-            os_log("%@: %@", type.description, string)
-            if let entry = try? database.loggingStorage.log(type: type, message: string) {
+            let appVersion: String
+            switch DP3TMode.current {
+            case .production:
+                appVersion = "-"
+            case .calibration(_, let av):
+                appVersion = av
+            }
+
+            let logString = "[\(appVersion)|\(DP3TTracing.frameworkVersion)] \(type.description): \(string)"
+            os_log("%@", logString)
+
+            let dbLogString = "[\(appVersion)|\(DP3TTracing.frameworkVersion)] \(string)"
+            if let entry = try? database.loggingStorage.log(type: type, message: logString) {
                 DispatchQueue.main.async {
                     self.delegate?.didAddLog(entry)
                 }

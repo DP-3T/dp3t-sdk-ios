@@ -8,7 +8,7 @@
 public enum DP3TMode: Equatable {
     case production
     #if CALIBRATION
-        case calibration(identifierPrefix: String)
+    case calibration(identifierPrefix: String, appVersion: String)
     #endif
 
     static var current: DP3TMode = .production

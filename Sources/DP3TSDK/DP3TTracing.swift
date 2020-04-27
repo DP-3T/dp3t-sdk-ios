@@ -7,9 +7,6 @@
 import Foundation
 import UIKit.UIApplication
 
-/// The current version of the SDK
-static let version: String = "0.1.8"
-
 /// A delegate for the DP3T tracing
 public protocol DP3TTracingDelegate: AnyObject {
     /// The state has changed
@@ -43,6 +40,9 @@ private var instance: DP3TSDK!
 
 /// DP3TTracing
 public enum DP3TTracing {
+    /// The current version of the SDK
+    public static let frameworkVersion: String = "0.1.8"
+
     /// initialize the SDK
     /// - Parameters:
     ///   - appId: application identifier used for the discovery call
