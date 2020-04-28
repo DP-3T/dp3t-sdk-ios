@@ -39,7 +39,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     private let urlCache: URLCache
 
-    private let jwtVerifier: JWTVerifier?
+    private let jwtVerifier: DP3TJWTVerifier?
 
     /// The user agent to send with the requests
     private var userAgent: String {
@@ -59,7 +59,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         exposeeEndpoint = ExposeeEndpoint(baseURL: descriptor.bucketBaseUrl)
         managingExposeeEndpoint = ManagingExposeeEndpoint(baseURL: descriptor.reportBaseUrl)
         if #available(iOS 11.0, *), let jwtPublicKey = descriptor.jwtPublicKey {
-            jwtVerifier = JWTVerifier.es256(publicKey: jwtPublicKey)
+            jwtVerifier = DP3TJWTVerifier(publicKey: jwtPublicKey, jwtTokenHeaderKey: "Signature")
         } else {
             jwtVerifier = nil
         }
@@ -105,33 +105,22 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
 
         // Validate JWT
-        if let verifier = jwtVerifier {
-            guard let jwtString = httpResponse.value(for: "Signature") else {
-                return .failure(.jwtSignatureError(code: 1, debugDescription: "No Signature field found in the header of the response. If the app specifies a JWT public key certificate for verification use, the server must send a `Signature` header field"))
-            }
+        if #available(iOS 11.0, *), let verifier = jwtVerifier {
 
             do {
-                let jwt = try JWT<ExposeeClaims>(jwtString: jwtString, verifier: verifier)
-                let validationResult = jwt.validateClaims(leeway: 10)
-                guard validationResult == .success else {
-                    return .failure(.jwtSignatureError(code: 2, debugDescription: "JWT signature don't match"))
-                }
+                let claims: ExposeeClaims = try verifier.verify(httpResponse: httpResponse, httpBody: responseData)
+
                 // Verify the batch time
-                let batchReleaseTimeRaw = jwt.claims.batchReleaseTime
+                let batchReleaseTimeRaw = claims.batchReleaseTime
                 let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
                 guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
                     return .failure(.jwtSignatureError(code: 3, debugDescription: "Batch release time missmatch"))
                 }
 
-                // Verify the hash
-                let claimContentHash = Data(base64Encoded: jwt.claims.contentHash)
-                let computedContentHash = Crypto.sha256(responseData)
-                guard claimContentHash == computedContentHash else {
-                    return .failure(.jwtSignatureError(code: 4, debugDescription: "Content Hash missmatch"))
-                }
-
+            } catch let error as DP3TNetworkingError {
+                return .failure(error)
             } catch {
-                return .failure(.jwtSignatureError(code: 5, debugDescription: "Generic JWC framework error \(error.localizedDescription)"))
+                return .failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)"))
             }
         }
 
@@ -259,7 +248,7 @@ internal extension HTTPURLResponse {
     }
 }
 
-private struct ExposeeClaims: Claims {
+private struct ExposeeClaims: DP3TClaims {
     let iss: String
     let iat: Date
     let exp: Date
