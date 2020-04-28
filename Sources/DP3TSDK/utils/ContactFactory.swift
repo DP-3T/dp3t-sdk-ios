@@ -7,9 +7,11 @@
 import Foundation
 
 enum ContactFactory {
-    static let badRssiThreshold: Double = -85.0
+    static let defaultTxPowerLevel: Double = 12.0
 
-    static let contactRssiThreshold: Double = -80.0
+    static let badAttenuationThreshold: Double = 64.0
+
+    static let contactAttenuationThreshold: Double = 54.0
 
     static let eventThreshold: Double = 0.8
 
@@ -35,17 +37,24 @@ enum ContactFactory {
             let ephID = element.key
             let handshakes = element.value
 
-            let rssiValues: [(Date, Double)] = handshakes.compactMap { handshake -> (Date, Double)? in
+            let attenutationValues: [(Date, Double)] = handshakes.compactMap { handshake -> (Date, Double)? in
                 guard let rssi = handshake.RSSI else { return nil }
-                guard rssi > ContactFactory.badRssiThreshold else { return nil }
-                return (handshake.timestamp, rssi)
+
+                let txPower = handshake.TXPowerlevel ?? ContactFactory.defaultTxPowerLevel
+
+                let attenuation = abs(txPower) - rssi
+
+                guard attenuation <= ContactFactory.badAttenuationThreshold else { return nil }
+
+                return (handshake.timestamp, attenuation)
             }
 
-            guard let firstValue = rssiValues.first else { return nil }
+            guard let firstValue = attenutationValues.first else { return nil }
 
-            let epochMean = rssiValues.map { $0.1 }.reduce(0.0, +) / Double(rssiValues.count)
+            let epochMean = attenutationValues.map { $0.1 }.reduce(0.0, +) / Double(attenutationValues.count)
 
             let epochStart = DP3TCryptoModule.getEpochStart(timestamp: firstValue.0)
+
             let windowLength = Int(CryptoConstants.secondsPerEpoch / ContactFactory.windowDuration)
 
             var numberOfMatchingWindows = 0
@@ -54,7 +63,7 @@ enum ContactFactory {
                 let start = epochStart.addingTimeInterval(Double(windowIndex) * ContactFactory.windowDuration)
                 let end = start.addingTimeInterval(ContactFactory.windowDuration)
 
-                let values = rssiValues.filter { (timestamp, _) -> Bool in
+                let values = attenutationValues.filter { (timestamp, _) -> Bool in
                     timestamp > start && timestamp <= end
                 }.map { $0.1 }
 
@@ -65,7 +74,7 @@ enum ContactFactory {
                 let eventDetector = windowMean / epochMean
 
                 if eventDetector > ContactFactory.eventThreshold,
-                    windowMean > ContactFactory.contactRssiThreshold {
+                    windowMean < ContactFactory.contactAttenuationThreshold {
                     numberOfMatchingWindows += 1
                 }
             }
