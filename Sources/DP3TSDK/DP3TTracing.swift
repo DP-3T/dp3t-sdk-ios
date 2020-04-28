@@ -111,19 +111,19 @@ public enum DP3TTracing {
     /// - Parameters:
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
-    ///   - callback: callback
     ///   - isFakeRequest: indicates if the request should be a fake one. This method should be called regulary so people sniffing the networking traffic can no figure out if somebody is marking themself actually as exposed
+    ///   - callback: callback
     public static func iWasExposed(onset: Date,
                                    authentication: ExposeeAuthMethod,
-                                   callback: @escaping (Result<Void, DP3TTracingError>) -> Void,
-                                   isFakeRequest: Bool = false) {
+                                   isFakeRequest: Bool = false,
+                                   callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
         instance.iWasExposed(onset: onset,
                              authentication: authentication,
-                             callback: callback,
-                             isFakeRequest: isFakeRequest)
+                             isFakeRequest: isFakeRequest,
+                             callback: callback)
     }
 
     /// reset the SDK

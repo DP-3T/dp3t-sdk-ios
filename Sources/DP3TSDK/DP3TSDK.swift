@@ -193,12 +193,12 @@ class DP3TSDK {
     /// - Parameters:
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
-    ///   - callback: callback
     ///   - isFakeRequest: indicates if the request should be a fake one. This method should be called regulary so people sniffing the networking traffic can no figure out if somebody is marking themself actually as exposed
+    ///   - callback: callback
     func iWasExposed(onset: Date,
                      authentication: ExposeeAuthMethod,
-                     callback: @escaping (Result<Void, DP3TTracingError>) -> Void,
-                     isFakeRequest: Bool = false) {
+                     isFakeRequest: Bool = false,
+                     callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         getATracingServiceClient(forceRefresh: false) { [weak self] result in
             guard let self = self else {
                 return
