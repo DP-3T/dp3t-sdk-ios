@@ -88,14 +88,23 @@ class DP3TDatabase {
             _logggingStorage = try LoggingStorage(database: connection)
             _secretKeysStorage = try SecretKeysStorage(database: connection)
         #endif
+
+        try deleteOldDate()
+    }
+
+    //deletes data older than CryptoConstants.numberOfDaysToKeepData
+    func deleteOldDate() throws{
+        try contactsStorage.deleteOldContacts()
+        try handshakesStorage.deleteOldHandshakes()
+        try knownCasesStorage.deleteOldKnownCases()
+        try matchedContactsStorage.deleteExpiredMatchedContacts()
     }
 
     /// Generates contacts from handshakes and deletes handshakes
     /// Should be called ragulary to ensure completenes of contacts
     /// - Throws: if error happens
     func generateContactsFromHandshakes() throws {
-        try contactsStorage.deleteOldContacts()
-        try handshakesStorage.deleteOldHandshakes()
+        try deleteOldDate()
         let epochStart = DP3TCryptoModule.getEpochStart()
         let handshakes = try handshakesStorage.getAll(olderThan: epochStart)
         let contacts = ContactFactory.contacts(from: handshakes)
