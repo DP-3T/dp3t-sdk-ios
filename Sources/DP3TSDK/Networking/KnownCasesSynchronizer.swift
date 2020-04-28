@@ -61,7 +61,7 @@ class KnownCasesSynchronizer {
     static func initializeSynchronizerIfNeeded(defaults: DefaultStorage = Default.shared) -> Date {
         guard defaults.lastLoadedBatchReleaseTime == nil else { return defaults.lastLoadedBatchReleaseTime! }
         let nowTimestamp = Date().timeIntervalSince1970
-        let lastBatch = Date(timeIntervalSince1970: nowTimestamp - nowTimestamp.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght))
+        let lastBatch = Date(timeIntervalSince1970: nowTimestamp - nowTimestamp.truncatingRemainder(dividingBy: NetworkingConstants.batchLength))
         var mutableDefaults = defaults
         mutableDefaults.lastLoadedBatchReleaseTime = lastBatch
         return lastBatch
@@ -79,12 +79,12 @@ class KnownCasesSynchronizer {
             lastBatch = KnownCasesSynchronizer.initializeSynchronizerIfNeeded().timeIntervalSince1970
         }
 
-        let batchesToLoad = Int((nowTimestamp - lastBatch) / NetworkingConstants.batchLenght)
+        let batchesToLoad = Int((nowTimestamp - lastBatch) / NetworkingConstants.batchLength)
 
-        let nextBatch = lastBatch + NetworkingConstants.batchLenght
+        let nextBatch = lastBatch + NetworkingConstants.batchLength
 
         for batchIndex in (0 ..< batchesToLoad) {
-            let currentReleaseTime = Date(timeIntervalSince1970: nextBatch + NetworkingConstants.batchLenght * TimeInterval(batchIndex))
+            let currentReleaseTime = Date(timeIntervalSince1970: nextBatch + NetworkingConstants.batchLength * TimeInterval(batchIndex))
             let result = service.getExposeeSynchronously(batchTimestamp: currentReleaseTime)
             switch result {
             case let .failure(error):

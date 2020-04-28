@@ -16,7 +16,7 @@ final class CryptoModuleTest: XCTestCase {
         let currentEphID = try! crypto.getCurrentEphID()
         var matchingCount = 0
         for ephID in allEphsOfToday {
-            XCTAssert(ephID.count == CryptoConstants.keyLenght)
+            XCTAssert(ephID.count == CryptoConstants.keyLength)
             if ephID == currentEphID {
                 matchingCount += 1
             }

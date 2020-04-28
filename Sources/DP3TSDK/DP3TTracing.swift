@@ -173,12 +173,12 @@ public enum DP3TTracing {
             }
         }
 
-        public static var batchLenght: TimeInterval {
+        public static var batchLength: TimeInterval {
             get {
-                return NetworkingConstants.batchLenght
+                return NetworkingConstants.batchLength
             }
             set {
-                NetworkingConstants.batchLenght = newValue
+                NetworkingConstants.batchLength = newValue
             }
         }
 

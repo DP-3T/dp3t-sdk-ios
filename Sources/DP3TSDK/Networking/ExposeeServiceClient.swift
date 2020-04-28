@@ -107,31 +107,31 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         // Validate JWT
         if let verifier = self.jwtVerifier {
             guard let jwtString = httpResponse.value(for: "Signature") else {
-                return .failure(.jwtSignitureError(code: 1, debugDescription: "No Signature field found in the header of the response. If the app specifies a JWT public key certificate for verification use, the server must send a `Signature` header field"))
+                return .failure(.jwtSignatureError(code: 1, debugDescription: "No Signature field found in the header of the response. If the app specifies a JWT public key certificate for verification use, the server must send a `Signature` header field"))
             }
 
             do {
                 let jwt = try JWT<ExposeeClaims>(jwtString: jwtString, verifier: verifier)
                 let validationResult = jwt.validateClaims(leeway: 10)
                 guard validationResult == .success else {
-                    return .failure(.jwtSignitureError(code: 2, debugDescription: "JWT signiture don't match"))
+                    return .failure(.jwtSignatureError(code: 2, debugDescription: "JWT signature don't match"))
                 }
                 // Verify the batch time
                 let batchReleaseTimeRaw = jwt.claims.batchReleaseTime
                 let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
                 guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
-                    return .failure(.jwtSignitureError(code: 3, debugDescription: "Batch release time missmatch"))
+                    return .failure(.jwtSignatureError(code: 3, debugDescription: "Batch release time missmatch"))
                 }
 
                 // Verify the hash
                 let claimContentHash = Data(base64Encoded: jwt.claims.contentHash)
                 let computedContentHash = Crypto.sha256(responseData)
                 guard claimContentHash == computedContentHash else {
-                    return .failure(.jwtSignitureError(code: 4, debugDescription: "Content Hash missmatch"))
+                    return .failure(.jwtSignatureError(code: 4, debugDescription: "Content Hash missmatch"))
                 }
 
             } catch {
-                return .failure(.jwtSignitureError(code: 5, debugDescription: "Generic JWC framework error \(error.localizedDescription)"))
+                return .failure(.jwtSignatureError(code: 5, debugDescription: "Generic JWC framework error \(error.localizedDescription)"))
             }
         }
 

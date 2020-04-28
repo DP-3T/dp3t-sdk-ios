@@ -11,7 +11,7 @@ import UIKit
 func initializeSDK(){
     /// Can be initialized either by:
     /// - using the discovery:
-    DP3TTracing.batchLenght = Default.shared.batchLenght
+    DP3TTracing.batchLength = Default.shared.batchLength
     let appVersion: String
     if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String{
