@@ -9,6 +9,6 @@ import Foundation
 /// Mobdel used for showing exposure days
 public struct ExposureDay: Equatable {
     public let identifier: Int?
-    internal let exposedDate: Date
+    public let exposedDate: Date
     public let reportDate: Date
 }

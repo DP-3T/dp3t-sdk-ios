@@ -59,7 +59,7 @@ class ExposureDaysStorage {
         try deleteExpiredExpsureDays()
 
         var exposureDays = [ExposureDay]()
-        for row in try database.prepare(table) {
+        for row in try database.prepare(table.order(reportDateColumn.asc)) {
             let exposureDay = ExposureDay(identifier: row[idColumn],
                                           exposedDate: Date(milliseconds: row[exposedDateColumn]),
                                           reportDate: Date(milliseconds: row[reportDateColumn]))
