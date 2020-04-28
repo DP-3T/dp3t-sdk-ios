@@ -69,7 +69,7 @@ class DP3TMatcher: DP3TMatcherProtocol {
         let contacts = try database.contactsStorage.getAllMatchedContacts()
 
         /// Group contacts by date and associated windowCounts
-        let groups = contacts.reduce(into: [Date: Int]()) { (groups, current) in
+        let groups = contacts.reduce(into: [Date: Int]()) { groups, current in
             let existing = groups[current.date] ?? 0
             groups[current.date] = existing + current.windowCount
         }
@@ -88,7 +88,7 @@ class DP3TMatcher: DP3TMatcherProtocol {
 
         let daysAfter = try database.exposureDaysStorage.getExposureDays()
 
-        ///Inform the delegate if we found a new match
+        /// Inform the delegate if we found a new match
         if daysBefore != daysAfter {
             delegate.didFindMatch()
         }

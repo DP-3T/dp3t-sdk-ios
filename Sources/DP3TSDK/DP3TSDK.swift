@@ -214,7 +214,7 @@ class DP3TSDK {
                     var key: Data
 
                     if isFakeRequest {
-                        //Send random data if request is fake
+                        // Send random data if request is fake
                         day = DayDate()
                         key = (try? Crypto.generateRandomKey()) ?? Data()
                     } else {

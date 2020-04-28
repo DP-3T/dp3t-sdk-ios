@@ -5,18 +5,17 @@
  */
 
 @testable import DP3TSDK
-import XCTest
 import SQLite
+import XCTest
 
-fileprivate class MockMatcherDelegate: DP3TMatcherDelegate {
-
+private class MockMatcherDelegate: DP3TMatcherDelegate {
     var didFindMatchStorage: Bool = false
 
     func didFindMatch() {
         didFindMatchStorage = true
     }
 
-    func handShakeAdded(_ handshake: HandshakeModel) {}
+    func handShakeAdded(_: HandshakeModel) {}
 }
 
 final class DP3TMatcherTests: XCTestCase {
@@ -69,12 +68,11 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-
         try! matcher.checkNewKnownCase(knownCase)
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
-    
+
     func testFindMatchSingleEnaughtWindows() {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
@@ -87,7 +85,6 @@ final class DP3TMatcherTests: XCTestCase {
                                        onset: Date().addingTimeInterval(-.day),
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
-        
 
         try! matcher.checkNewKnownCase(knownCase)
 
@@ -98,15 +95,12 @@ final class DP3TMatcherTests: XCTestCase {
         XCTAssertEqual(contacts.first!.date, currentBatchStartDate)
         XCTAssertEqual(contacts.first!.windowCount, ContactFactory.numberOfWindowsForExposure + 1)
 
-
         let days = try! database.exposureDaysStorage.getExposureDays()
         XCTAssertEqual(days.isEmpty, false)
         XCTAssertEqual(days.first!.exposedDate, currentBatchStartDate)
     }
 
     func testFindMatchSingleNotEnaughtWindows() {
-
-
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
 
@@ -123,7 +117,6 @@ final class DP3TMatcherTests: XCTestCase {
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
-
 
     func testFindMatchMulipleContactsToReachThreshold() {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
@@ -150,7 +143,6 @@ final class DP3TMatcherTests: XCTestCase {
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
-
 
     func testFindMatchMulipleContactsNotToReachThreshold() {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
@@ -188,7 +180,6 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-
         try! matcher.checkNewKnownCase(knownCase)
 
         XCTAssert(delegate.didFindMatchStorage)
@@ -200,7 +191,7 @@ final class DP3TMatcherTests: XCTestCase {
         XCTAssert(!delegate.didFindMatchStorage)
     }
 
-    func testWithMultipleDaysMatching(){
+    func testWithMultipleDaysMatching() {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
 
@@ -218,7 +209,6 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-
         try! matcher.checkNewKnownCase(knownCase)
 
         XCTAssert(delegate.didFindMatchStorage)
@@ -233,9 +223,9 @@ final class DP3TMatcherTests: XCTestCase {
         database.contactsStorage.add(contact: c2)
 
         let knownCase1 = KnownCaseModel(id: nil,
-                                       key: key,
-                                       onset: Date().addingTimeInterval(-.day * 2),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(-.day + NetworkingConstants.batchLength))
+                                        key: key,
+                                        onset: Date().addingTimeInterval(-.day * 2),
+                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(-.day + NetworkingConstants.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase1])
 
         try! matcher.checkNewKnownCase(knownCase1)
