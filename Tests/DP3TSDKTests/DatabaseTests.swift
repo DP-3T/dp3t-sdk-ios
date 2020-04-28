@@ -53,10 +53,12 @@ final class DatabaseTests: XCTestCase {
 
         try! database.generateContactsFromHandshakes()
 
+        let bucketStart = epochStart.timeIntervalSince1970 - epochStart.timeIntervalSince1970.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+
         let c = try! database.contactsStorage.getContacts(for: day)
         XCTAssertEqual(c.count, 1)
         XCTAssertEqual(c.first!.ephID, token)
-        XCTAssertEqual(c.first!.day, day)
+        XCTAssertEqual(c.first!.date, Date(timeIntervalSince1970: bucketStart))
     }
 
     func testContactGenerationUnique() {
@@ -72,10 +74,12 @@ final class DatabaseTests: XCTestCase {
         try! database.handshakesStorage.add(handshake: h2)
         try! database.generateContactsFromHandshakes()
 
+        let bucketStart = ts.timeIntervalSince1970 - ts.timeIntervalSince1970.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+
         let c = try! database.contactsStorage.getContacts(for: day, overlappingTimeInverval: .day, contactThreshold: 1)
         XCTAssertEqual(c.count, 1)
         XCTAssertEqual(c.first!.ephID, token)
-        XCTAssertEqual(c.first!.day, day)
+        XCTAssertEqual(c.first!.date, Date(timeIntervalSince1970: bucketStart))
     }
 
     func testContactGenerationUniqueDifferentEpoch() {
@@ -122,11 +126,10 @@ final class DatabaseTests: XCTestCase {
 
     func testDeleteOldContacts(){
         let date = DayDate().dayMin.addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day + 1))
-        let day = DayDate(date: date)
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
-        let contact = Contact(identifier: nil, ephID: token, day: day, windowCount: 0, associatedKnownCase: nil)
+        let contact = Contact(identifier: nil, ephID: token, date: date, windowCount: 0, associatedKnownCase: nil)
         XCTAssertEqual(try! database.contactsStorage.count(), 0)
         sleep(1)
         database.contactsStorage.add(contact: contact)
@@ -139,11 +142,10 @@ final class DatabaseTests: XCTestCase {
 
     func testNotDeleteNewContacts() {
         let date = Date().addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day * 0.5))
-        let day = DayDate(date: date)
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
-        let contact = Contact(identifier: nil, ephID: token, day: day, windowCount: 0, associatedKnownCase: nil)
+        let contact = Contact(identifier: nil, ephID: token, date: date, windowCount: 0, associatedKnownCase: nil)
         database.contactsStorage.add(contact: contact)
         var count = try! database.contactsStorage.count()
         XCTAssertEqual(count, 1)

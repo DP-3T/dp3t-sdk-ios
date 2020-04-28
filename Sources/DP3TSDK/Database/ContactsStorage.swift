@@ -53,7 +53,7 @@ class ContactsStorage {
     /// - Parameter contact: the Contact to add
     func add(contact: Contact) {
         let insert = table.insert(
-            dateColumn <- Date(timeIntervalSince1970: contact.day.timestamp).millisecondsSince1970,
+            dateColumn <- contact.date.millisecondsSince1970,
             ephIDColumn <- contact.ephID,
             windowCountColumn <- contact.windowCount,
             associatedKnownCaseColumn <- contact.associatedKnownCase
@@ -104,7 +104,7 @@ class ContactsStorage {
             guard row[associatedKnownCaseColumn] == nil else { continue }
             let model = Contact(identifier: row[idColumn],
                                 ephID: row[ephIDColumn],
-                                day: DayDate(date: Date(milliseconds: row[dateColumn])),
+                                date: Date(milliseconds: row[dateColumn]),
                                 windowCount: row[windowCountColumn],
                                 associatedKnownCase: row[associatedKnownCaseColumn])
             contacts.append(model)

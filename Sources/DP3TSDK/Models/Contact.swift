@@ -10,7 +10,7 @@ import Foundation
 struct Contact {
     let identifier: Int?
     let ephID: EphID
-    let day: DayDate
+    let date: Date
     let windowCount: Int
     let associatedKnownCase: Int?
 }
