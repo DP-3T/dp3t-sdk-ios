@@ -2,6 +2,7 @@
 
 ## Latest
 - Fixed issue contact date calculation
+- Adds fake request flag to exposed method
 
 ## Version 0.1.8 (27.4.2020)
 - Add parameter to set bucket length (has to be supported by the backend)

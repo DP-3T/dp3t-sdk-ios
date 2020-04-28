@@ -178,6 +178,21 @@ class ControlViewController: UIViewController {
                 button.setTitleColor(.blue, for: .normal)
                 button.setTitleColor(.black, for: .highlighted)
             }
+            button.setTitle("Set Infected Fake", for: .normal)
+            button.addTarget(self, action: #selector(setExposedFake), for: .touchUpInside)
+            stackView.addArrangedSubview(button)
+        }
+        stackView.addSpacerView(12)
+
+        do {
+            let button = UIButton()
+            if #available(iOS 13.0, *) {
+                button.setTitleColor(.systemBlue, for: .normal)
+                button.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                button.setTitleColor(.blue, for: .normal)
+                button.setTitleColor(.black, for: .highlighted)
+            }
             button.setTitle("Synchronize with Backend", for: .normal)
             button.addTarget(self, action: #selector(sync), for: .touchUpInside)
             stackView.addArrangedSubview(button)
@@ -274,6 +289,19 @@ class ControlViewController: UIViewController {
 
     @objc func setExposed() {
         DP3TTracing.iWasExposed(onset: Date(), authentication: .none) { _ in
+            DP3TTracing.status { result in
+                switch result {
+                case let .success(state):
+                    self.updateUI(state)
+                case .failure:
+                    break
+                }
+            }
+        }
+    }
+
+    @objc func setExposedFake() {
+        DP3TTracing.iWasExposed(onset: Date(), authentication: .none, isFakeRequest: true) { _ in
             DP3TTracing.status { result in
                 switch result {
                 case let .success(state):
