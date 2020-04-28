@@ -106,7 +106,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
         // Validate JWT
         if #available(iOS 11.0, *), let verifier = jwtVerifier {
-
             do {
                 let claims: ExposeeClaims = try verifier.verify(httpResponse: httpResponse, httpBody: responseData)
 
