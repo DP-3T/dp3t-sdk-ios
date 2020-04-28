@@ -59,7 +59,7 @@ class DP3TMatcher: DP3TMatcherProtocol {
             fatalError("Known case has to be in database at this point")
         }
 
-        /// Store store all matching links in database
+        /// Store all matching links in database
         try matchingContacts.forEach { contact in
             guard let contactId = contact.identifier else { return }
             try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
@@ -83,7 +83,7 @@ class DP3TMatcher: DP3TMatcherProtocol {
 
         let daysBefore = try database.exposureDaysStorage.getExposureDays()
 
-        /// Safe the matchedDays
+        /// Save the matchedDays
         try matchedDays.forEach(database.exposureDaysStorage.add(_:))
 
         let daysAfter = try database.exposureDaysStorage.getExposureDays()
