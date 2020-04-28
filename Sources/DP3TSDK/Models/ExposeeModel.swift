@@ -29,7 +29,7 @@ struct ExposeeModel: Encodable {
         let startOfDayTimestamp = Int(onset.dayMin.timeIntervalSince1970)
         try container.encode(startOfDayTimestamp, forKey: .onset)
 
-        try container.encode(fake, forKey: .fake)
+        try container.encode(fake ? 1 : 0, forKey: .fake)
     }
 
     enum CodingKeys: CodingKey {
