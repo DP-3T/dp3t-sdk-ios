@@ -370,7 +370,7 @@ extension DP3TSDK: BluetoothPermissionDelegate {
             os_log("%@", logString)
 
             let dbLogString = "[\(appVersion)|\(DP3TTracing.frameworkVersion)] \(string)"
-            if let entry = try? database.loggingStorage.log(type: type, message: logString) {
+            if let entry = try? database.loggingStorage.log(type: type, message: dbLogString) {
                 DispatchQueue.main.async {
                     self.delegate?.didAddLog(entry)
                 }
