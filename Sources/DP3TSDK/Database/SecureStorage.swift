@@ -22,11 +22,10 @@ protocol SecureStorageProtocol {
 
 /// used for storing SecretKeys and EphIDs in the Keychain
 class SecureStorage: SecureStorageProtocol {
-
     #if CALIBRATION
         weak var debugSecretKeysStorageDelegate: SecretKeysStorageDelegate? {
             didSet {
-                if let secretKeys = try? self.getSecretKeys() {
+                if let secretKeys = try? getSecretKeys() {
                     try? debugSecretKeysStorageDelegate?.update(secretKeys: secretKeys)
                 }
             }
@@ -42,9 +41,9 @@ class SecureStorage: SecureStorageProtocol {
     /// - Parameter keychain: the keychain to use
     init(keychain: Keychain = Keychain()) {
         self.keychain = keychain
-        if (Default.shared.isFirstLaunch) {
+        if Default.shared.isFirstLaunch {
             Default.shared.isFirstLaunch = false
-            self.removeAllObject()
+            removeAllObject()
         }
     }
 
@@ -75,7 +74,7 @@ class SecureStorage: SecureStorageProtocol {
     func setEphIDs(_ object: EphIDsForDay) throws {
         let result = keychain.set(object, for: ephIDsTodayKey)
         switch result {
-        case .success(_):
+        case .success:
             return
         case let .failure(error):
             throw error
@@ -109,7 +108,7 @@ class SecureStorage: SecureStorageProtocol {
     func setSecretKeys(_ object: [SecretKey]) throws {
         let result = keychain.set(object, for: secretKeyKey)
         switch result {
-        case .success(_):
+        case .success:
             #if CALIBRATION
                 try debugSecretKeysStorageDelegate?.update(secretKeys: object)
             #endif

@@ -4,15 +4,15 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import Foundation
 @testable import DP3TSDK
+import Foundation
 
 class MockDefaults: DefaultStorage {
     var isFirstLaunch: Bool = false
 
-    var lastSync: Date? = nil
+    var lastSync: Date?
 
-    var lastLoadedBatchReleaseTime: Date? = nil
+    var lastLoadedBatchReleaseTime: Date?
 
     var didMarkAsInfected: Bool = false
 }

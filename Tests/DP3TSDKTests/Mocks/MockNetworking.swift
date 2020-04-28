@@ -1,27 +1,27 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
 import Foundation
 
 class MockTask: URLSessionDataTask {
-  private let data_: Data?
-  private let urlResponse_: URLResponse?
-  private let error_: Error?
+    private let data_: Data?
+    private let urlResponse_: URLResponse?
+    private let error_: Error?
 
-  var completionHandler: ((Data?, URLResponse?, Error?) -> Void)?
+    var completionHandler: ((Data?, URLResponse?, Error?) -> Void)?
 
-  init(data: Data?, urlResponse: URLResponse?, error: Error?) {
-    self.data_ = data
-    self.urlResponse_ = urlResponse
-    self.error_ = error
-  }
+    init(data: Data?, urlResponse: URLResponse?, error: Error?) {
+        data_ = data
+        urlResponse_ = urlResponse
+        error_ = error
+    }
 
-  override func resume() {
-    self.completionHandler?(self.data_, self.urlResponse_, self.error_)
-  }
+    override func resume() {
+        completionHandler?(data_, urlResponse_, error_)
+    }
 }
 
 class MockUrlCache: URLCache {
@@ -30,7 +30,8 @@ class MockUrlCache: URLCache {
         self.response = response
         super.init(memoryCapacity: 1, diskCapacity: 1, diskPath: "")
     }
-    override func cachedResponse(for request: URLRequest) -> CachedURLResponse? {
+
+    override func cachedResponse(for _: URLRequest) -> CachedURLResponse? {
         return response
     }
 }
@@ -42,6 +43,7 @@ class MockSession: URLSession {
     init(data: Data?, urlResponse: URLResponse?, error: Error?) {
         task = MockTask(data: data, urlResponse: urlResponse, error: error)
     }
+
     override func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
         requests.append(request)
         task.completionHandler = completionHandler

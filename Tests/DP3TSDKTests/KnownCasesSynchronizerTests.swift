@@ -4,32 +4,31 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import Foundation
 @testable import DP3TSDK
-import XCTest
+import Foundation
 import SQLite
+import XCTest
 
-fileprivate class MockMatcher: DP3TMatcherProtocol {
+private class MockMatcher: DP3TMatcherProtocol {
     var knownCaseKeys: [Data] = []
     func checkNewKnownCase(_ knownCase: KnownCaseModel) throws {
         knownCaseKeys.append(knownCase.key)
     }
 }
 
-fileprivate class MockService: ExposeeServiceClientProtocol {
+private class MockService: ExposeeServiceClientProtocol {
     var models: [KnownCaseModel] = []
     var requests: Int = 0
 
-    func getExposeeSynchronously(batchTimestamp: Date) -> ExposeeResult {
+    func getExposeeSynchronously(batchTimestamp _: Date) -> ExposeeResult {
         requests += 1
         return .success(models)
     }
 
-    func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (ExposeeCompletion) -> Void) {}
+    func addExposee(_: ExposeeModel, authentication _: ExposeeAuthMethod, completion _: @escaping (ExposeeCompletion) -> Void) {}
 }
 
 final class KnownCasesSynchronizerTests: XCTestCase {
-
     let connection = try! Connection(.inMemory, readonly: false)
 
     lazy var database: DP3TDatabase! = try! DP3TDatabase(connection_: connection)
@@ -38,14 +37,13 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         try! database.emptyStorage()
     }
 
-    fileprivate func getMockService(array: [KnownCaseModel] = []) -> MockService{
+    fileprivate func getMockService(array: [KnownCaseModel] = []) -> MockService {
         let service = MockService()
         service.models = array
         return service
     }
 
     func testFirstLaunchNoRequests() {
-
         let defaults = MockDefaults()
         let matcher = MockMatcher()
         let service = getMockService()
@@ -57,28 +55,27 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let exposeeExpectation = expectation(description: "exposee")
 
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
-        synchronizer.sync(service: service) { (result) in
+        synchronizer.sync(service: service) { result in
             if case .success = result {
                 XCTAssertEqual(service.requests, 0)
                 let nowTs = Date().timeIntervalSince1970
-                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
                 XCTAssertEqual(defaults.lastLoadedBatchReleaseTime!.timeIntervalSince1970, lastBatchTs, accuracy: 1.0)
             } else {
                 XCTFail()
             }
             exposeeExpectation.fulfill()
         }
-        waitForExpectations(timeout: 1) { (error) in
-          XCTAssertNotNil(exposeeExpectation)
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertNotNil(exposeeExpectation)
         }
-
     }
 
     func testNotFirstLaunch() {
         let defaults = MockDefaults()
         do {
-            let nowTs = Date().addingTimeInterval(NetworkingConstants.batchLenght * 100 * (-1)).timeIntervalSince1970
-            let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+            let nowTs = Date().addingTimeInterval(NetworkingConstants.batchLength * 100 * (-1)).timeIntervalSince1970
+            let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
             defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: lastBatchTs)
         }
         let matcher = MockMatcher()
@@ -91,21 +88,20 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let exposeeExpectation = expectation(description: "exposee")
 
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
-        synchronizer.sync(service: service) { (result) in
+        synchronizer.sync(service: service) { result in
             if case .success = result {
                 XCTAssertEqual(service.requests, 100)
                 let nowTs = Date().timeIntervalSince1970
-                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
                 XCTAssertEqual(defaults.lastLoadedBatchReleaseTime!.timeIntervalSince1970, lastBatchTs, accuracy: 1.0)
             } else {
                 XCTFail()
             }
             exposeeExpectation.fulfill()
         }
-        waitForExpectations(timeout: 1) { (error) in
-          XCTAssertNotNil(exposeeExpectation)
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertNotNil(exposeeExpectation)
         }
-
     }
 
     func testFirstAndSecondLaunch() {
@@ -120,47 +116,47 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         var exposeeExpectation = expectation(description: "exposee")
 
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
-        synchronizer.sync(service: service) { (result) in
+        synchronizer.sync(service: service) { result in
             if case .success = result {
                 XCTAssertEqual(service.requests, 0)
                 let nowTs = Date().timeIntervalSince1970
-                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
                 XCTAssertEqual(defaults.lastLoadedBatchReleaseTime!.timeIntervalSince1970, lastBatchTs, accuracy: 1.0)
             } else {
                 XCTFail()
             }
             exposeeExpectation.fulfill()
         }
-        waitForExpectations(timeout: 1) { (error) in
-          XCTAssertNotNil(exposeeExpectation)
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertNotNil(exposeeExpectation)
         }
 
         exposeeExpectation = expectation(description: "exposee")
 
-        let nextSync = Date().addingTimeInterval(NetworkingConstants.batchLenght * 24)
-        synchronizer.sync(service: service, now: nextSync) { (result) in
+        let nextSync = Date().addingTimeInterval(NetworkingConstants.batchLength * 24)
+        synchronizer.sync(service: service, now: nextSync) { result in
             if case .success = result {
                 XCTAssertEqual(service.requests, 24)
                 let nowTs = nextSync.timeIntervalSince1970
-                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
+                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
                 XCTAssertEqual(defaults.lastLoadedBatchReleaseTime!.timeIntervalSince1970, lastBatchTs, accuracy: 1.0)
             } else {
                 XCTFail()
             }
             exposeeExpectation.fulfill()
         }
-        waitForExpectations(timeout: 1) { (error) in
-          XCTAssertNotNil(exposeeExpectation)
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertNotNil(exposeeExpectation)
         }
     }
 
-    func testCallingOfMatcher(){
+    func testCallingOfMatcher() {
         let b64Key = "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI="
         let key = Data(base64Encoded: b64Key)!
         let defaults = MockDefaults()
         let now = Date().timeIntervalSince1970
-        let ts = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght)
-        defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: ts - NetworkingConstants.batchLenght)
+        let ts = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+        defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: ts - NetworkingConstants.batchLength)
         let matcher = MockMatcher()
         let knownCase = KnownCaseModel(id: nil, key: key, onset: Date(), batchTimestamp: Date())
         let service = getMockService(array: [knownCase])
@@ -171,7 +167,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                                   defaults: defaults)
         let exposeeExpectation = expectation(description: "exposee")
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
-        synchronizer.sync(service: service) { (result) in
+        synchronizer.sync(service: service) { result in
 
             if case .success = result {
                 XCTAssertEqual(matcher.knownCaseKeys.count, 1)
@@ -183,8 +179,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
             exposeeExpectation.fulfill()
         }
-        waitForExpectations(timeout: 1) { (error) in
-          XCTAssertNotNil(exposeeExpectation)
+        waitForExpectations(timeout: 1) { _ in
+            XCTAssertNotNil(exposeeExpectation)
         }
     }
 
@@ -192,6 +188,6 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         ("testFirstLaunchNoRequests", testFirstLaunchNoRequests),
         ("testNotFirstLaunch", testNotFirstLaunch),
         ("testCallingOfMatcher", testCallingOfMatcher),
-        ("testFirstAndSecondLaunch", testFirstAndSecondLaunch)
+        ("testFirstAndSecondLaunch", testFirstAndSecondLaunch),
     ]
 }

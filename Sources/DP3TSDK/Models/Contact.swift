@@ -1,8 +1,8 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
 import Foundation
 
@@ -10,7 +10,7 @@ import Foundation
 struct Contact {
     let identifier: Int?
     let ephID: EphID
-    let day: DayDate
+    let date: Date
     let windowCount: Int
     let associatedKnownCase: Int?
 }

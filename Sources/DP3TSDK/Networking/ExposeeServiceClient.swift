@@ -5,8 +5,8 @@
  */
 
 import Foundation
-import UIKit
 import SwiftJWT
+import UIKit
 
 protocol ExposeeServiceClientProtocol {
     typealias ExposeeResult = Result<[KnownCaseModel]?, DP3TNetworkingError>
@@ -39,7 +39,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     private let urlCache: URLCache
 
-    private let jwtVerifier: JWTVerifier?
+    private let jwtVerifier: DP3TJWTVerifier?
 
     /// The user agent to send with the requests
     private var userAgent: String {
@@ -59,7 +59,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         exposeeEndpoint = ExposeeEndpoint(baseURL: descriptor.bucketBaseUrl)
         managingExposeeEndpoint = ManagingExposeeEndpoint(baseURL: descriptor.reportBaseUrl)
         if #available(iOS 11.0, *), let jwtPublicKey = descriptor.jwtPublicKey {
-            jwtVerifier = JWTVerifier.es256(publicKey: jwtPublicKey)
+            jwtVerifier = DP3TJWTVerifier(publicKey: jwtPublicKey, jwtTokenHeaderKey: "Signature")
         } else {
             jwtVerifier = nil
         }
@@ -86,7 +86,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
         if let date = httpResponse.date,
             abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
-                return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
+            return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
         }
 
         let httpStatus = httpResponse.statusCode
@@ -105,33 +105,21 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
 
         // Validate JWT
-        if let verifier = self.jwtVerifier {
-            guard let jwtString = httpResponse.value(for: "Signature") else {
-                return .failure(.jwtSignitureError(code: 1, debugDescription: "No Signature field found in the header of the response. If the app specifies a JWT public key certificate for verification use, the server must send a `Signature` header field"))
-            }
-
+        if #available(iOS 11.0, *), let verifier = jwtVerifier {
             do {
-                let jwt = try JWT<ExposeeClaims>(jwtString: jwtString, verifier: verifier)
-                let validationResult = jwt.validateClaims(leeway: 10)
-                guard validationResult == .success else {
-                    return .failure(.jwtSignitureError(code: 2, debugDescription: "JWT signiture don't match"))
-                }
+                let claims: ExposeeClaims = try verifier.verify(httpResponse: httpResponse, httpBody: responseData)
+
                 // Verify the batch time
-                let batchReleaseTimeRaw = jwt.claims.batchReleaseTime
+                let batchReleaseTimeRaw = claims.batchReleaseTime
                 let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
                 guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
-                    return .failure(.jwtSignitureError(code: 3, debugDescription: "Batch release time missmatch"))
+                    return .failure(.jwtSignatureError(code: 3, debugDescription: "Batch release time missmatch"))
                 }
 
-                // Verify the hash
-                let claimContentHash = Data(base64Encoded: jwt.claims.contentHash)
-                let computedContentHash = Crypto.sha256(responseData)
-                guard claimContentHash == computedContentHash else {
-                    return .failure(.jwtSignitureError(code: 4, debugDescription: "Content Hash missmatch"))
-                }
-
+            } catch let error as DP3TNetworkingError {
+                return .failure(error)
             } catch {
-                return .failure(.jwtSignitureError(code: 5, debugDescription: "Generic JWC framework error \(error.localizedDescription)"))
+                return .failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)"))
             }
         }
 
@@ -157,7 +145,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
     func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
-
         // addExposee endpoint
         let url = managingExposeeEndpoint.addExposee()
 
@@ -176,7 +163,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
         request.httpBody = payload
 
-        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
             guard error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))
                 return
@@ -201,7 +188,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     /// - Parameters:
     ///   - enviroment: The environment to use
     ///   - completion: The completion block
-    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[ApplicationDescriptor], DP3TNetworkingError>) -> Void) {
+    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared, completion: @escaping (Result<[ApplicationDescriptor], DP3TNetworkingError>) -> Void) {
         let url = enviroment.discoveryEndpoint
         let request = URLRequest(url: url)
 
@@ -225,7 +212,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 completion(.failure(.noDataReturned))
                 return
             }
-            
+
             do {
                 let discoveryResponse = try JSONDecoder().decode(DiscoveryServiceResponse.self, from: responseData)
                 return completion(.success(discoveryResponse.applications))
@@ -254,13 +241,13 @@ internal extension HTTPURLResponse {
         if #available(iOS 13.0, *) {
             return value(forHTTPHeaderField: key)
         } else {
-            //https://bugs.swift.org/browse/SR-2429
+            // https://bugs.swift.org/browse/SR-2429
             return (allHeaderFields as NSDictionary)[key] as? String
         }
     }
 }
 
-fileprivate struct ExposeeClaims: Claims {
+private struct ExposeeClaims: DP3TClaims {
     let iss: String
     let iat: Date
     let exp: Date
@@ -276,8 +263,7 @@ fileprivate struct ExposeeClaims: Claims {
     }
 }
 
-
-fileprivate extension URLSession {
+private extension URLSession {
     func synchronousDataTask(with request: URLRequest) -> (Data?, URLResponse?, Error?) {
         var data: Data?
         var response: URLResponse?

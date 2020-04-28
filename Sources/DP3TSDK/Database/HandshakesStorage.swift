@@ -104,86 +104,85 @@ class HandshakesStorage {
 
 #if CALIBRATION
 
-extension HandshakesStorage {
+    extension HandshakesStorage {
+        func getHandshakes(_ request: HandshakeRequest) throws -> HandshakeResponse {
+            var query = table
 
-    func getHandshakes(_ request: HandshakeRequest) throws -> HandshakeResponse {
-        var query = table
+            // Limit
+            if let limit = request.limit {
+                assert(limit > 0, "Limits should be at least one")
+                assert(request.offset >= 0, "Offset must be positive")
+                query = query.limit(limit, offset: request.offset)
+            }
 
-        // Limit
-        if let limit = request.limit {
-            assert(limit > 0, "Limits should be at least one")
-            assert(request.offset >= 0, "Offset must be positive")
-            query = query.limit(limit, offset: request.offset)
+            // Sorting
+            switch request.sortingOption {
+            case .ascendingTimestamp:
+                query = query.order(timestampColumn.asc)
+            case .descendingTimestamp:
+                query = query.order(timestampColumn.desc)
+            }
+
+            var handshakes = [HandshakeModel]()
+            for row in try database.prepare(query) {
+                let model = HandshakeModel(timestamp: Date(milliseconds: row[timestampColumn]),
+                                           ephID: row[ephIDColumn],
+                                           TXPowerlevel: row[TXPowerlevelColumn],
+                                           RSSI: row[RSSIColumn])
+                handshakes.append(model)
+            }
+
+            let previousRequest: HandshakeRequest?
+            if request.offset > 0, let limit = request.limit {
+                let diff = request.offset - limit
+                let previousOffset = max(0, diff)
+                let previousLimit = limit + min(0, diff)
+                previousRequest = HandshakeRequest(offset: previousOffset, limit: previousLimit)
+            } else {
+                previousRequest = nil
+            }
+
+            let nextRequest: HandshakeRequest?
+            if request.limit == nil || handshakes.count < request.limit! {
+                nextRequest = nil
+            } else {
+                let nextOffset = request.offset + request.limit!
+                nextRequest = HandshakeRequest(offset: nextOffset, limit: request.limit)
+            }
+
+            return HandshakeResponse(handshakes: handshakes, offset: request.offset, limit: request.limit, previousRequest: previousRequest, nextRequest: nextRequest)
         }
-
-        // Sorting
-        switch request.sortingOption {
-        case .ascendingTimestamp:
-            query = query.order(timestampColumn.asc)
-        case .descendingTimestamp:
-            query = query.order(timestampColumn.desc)
-        }
-
-        var handshakes = [HandshakeModel]()
-        for row in try database.prepare(query) {
-            let model = HandshakeModel(timestamp: Date(milliseconds: row[timestampColumn]),
-                                       ephID: row[ephIDColumn],
-                                       TXPowerlevel: row[TXPowerlevelColumn],
-                                       RSSI: row[RSSIColumn])
-            handshakes.append(model)
-        }
-
-        let previousRequest: HandshakeRequest?
-        if request.offset > 0, let limit = request.limit {
-            let diff = request.offset - limit
-            let previousOffset = max(0, diff)
-            let previousLimit = limit + min(0, diff)
-            previousRequest = HandshakeRequest(offset: previousOffset, limit: previousLimit)
-        } else {
-            previousRequest = nil
-        }
-
-        let nextRequest: HandshakeRequest?
-        if request.limit == nil || handshakes.count < request.limit! {
-            nextRequest = nil
-        } else {
-            let nextOffset = request.offset + request.limit!
-            nextRequest = HandshakeRequest(offset: nextOffset, limit: request.limit)
-        }
-
-        return HandshakeResponse(handshakes: handshakes, offset: request.offset, limit: request.limit, previousRequest: previousRequest, nextRequest: nextRequest)
-    }
-}
-
-public struct HandshakeRequest {
-    public enum SortingOption {
-        case ascendingTimestamp
-        case descendingTimestamp
     }
 
-    public let sortingOption: SortingOption
-    public let offset: Int
-    public let limit: Int?
-    public init(sortingOption: SortingOption = .descendingTimestamp, offset: Int = 0, limit: Int? = nil) {
-        self.sortingOption = sortingOption
-        self.offset = offset
-        self.limit = limit
-    }
-}
+    public struct HandshakeRequest {
+        public enum SortingOption {
+            case ascendingTimestamp
+            case descendingTimestamp
+        }
 
-public struct HandshakeResponse {
-    public let offset: Int
-    public let limit: Int?
-    public let handshakes: [HandshakeModel]
-    public let previousRequest: HandshakeRequest?
-    public let nextRequest: HandshakeRequest?
-    fileprivate init(handshakes: [HandshakeModel], offset: Int, limit: Int?, previousRequest: HandshakeRequest?, nextRequest: HandshakeRequest?) {
-        self.handshakes = handshakes
-        self.previousRequest = previousRequest
-        self.nextRequest = nextRequest
-        self.offset = offset
-        self.limit = limit
+        public let sortingOption: SortingOption
+        public let offset: Int
+        public let limit: Int?
+        public init(sortingOption: SortingOption = .descendingTimestamp, offset: Int = 0, limit: Int? = nil) {
+            self.sortingOption = sortingOption
+            self.offset = offset
+            self.limit = limit
+        }
     }
-}
+
+    public struct HandshakeResponse {
+        public let offset: Int
+        public let limit: Int?
+        public let handshakes: [HandshakeModel]
+        public let previousRequest: HandshakeRequest?
+        public let nextRequest: HandshakeRequest?
+        fileprivate init(handshakes: [HandshakeModel], offset: Int, limit: Int?, previousRequest: HandshakeRequest?, nextRequest: HandshakeRequest?) {
+            self.handshakes = handshakes
+            self.previousRequest = previousRequest
+            self.nextRequest = nextRequest
+            self.offset = offset
+            self.limit = limit
+        }
+    }
 
 #endif

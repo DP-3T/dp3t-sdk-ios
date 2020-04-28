@@ -15,7 +15,6 @@ enum CryptoError: Error {
 
 /// class which handles all cryptographic operations fot the sdk
 internal class Crypto {
-
     /// generates 32 bytes of random data
     /// - Throws: throws if a error happens
     /// - Returns: random data
@@ -33,8 +32,8 @@ internal class Crypto {
     /// Perform the SHA256 hashing algorithm
     /// - Parameter data: input data
     /// - Returns: digest
-    internal static func sha256(_ data : Data) -> Data {
-        var digest = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
+    internal static func sha256(_ data: Data) -> Data {
+        var digest = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
         data.withUnsafeBytes {
             _ = CC_SHA256($0.baseAddress, CC_LONG(data.count), &digest)
         }
@@ -47,11 +46,11 @@ internal class Crypto {
     ///   - key: The key to use for the hash
     /// - Returns: digest
     internal static func hmac(msg: Data, key: Data) -> Data {
-        var macData = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
+        var macData = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
         msg.withUnsafeBytes { msgBytes in
             key.withUnsafeBytes { keyBytes in
                 guard let keyAddress = keyBytes.baseAddress,
-                      let msgAddress = msgBytes.baseAddress
+                    let msgAddress = msgBytes.baseAddress
                 else { return }
                 CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA256),
                        keyAddress, key.count, msgAddress,
@@ -70,14 +69,12 @@ internal class Crypto {
 
         private var cryptor: CCCryptorRef?
 
-
         /// Initialize the encryptor
         /// - Parameter keyData: the key to use
         /// - Throws: throws if a error happens
         internal init(keyData: Data) throws {
-
             self.keyData = keyData
-            self.keyLength = keyData.count
+            keyLength = keyData.count
 
             let cryptStatus = keyData.withUnsafeBytes { keyBytes -> CCCryptorStatus in
                 guard let keyBuffer = keyBytes.baseAddress else { return -1 }
@@ -102,7 +99,6 @@ internal class Crypto {
         deinit {
             CCCryptorRelease(cryptor)
         }
-
 
         /// Update the stream cipher with given data
         /// - Parameter data: input data

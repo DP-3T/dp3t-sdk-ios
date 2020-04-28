@@ -1,18 +1,15 @@
 
-import UIKit
 import Alamofire
+import UIKit
 
 class UploadDatabaseHelper {
-
     private var deviceToken: String {
-        get {
-            if let deviceToken: String = UserDefaults.standard.string(forKey: "org.dpppt.unique_device_token") {
-                return deviceToken
-            } else {
-                let uuid = UUID().uuidString
-                UserDefaults.standard.set(uuid, forKey: "org.dpppt.unique_device_token")
-                return uuid
-            }
+        if let deviceToken: String = UserDefaults.standard.string(forKey: "org.dpppt.unique_device_token") {
+            return deviceToken
+        } else {
+            let uuid = UUID().uuidString
+            UserDefaults.standard.set(uuid, forKey: "org.dpppt.unique_device_token")
+            return uuid
         }
     }
 
@@ -28,10 +25,10 @@ class UploadDatabaseHelper {
         let url = URL(string: "https://dp3tdemoupload.azurewebsites.net/upload")!
         guard let databaseData = try? Data(contentsOf: fileUrl) else {
             completion?(.failure(UploadServerError(error: "Parsing error",
-                                             message: "Couldn't read file",
-                                             path: "",
-                                             status: 404,
-                                             timestamp: Date().timeIntervalSince1970)))
+                                                   message: "Couldn't read file",
+                                                   path: "",
+                                                   status: 404,
+                                                   timestamp: Date().timeIntervalSince1970)))
             return
         }
 
@@ -44,7 +41,7 @@ class UploadDatabaseHelper {
         AF.upload(multipartFormData: { multipartFormData in
             multipartFormData.append(databaseData, withName: "file", fileName: fileName, mimeType: "application/sqlite")
         }, to: url)
-            .response { (response) in
+            .response { response in
                 if let responseData = response.data {
                     if let responseObject = try? JSONDecoder().decode(UploadServerError.self, from: responseData) {
                         completion?(.failure(responseObject))
@@ -52,13 +49,12 @@ class UploadDatabaseHelper {
                         completion?(.success(string))
                     } else {
                         completion?(.failure(UploadServerError(error: "Upload Error",
-                                                         message: "Unknown error",
-                                                         path: "",
-                                                         status: 400,
-                                                         timestamp: Date().timeIntervalSince1970)))
+                                                               message: "Unknown error",
+                                                               path: "",
+                                                               status: 400,
+                                                               timestamp: Date().timeIntervalSince1970)))
                     }
                 }
-
-        }
+            }
     }
 }

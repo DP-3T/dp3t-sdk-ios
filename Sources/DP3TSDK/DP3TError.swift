@@ -8,7 +8,6 @@ import Foundation
 
 /// SDK Errors
 public enum DP3TTracingError: Error {
-
     /// NetworkingError
     case networkingError(error: DP3TNetworkingError)
 
@@ -26,7 +25,6 @@ public enum DP3TTracingError: Error {
 
     /// Bluetooth permission error
     case permissonError
-
 }
 
 /// A set of networking errors returned from the SDK
@@ -47,8 +45,8 @@ public enum DP3TNetworkingError: Error {
     case batchReleaseTimeMissmatch
     /// Device time differs from server time
     case timeInconsistency(shift: TimeInterval)
-    /// JWT signiture validation
-    case jwtSignitureError(code: Int, debugDescription: String)
+    /// JWT signature validation
+    case jwtSignatureError(code: Int, debugDescription: String)
 
     /// An error code that uniquely identify an error.
     public var errorCode: Int {
@@ -68,10 +66,10 @@ public enum DP3TNetworkingError: Error {
             return 600
         case .timeInconsistency:
             return 700
-        case .HTTPFailureResponse(status: let status):
+        case let .HTTPFailureResponse(status: status):
             // Combines the HTTP Status error with the error
             return 8000 + status
-        case .jwtSignitureError(code: let code, debugDescription: _):
+        case .jwtSignatureError(code: let code, debugDescription: _):
             return 900 + code
         }
     }

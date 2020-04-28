@@ -7,8 +7,6 @@
 @testable import DP3TSDK
 import XCTest
 
-
-
 final class DP3TTracingCryptoTests: XCTestCase {
     func testSha256() {
         let string = "COVID19"
@@ -28,6 +26,6 @@ final class DP3TTracingCryptoTests: XCTestCase {
 
     static var allTests = [
         ("sha256", testSha256),
-        ("testHmac", testHmac)
+        ("testHmac", testHmac),
     ]
 }

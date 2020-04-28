@@ -40,11 +40,11 @@ class DP3TDatabase {
         return _contactsStorage
     }
 
-    /// contacts Storage
-    private let _matchedContactsStorage: MatchedContactsStorage
-    var matchedContactsStorage: MatchedContactsStorage {
+    /// exposure days Storage
+    private let _exposureDaysStorage: ExposureDaysStorage
+    var exposureDaysStorage: ExposureDaysStorage {
         guard !isDestroyed else { fatalError("Database is destroyed") }
-        return _matchedContactsStorage
+        return _exposureDaysStorage
     }
 
     /// knowncase Storage
@@ -68,6 +68,13 @@ class DP3TDatabase {
             guard !isDestroyed else { fatalError("Database is destroyed") }
             return _secretKeysStorage
         }
+
+        /// secret keys storage
+        private let _deviceInfo: DeviceInfoStorage
+        var deviceInfo: DeviceInfoStorage {
+            guard !isDestroyed else { fatalError("Database is destroyed") }
+            return _deviceInfo
+        }
     #endif
 
     /// Initializer
@@ -76,32 +83,45 @@ class DP3TDatabase {
             self.connection = connection
         } else {
             var filePath = DP3TDatabase.getDatabasePath()
-            self.connection = try Connection(filePath.absoluteString, readonly: false)
+            connection = try Connection(filePath.absoluteString, readonly: false)
             try? filePath.addExcludedFromBackupAttribute()
         }
         _knownCasesStorage = try KnownCasesStorage(database: connection)
         _handshakesStorage = try HandshakesStorage(database: connection)
         _contactsStorage = try ContactsStorage(database: connection, knownCasesStorage: _knownCasesStorage)
-        _matchedContactsStorage = try MatchedContactsStorage(database: connection, knownCasesStorage: _knownCasesStorage)
+        _exposureDaysStorage = try ExposureDaysStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
         #if CALIBRATION
             _logggingStorage = try LoggingStorage(database: connection)
             _secretKeysStorage = try SecretKeysStorage(database: connection)
+            _deviceInfo = try DeviceInfoStorage(database: connection)
+            try _deviceInfo.set()
         #endif
+
+        DispatchQueue.global(qos: .background).async {
+            try? self.deleteOldDate()
+        }
+    }
+
+    // deletes data older than CryptoConstants.numberOfDaysToKeepData
+    func deleteOldDate() throws {
+        try contactsStorage.deleteOldContacts()
+        try handshakesStorage.deleteOldHandshakes()
+        try knownCasesStorage.deleteOldKnownCases()
+        try exposureDaysStorage.deleteExpiredExpsureDays()
     }
 
     /// Generates contacts from handshakes and deletes handshakes
     /// Should be called ragulary to ensure completenes of contacts
     /// - Throws: if error happens
     func generateContactsFromHandshakes() throws {
-        try contactsStorage.deleteOldContacts()
-        try handshakesStorage.deleteOldHandshakes()
+        try deleteOldDate()
         let epochStart = DP3TCryptoModule.getEpochStart()
         let handshakes = try handshakesStorage.getAll(olderThan: epochStart)
         let contacts = ContactFactory.contacts(from: handshakes)
         contacts.forEach(contactsStorage.add(contact:))
         #if !CALIBRATION
-        try handshakesStorage.delete(handshakes)
+            try handshakesStorage.delete(handshakes)
         #endif
         try contactsStorage.deleteOldContacts()
     }
@@ -117,7 +137,7 @@ class DP3TDatabase {
                 try secretKeysStorage.emptyStorage()
             #endif
             try contactsStorage.emptyStorage()
-            try matchedContactsStorage.emptyStorage()
+            try exposureDaysStorage.emptyStorage()
         }
     }
 

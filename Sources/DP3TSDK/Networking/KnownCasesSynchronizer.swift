@@ -61,30 +61,30 @@ class KnownCasesSynchronizer {
     static func initializeSynchronizerIfNeeded(defaults: DefaultStorage = Default.shared) -> Date {
         guard defaults.lastLoadedBatchReleaseTime == nil else { return defaults.lastLoadedBatchReleaseTime! }
         let nowTimestamp = Date().timeIntervalSince1970
-        let lastBatch = Date(timeIntervalSince1970: nowTimestamp - nowTimestamp.truncatingRemainder(dividingBy: NetworkingConstants.batchLenght))
+        let lastBatch = Date(timeIntervalSince1970: nowTimestamp - nowTimestamp.truncatingRemainder(dividingBy: NetworkingConstants.batchLength))
         var mutableDefaults = defaults
         mutableDefaults.lastLoadedBatchReleaseTime = lastBatch
         return lastBatch
     }
 
-    private func internalSync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?){
+    private func internalSync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?) {
         let nowTimestamp = now.timeIntervalSince1970
 
         var lastBatch: TimeInterval!
         if let storedLastBatch = defaults.lastLoadedBatchReleaseTime,
-            storedLastBatch < Date(){
+            storedLastBatch < Date() {
             lastBatch = storedLastBatch.timeIntervalSince1970
         } else {
             assert(false, "This should never happen if initializeSynchronizerIfNeeded gets called on SDK init")
             lastBatch = KnownCasesSynchronizer.initializeSynchronizerIfNeeded().timeIntervalSince1970
         }
 
-        let batchesToLoad = Int((nowTimestamp - lastBatch) / NetworkingConstants.batchLenght)
+        let batchesToLoad = Int((nowTimestamp - lastBatch) / NetworkingConstants.batchLength)
 
-        let nextBatch = lastBatch + NetworkingConstants.batchLenght
+        let nextBatch = lastBatch + NetworkingConstants.batchLength
 
-        for batchIndex in (0 ..< batchesToLoad) {
-            let currentReleaseTime = Date(timeIntervalSince1970: nextBatch + NetworkingConstants.batchLenght * TimeInterval(batchIndex))
+        for batchIndex in 0 ..< batchesToLoad {
+            let currentReleaseTime = Date(timeIntervalSince1970: nextBatch + NetworkingConstants.batchLength * TimeInterval(batchIndex))
             let result = service.getExposeeSynchronously(batchTimestamp: currentReleaseTime)
             switch result {
             case let .failure(error):

@@ -10,17 +10,16 @@ import Foundation
 /// Implements the ephID and secretkey handling
 /// as specified in https://github.com/DP-3T/documents
 class DP3TCryptoModule {
-
     private let store: SecureStorageProtocol
 
     #if CALIBRATION
-    weak var debugSecretKeysStorageDelegate: SecretKeysStorageDelegate? {
-        didSet {
-            if let storage = self.store as? SecureStorage {
-                storage.debugSecretKeysStorageDelegate = debugSecretKeysStorageDelegate
+        weak var debugSecretKeysStorageDelegate: SecretKeysStorageDelegate? {
+            didSet {
+                if let storage = store as? SecureStorage {
+                    storage.debugSecretKeysStorageDelegate = debugSecretKeysStorageDelegate
+                }
             }
         }
-    }
     #endif
 
     /// Initilized the module
@@ -64,7 +63,7 @@ class DP3TCryptoModule {
     /// - Returns: the secret key
     internal func getCurrentSK(day: DayDate = DayDate()) throws -> Data {
         var keys = try store.getSecretKeys()
-        if let key = keys.first(where: { $0.day == day }){
+        if let key = keys.first(where: { $0.day == day }) {
             return key.keyData
         }
         while keys.first!.day < day {
@@ -72,7 +71,7 @@ class DP3TCryptoModule {
             keys = try store.getSecretKeys()
         }
         guard let firstKey = keys.first,
-              firstKey.day.timestamp == day.timestamp else {
+            firstKey.day.timestamp == day.timestamp else {
             throw CryptoError.dataIntegrity
         }
         return firstKey.keyData
@@ -85,15 +84,15 @@ class DP3TCryptoModule {
     internal static func createEphIDs(secretKey: Data) throws -> [EphID] {
         let hmac = Crypto.hmac(msg: CryptoConstants.broadcastKey, key: secretKey)
 
-        let zeroData = Data(count: CryptoConstants.keyLenght * CryptoConstants.numberOfEpochsPerDay)
+        let zeroData = Data(count: CryptoConstants.keyLength * CryptoConstants.numberOfEpochsPerDay)
 
         let aes = try Crypto.AESCTREncrypt(keyData: hmac)
 
         var ephIDs = [Data]()
         let prgData = try aes.encrypt(data: zeroData)
         for i in 0 ..< CryptoConstants.numberOfEpochsPerDay {
-            let pos = i * CryptoConstants.keyLenght
-            ephIDs.append(prgData[pos ..< pos + CryptoConstants.keyLenght])
+            let pos = i * CryptoConstants.keyLength
+            ephIDs.append(prgData[pos ..< pos + CryptoConstants.keyLength])
         }
 
         ephIDs.shuffle()
@@ -167,7 +166,8 @@ class DP3TCryptoModule {
             // generate all ephIDs for day
             let ephIDs = Set(try DP3TCryptoModule.createEphIDs(secretKey: secretKeyForDay))
             // check all handshakes if they match any of the ephIDs
-            for contact in contactsOnDay {
+            // make sure that all contact date is before bucket date
+            for contact in contactsOnDay where bucketDate >= contact.date {
                 if ephIDs.contains(contact.ephID) {
                     matchingContacts.append(contact)
                 }

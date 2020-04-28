@@ -26,7 +26,6 @@ public protocol DP3TTracingDelegate: AnyObject {
     }
 #endif
 
-
 /// The mode in which the SDK is initialized
 public enum DP3TApplicationInfo {
     /// Using the discovery services from Github. https://github.com/DP-3T/dp3t-discovery
@@ -35,13 +34,12 @@ public enum DP3TApplicationInfo {
     case manual(_ appInfo: ApplicationDescriptor)
 }
 
-
 private var instance: DP3TSDK!
 
 /// DP3TTracing
 public enum DP3TTracing {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "0.1.8"
+    public static let frameworkVersion: String = "0.1.9"
 
     /// initialize the SDK
     /// - Parameters:
@@ -113,12 +111,19 @@ public enum DP3TTracing {
     /// - Parameters:
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
+    ///   - isFakeRequest: indicates if the request should be a fake one. This method should be called regulary so people sniffing the networking traffic can no figure out if somebody is marking themself actually as exposed
     ///   - callback: callback
-    public static func iWasExposed(onset: Date, authentication: ExposeeAuthMethod, callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+    public static func iWasExposed(onset: Date,
+                                   authentication: ExposeeAuthMethod,
+                                   isFakeRequest: Bool = false,
+                                   callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
-        instance.iWasExposed(onset: onset, authentication: authentication, callback: callback)
+        instance.iWasExposed(onset: onset,
+                             authentication: authentication,
+                             isFakeRequest: isFakeRequest,
+                             callback: callback)
     }
 
     /// reset the SDK
@@ -173,12 +178,12 @@ public enum DP3TTracing {
             }
         }
 
-        public static var batchLenght: TimeInterval {
+        public static var batchLength: TimeInterval {
             get {
-                return NetworkingConstants.batchLenght
+                return NetworkingConstants.batchLength
             }
             set {
-                NetworkingConstants.batchLenght = newValue
+                NetworkingConstants.batchLength = newValue
             }
         }
 

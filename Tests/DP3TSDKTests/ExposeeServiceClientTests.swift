@@ -7,10 +7,8 @@
 @testable import DP3TSDK
 import XCTest
 
-
 final class ExposeeServiceClientTests: XCTestCase {
     func testExposeeEmpty() {
-
         let batchTimestamp = Date()
         var list = ProtoExposedList()
         list.batchReleaseTime = batchTimestamp.millisecondsSince1970
@@ -75,11 +73,11 @@ final class ExposeeServiceClientTests: XCTestCase {
         let data = try! list.serializedData()
 
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: Date())]
-        //URLSession gives the cached reponse
+        // URLSession gives the cached reponse
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)!
 
         let cachedHeaders = ["Etag": "HASHDIFF"]
-        //URLSession gives the cached reponse
+        // URLSession gives the cached reponse
         let cachedResponse = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: cachedHeaders)!
 
         let session = MockSession(data: data, urlResponse: response, error: nil)
@@ -88,7 +86,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         let cachedCacheResponse = CachedURLResponse(response: cachedResponse, data: Data())
         let cache = MockUrlCache(response: cachedCacheResponse)
 
-        let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session,  urlCache: cache)
+        let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session, urlCache: cache)
 
         let result = synchronizer.getExposeeSynchronously(batchTimestamp: batchTimestamp)
         let timestampIdentifier = String(batchTimestamp.millisecondsSince1970)
@@ -122,7 +120,7 @@ final class ExposeeServiceClientTests: XCTestCase {
             default:
                 XCTFail("Should not succeed due to timeInconsistency")
             }
-        case .success(_):
+        case .success:
             XCTFail("Should not succeed due to timeInconsistency")
         }
     }
@@ -138,11 +136,9 @@ final class ExposeeServiceClientTests: XCTestCase {
         let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
 
-        let _ = synchronizer.getExposeeSynchronously(batchTimestamp: batchTimestamp)
+        _ = synchronizer.getExposeeSynchronously(batchTimestamp: batchTimestamp)
         let responseHeaders = session.requests.first!.allHTTPHeaderFields!
         XCTAssertEqual(responseHeaders["Accept"]!, "application/x-protobuf")
-
-
     }
 
     static var allTests = [
@@ -150,7 +146,6 @@ final class ExposeeServiceClientTests: XCTestCase {
         ("testExposeeSingle", testExposeeSingle),
         ("testWithDifferentEtagExposeeSingle", testWithDifferentEtagExposeeSingle),
         ("testTimeInconsistency", testTimeInconsistency),
-        ("testSettingAcceptHeaderProtobuf", testSettingAcceptHeaderProtobuf)
+        ("testSettingAcceptHeaderProtobuf", testSettingAcceptHeaderProtobuf),
     ]
 }
-

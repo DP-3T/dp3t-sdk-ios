@@ -1,18 +1,18 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
+import BackgroundTasks
 import Foundation
 import UIKit.UIApplication
-import BackgroundTasks
 
-fileprivate class SyncOperation: Operation {
+private class SyncOperation: Operation {
     override func main() {
         DP3TTracing.sync { result in
             switch result {
-            case .failure(_):
+            case .failure:
                 self.cancel()
             default:
                 break
@@ -23,12 +23,12 @@ fileprivate class SyncOperation: Operation {
 
 /// Background task registration should only happen once per run
 /// If the SDK gets destroyed and initialized again this would cause a crash
-fileprivate var didRegisterBackgroundTask: Bool = false
+private var didRegisterBackgroundTask: Bool = false
 
 @available(iOS 13.0, *)
 class DP3TBackgroundTaskManager {
     static let taskIdentifier: String = "org.dpppt.synctask"
-    
+
     static let syncInterval: TimeInterval = 15 * .minute
 
     /// A logger for debugging
@@ -48,16 +48,16 @@ class DP3TBackgroundTaskManager {
         guard !didRegisterBackgroundTask else { return }
         didRegisterBackgroundTask = true
         #if CALIBRATION
-        logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.register")
+            logger?.log(type: .sdk, "DP3TBackgroundTaskManager.register")
         #endif
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .global()) { (task) in
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .global()) { task in
             self.handleBackgroundTask(task)
         }
     }
 
-    private func handleBackgroundTask(_ task: BGTask){
+    private func handleBackgroundTask(_ task: BGTask) {
         #if CALIBRATION
-        logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.handleBackgroundTask")
+            logger?.log(type: .sdk, "DP3TBackgroundTaskManager.handleBackgroundTask")
         #endif
 
         scheduleBackgroundTask()
@@ -66,7 +66,7 @@ class DP3TBackgroundTaskManager {
         queue.maxConcurrentOperationCount = 1
 
         queue.addOperation(SyncOperation())
-        
+
         task.expirationHandler = {
             queue.cancelAllOperations()
         }
@@ -77,24 +77,23 @@ class DP3TBackgroundTaskManager {
         }
     }
 
-    private func scheduleBackgroundTask(){
+    private func scheduleBackgroundTask() {
         let syncTask = BGAppRefreshTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         syncTask.earliestBeginDate = Date(timeIntervalSinceNow: DP3TBackgroundTaskManager.syncInterval)
         #if CALIBRATION
-        logger?.log(type: .sdk ,"DP3TBackgroundTaskManager.scheduleBackgroundTask earliestBeginDate: \(syncTask.earliestBeginDate!)")
+            logger?.log(type: .sdk, "DP3TBackgroundTaskManager.scheduleBackgroundTask earliestBeginDate: \(syncTask.earliestBeginDate!)")
         #endif
         do {
             try BGTaskScheduler.shared.submit(syncTask)
         } catch {
             #if CALIBRATION
-            logger?.log(type: .sdk ,"Unable to submit task: \(error.localizedDescription)")
+                logger?.log(type: .sdk, "Unable to submit task: \(error.localizedDescription)")
             #endif
         }
     }
 
     @objc
-    private func didEnterBackground(){
+    private func didEnterBackground() {
         scheduleBackgroundTask()
     }
-
 }

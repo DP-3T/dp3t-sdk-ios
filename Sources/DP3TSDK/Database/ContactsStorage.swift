@@ -40,7 +40,7 @@ class ContactsStorage {
             t.column(associatedKnownCaseColumn)
             t.column(windowCountColumn)
             t.foreignKey(associatedKnownCaseColumn, references: knownCasesStorage.table, knownCasesStorage.idColumn, delete: .setNull)
-            t.unique(dateColumn,ephIDColumn)
+            t.unique(dateColumn, ephIDColumn)
         })
     }
 
@@ -53,7 +53,7 @@ class ContactsStorage {
     /// - Parameter contact: the Contact to add
     func add(contact: Contact) {
         let insert = table.insert(
-            dateColumn <- Date(timeIntervalSince1970: contact.day.timestamp).millisecondsSince1970,
+            dateColumn <- contact.date.millisecondsSince1970,
             ephIDColumn <- contact.ephID,
             windowCountColumn <- contact.windowCount,
             associatedKnownCaseColumn <- contact.associatedKnownCase
@@ -78,6 +78,23 @@ class ContactsStorage {
         try database.run(contactRow.update(associatedKnownCaseColumn <- knownCaseId))
     }
 
+    /// Retreive all contacted with a associated known case
+    /// - Throws: if a database error happens
+    /// - Returns: list of contacts
+    func getAllMatchedContacts() throws -> [Contact] {
+        let query = table.filter(associatedKnownCaseColumn != nil)
+        var contacts: [Contact] = []
+        for row in try database.prepare(query) {
+            let model = Contact(identifier: row[idColumn],
+                                ephID: row[ephIDColumn],
+                                date: Date(milliseconds: row[dateColumn]),
+                                windowCount: row[windowCountColumn],
+                                associatedKnownCase: row[associatedKnownCaseColumn])
+            contacts.append(model)
+        }
+        return contacts
+    }
+
     /// Helper function to retrieve Contacts from Handshakes
     /// - Parameters:
     ///   - day: the day for which to retreive contact
@@ -85,8 +102,7 @@ class ContactsStorage {
     ///   - contactThreshold: how many handshakes to have to be recognized as contact
     /// - Throws: if a database error happens
     /// - Returns: list of contacts
-    func getContacts(for day: DayDate, overlappingTimeInverval: TimeInterval = 0, contactThreshold: Int = 1) throws -> [Contact] {
-
+    func getContacts(for day: DayDate, overlappingTimeInverval: TimeInterval = 0, contactThreshold _: Int = 1) throws -> [Contact] {
         // if the day is older than .numberOfDaysToKeepData we can skip fetching contacts from the databae
         // since we dont keep them so long anyway
         if day.dayMin.timeIntervalSinceNow > TimeInterval(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day {
@@ -97,14 +113,14 @@ class ContactsStorage {
         let dayMin = day.dayMin.addingTimeInterval(-overlappingTimeInverval).millisecondsSince1970
         let dayMax = day.dayMax.addingTimeInterval(overlappingTimeInverval).millisecondsSince1970
 
-        let query = table.filter(dayMin...dayMax ~= dateColumn)
+        let query = table.filter(dayMin ... dayMax ~= dateColumn)
 
         var contacts = [Contact]()
         for row in try database.prepare(query) {
             guard row[associatedKnownCaseColumn] == nil else { continue }
             let model = Contact(identifier: row[idColumn],
                                 ephID: row[ephIDColumn],
-                                day: DayDate(date: Date(milliseconds: row[dateColumn])),
+                                date: Date(milliseconds: row[dateColumn]),
                                 windowCount: row[windowCountColumn],
                                 associatedKnownCase: row[associatedKnownCaseColumn])
             contacts.append(model)
