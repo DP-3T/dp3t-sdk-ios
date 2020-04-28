@@ -1,13 +1,12 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
 import Foundation
 
 enum ContactFactory {
-    
     static let badRssiThreshold: Double = -85.0
 
     static let contactRssiThreshold: Double = -80.0
@@ -44,20 +43,20 @@ enum ContactFactory {
 
             guard let firstValue = rssiValues.first else { return nil }
 
-            let epochMean = rssiValues.map{ $0.1 }.reduce(0.0, +) / Double(rssiValues.count)
+            let epochMean = rssiValues.map { $0.1 }.reduce(0.0, +) / Double(rssiValues.count)
 
             let epochStart = DP3TCryptoModule.getEpochStart(timestamp: firstValue.0)
             let windowLength = Int(CryptoConstants.secondsPerEpoch / ContactFactory.windowDuration)
 
             var numberOfMatchingWindows = 0
 
-            for windowIndex in (0 ..< windowLength) {
+            for windowIndex in 0 ..< windowLength {
                 let start = epochStart.addingTimeInterval(Double(windowIndex) * ContactFactory.windowDuration)
                 let end = start.addingTimeInterval(ContactFactory.windowDuration)
 
-                let values = rssiValues.filter { (timestamp, rssi) -> Bool in
-                    return timestamp > start && timestamp <= end
-                }.map{ $0.1 }
+                let values = rssiValues.filter { (timestamp, _) -> Bool in
+                    timestamp > start && timestamp <= end
+                }.map { $0.1 }
 
                 guard !values.isEmpty else { continue }
 

@@ -67,12 +67,12 @@ class KnownCasesSynchronizer {
         return lastBatch
     }
 
-    private func internalSync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?){
+    private func internalSync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?) {
         let nowTimestamp = now.timeIntervalSince1970
 
         var lastBatch: TimeInterval!
         if let storedLastBatch = defaults.lastLoadedBatchReleaseTime,
-            storedLastBatch < Date(){
+            storedLastBatch < Date() {
             lastBatch = storedLastBatch.timeIntervalSince1970
         } else {
             assert(false, "This should never happen if initializeSynchronizerIfNeeded gets called on SDK init")
@@ -83,7 +83,7 @@ class KnownCasesSynchronizer {
 
         let nextBatch = lastBatch + NetworkingConstants.batchLength
 
-        for batchIndex in (0 ..< batchesToLoad) {
+        for batchIndex in 0 ..< batchesToLoad {
             let currentReleaseTime = Date(timeIntervalSince1970: nextBatch + NetworkingConstants.batchLength * TimeInterval(batchIndex))
             let result = service.getExposeeSynchronously(batchTimestamp: currentReleaseTime)
             switch result {

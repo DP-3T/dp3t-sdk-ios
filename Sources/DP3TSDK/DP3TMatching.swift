@@ -45,16 +45,15 @@ class DP3TMatcher: DP3TMatcherProtocol {
     /// - Parameter knownCase: known Case
     func checkNewKnownCase(_ knownCase: KnownCaseModel) throws {
         let matchingContacts = try crypto.checkContacts(secretKey: knownCase.key,
-                                                onsetDate: DayDate(date: knownCase.onset),
-                                                bucketDate: knownCase.batchTimestamp) { (day) -> ([Contact]) in
+                                                        onsetDate: DayDate(date: knownCase.onset),
+                                                        bucketDate: knownCase.batchTimestamp) { (day) -> ([Contact]) in
             (try? database.contactsStorage.getContacts(for: day)) ?? []
         }
 
-        let totalWindowCount = matchingContacts.map{ $0.windowCount }.reduce(0,+)
+        let totalWindowCount = matchingContacts.map { $0.windowCount }.reduce(0,+)
         if totalWindowCount > ContactFactory.numberOfWindowsForExposure,
-           let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
-
-            try matchingContacts.forEach { (contact) in
+            let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
+            try matchingContacts.forEach { contact in
                 guard let contactId = contact.identifier else { return }
                 try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
             }

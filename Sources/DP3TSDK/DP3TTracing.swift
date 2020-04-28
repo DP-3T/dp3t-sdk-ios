@@ -26,7 +26,6 @@ public protocol DP3TTracingDelegate: AnyObject {
     }
 #endif
 
-
 /// The mode in which the SDK is initialized
 public enum DP3TApplicationInfo {
     /// Using the discovery services from Github. https://github.com/DP-3T/dp3t-discovery
@@ -34,7 +33,6 @@ public enum DP3TApplicationInfo {
     /// Manually by specifying all the necessary information
     case manual(_ appInfo: ApplicationDescriptor)
 }
-
 
 private var instance: DP3TSDK!
 

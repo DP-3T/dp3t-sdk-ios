@@ -131,11 +131,11 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             var data = try crypto!.getCurrentEphID()
 
             #if CALIBRATION
-            if case .calibration(let identifierPrefix, _) = DP3TMode.current, identifierPrefix != "" {
-                let paddedIdentifier = identifierPrefix.padding(toLength: 4, withPad: " ", startingAt: 0)
-                let identifierData = paddedIdentifier.data(using: .utf8)!
-                data = identifierData + data.suffix(data.count - identifierData.count)
-            }
+                if case let .calibration(identifierPrefix, _) = DP3TMode.current, identifierPrefix != "" {
+                    let paddedIdentifier = identifierPrefix.padding(toLength: 4, withPad: " ", startingAt: 0)
+                    let identifierData = paddedIdentifier.data(using: .utf8)!
+                    data = identifierData + data.suffix(data.count - identifierData.count)
+                }
             #endif
 
             request.value = data

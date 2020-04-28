@@ -1,8 +1,8 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
 import Foundation
 
@@ -24,7 +24,6 @@ enum KeychainError: Error {
 
 /// A wrapper class for the keychain
 class Keychain {
-
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
@@ -57,7 +56,7 @@ class Keychain {
             do {
                 let object = try JSONDecoder().decode(T.self, from: item)
                 return .success(object)
-            } catch let error {
+            } catch {
                 return .failure(.decodingError(error))
             }
         default:
@@ -65,18 +64,17 @@ class Keychain {
         }
     }
 
-
     /// Set a object to the keychain
     /// - Parameters:
     ///   - object: the object to set
     ///   - key: the keyobject to use
     /// - Returns: a result which either is successful or contains the error
     @discardableResult
-    public func set<T: Codable>(_ object: T, for key:  Key<T>) -> Result<Void, KeychainError> {
+    public func set<T: Codable>(_ object: T, for key: Key<T>) -> Result<Void, KeychainError> {
         let data: Data
         do {
             data = try encoder.encode(object)
-        } catch let error {
+        } catch {
             return .failure(.encodingError(error))
         }
         var query = self.query(for: key)
@@ -86,7 +84,7 @@ class Keychain {
 
         switch status {
         case errSecSuccess:
-            //Item exists so we can update it
+            // Item exists so we can update it
             let attributes = [kSecValueData: data]
             status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
             if status != errSecSuccess {
@@ -95,7 +93,7 @@ class Keychain {
                 return .success(())
             }
         case errSecItemNotFound:
-            //First time setting item
+            // First time setting item
             status = SecItemAdd(query as CFDictionary, nil)
 
             if status != noErr {
@@ -134,5 +132,4 @@ class Keychain {
         ]
         return query
     }
-
 }

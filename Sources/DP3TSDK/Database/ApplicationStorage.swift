@@ -60,11 +60,11 @@ class ApplicationStorage {
             throw DP3TTracingError.databaseError(error: nil)
         }
         return ApplicationDescriptor(appId: row[appIdColumn],
-                                            description: row[descriptionColumn],
-                                            jwtPublicKey: nil,
-                                            bucketBaseUrl: row[bucketBaseUrlColumn],
-                                            reportBaseUrl: row[reportBaseUrlColumn],
-                                            contact: row[contactColumn])
+                                     description: row[descriptionColumn],
+                                     jwtPublicKey: nil,
+                                     bucketBaseUrl: row[bucketBaseUrlColumn],
+                                     reportBaseUrl: row[reportBaseUrlColumn],
+                                     contact: row[contactColumn])
     }
 
     /// Delete all entries

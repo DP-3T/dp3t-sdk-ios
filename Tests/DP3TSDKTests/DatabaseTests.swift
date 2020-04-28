@@ -5,11 +5,10 @@
  */
 
 @testable import DP3TSDK
-import XCTest
 import SQLite
+import XCTest
 
 final class DatabaseTests: XCTestCase {
-
     let connection = try! Connection(.inMemory, readonly: false)
 
     lazy var database: DP3TDatabase! = try! DP3TDatabase(connection_: connection)
@@ -18,7 +17,7 @@ final class DatabaseTests: XCTestCase {
         try! database.emptyStorage()
     }
 
-    func testEmptyStorage(){
+    func testEmptyStorage() {
         let date = Date()
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
         let h1 = HandshakeModel(identifier: nil, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
@@ -65,7 +64,6 @@ final class DatabaseTests: XCTestCase {
         let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
         let day = DayDate(date: ts)
 
-
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
         let h1 = HandshakeModel(identifier: nil, timestamp: ts, ephID: token, TXPowerlevel: nil, RSSI: -30)
         let h2 = HandshakeModel(identifier: nil, timestamp: ts.addingTimeInterval(10), ephID: token, TXPowerlevel: nil, RSSI: -30)
@@ -85,7 +83,6 @@ final class DatabaseTests: XCTestCase {
     func testContactGenerationUniqueDifferentEpoch() {
         let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
         let day = DayDate(date: ts)
-
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
         let h1 = HandshakeModel(identifier: nil, timestamp: ts, ephID: token, TXPowerlevel: nil, RSSI: -30)
@@ -124,7 +121,7 @@ final class DatabaseTests: XCTestCase {
         XCTAssertTrue(c.isEmpty)
     }
 
-    func testDeleteOldContacts(){
+    func testDeleteOldContacts() {
         let date = DayDate().dayMin.addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day + 1))
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
@@ -154,7 +151,7 @@ final class DatabaseTests: XCTestCase {
         XCTAssertEqual(count, 1)
     }
 
-    func testDeleteOldHandshakes(){
+    func testDeleteOldHandshakes() {
         let date = DayDate().dayMin.addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day + 1))
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
@@ -182,7 +179,7 @@ final class DatabaseTests: XCTestCase {
         XCTAssertEqual(count, 1)
     }
 
-    func testDeleteBulkHandshakes(){
+    func testDeleteBulkHandshakes() {
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
         let date = Date()
 
@@ -198,7 +195,6 @@ final class DatabaseTests: XCTestCase {
         XCTAssertEqual(try! database.handshakesStorage.count(), 0)
     }
 
-
     static var allTests = [
         ("testEmptyStorage", testEmptyStorage),
         ("testContactGeneration", testContactGeneration),
@@ -208,6 +204,6 @@ final class DatabaseTests: XCTestCase {
         ("testNotDeleteNewHandshakes", testNotDeleteNewHandshakes),
         ("testContactGenerationUnique", testContactGenerationUnique),
         ("testContactGenerationUniqueDifferentEpoch", testContactGenerationUniqueDifferentEpoch),
-        ("testDeleteBulkHandshakes", testDeleteBulkHandshakes)
+        ("testDeleteBulkHandshakes", testDeleteBulkHandshakes),
     ]
 }

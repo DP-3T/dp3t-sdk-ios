@@ -61,22 +61,22 @@ class ControlViewController: UIViewController {
         if #available(iOS 13.0, *) {
             self.view.backgroundColor = .systemBackground
         } else {
-            self.view.backgroundColor = .white
+            view.backgroundColor = .white
         }
-        self.view.addSubview(scrollView)
-        scrollView.snp.makeConstraints { (make) in
+        view.addSubview(scrollView)
+        scrollView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
 
         let contentView = UIView()
-        self.scrollView.addSubview(contentView)
-        contentView.snp.makeConstraints { (make) in
+        scrollView.addSubview(contentView)
+        contentView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
             make.width.equalTo(self.view)
         }
 
-        contentView.addSubview(self.stackView)
-        self.stackView.snp.makeConstraints { (make) in
+        contentView.addSubview(stackView)
+        stackView.snp.makeConstraints { make in
             make.top.leading.bottom.trailing.equalToSuperview().inset(10)
         }
         stackView.axis = .vertical
@@ -260,9 +260,9 @@ class ControlViewController: UIViewController {
         DP3TTracing.sync { [weak self] result in
             switch result {
             case let .failure(error):
-                let ac = UIAlertController.init(title: "Error",
-                                                message: error.description,
-                                                preferredStyle: .alert)
+                let ac = UIAlertController(title: "Error",
+                                           message: error.description,
+                                           preferredStyle: .alert)
                 ac.addAction(.init(title: "Retry", style: .default) { _ in self?.sync() })
                 ac.addAction(.init(title: "Cancel", style: .destructive))
                 self?.present(ac, animated: true)
@@ -296,13 +296,13 @@ class ControlViewController: UIViewController {
     @objc func uploadDatabase() {
         let loading = UIAlertController(title: "Uploading", message: "Please wait", preferredStyle: .alert)
         present(loading, animated: true)
-        
+
         uploadHelper.uploadDatabase(fileUrl: Self.getDatabasePath()) { result in
             let alert: UIAlertController
             switch result {
             case .success:
                 alert = UIAlertController(title: "Upload successful", message: nil, preferredStyle: .alert)
-            case .failure(let error):
+            case let .failure(error):
                 alert = UIAlertController(title: "Upload failed", message: error.message, preferredStyle: .alert)
             }
             alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
@@ -318,7 +318,7 @@ class ControlViewController: UIViewController {
         NotificationCenter.default.post(name: Notification.Name("ClearData"), object: nil)
 
         initializeSDK()
-        
+
         DP3TTracing.delegate = navigationController?.tabBarController as? DP3TTracingDelegate
         DP3TTracing.status { result in
             switch result {
@@ -353,7 +353,7 @@ class ControlViewController: UIViewController {
     func updateUI(_ state: TracingState) {
         var elements: [String] = []
         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
-            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String{
+            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
             elements.append("Version: App: \(version)(\(build)) SDK: \(DP3TTracing.frameworkVersion)")
         }
         elements.append("tracking State: \(state.trackingState.stringValue)")
@@ -444,11 +444,11 @@ private extension TrackingState {
 
 extension DP3TTracingError {
     var description: String {
-       switch self {
+        switch self {
         case .bluetoothTurnedOff:
             return "bluetoothTurnedOff"
         case let .caseSynchronizationError(errors: errors):
-            return "caseSynchronizationError \(errors.map{ $0.localizedDescription })"
+            return "caseSynchronizationError \(errors.map { $0.localizedDescription })"
         case let .cryptographyError(error: error):
             return "cryptographyError \(error)"
         case let .databaseError(error: error):

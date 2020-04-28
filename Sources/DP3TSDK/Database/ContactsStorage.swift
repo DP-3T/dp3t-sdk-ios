@@ -40,7 +40,7 @@ class ContactsStorage {
             t.column(associatedKnownCaseColumn)
             t.column(windowCountColumn)
             t.foreignKey(associatedKnownCaseColumn, references: knownCasesStorage.table, knownCasesStorage.idColumn, delete: .setNull)
-            t.unique(dateColumn,ephIDColumn)
+            t.unique(dateColumn, ephIDColumn)
         })
     }
 
@@ -85,8 +85,7 @@ class ContactsStorage {
     ///   - contactThreshold: how many handshakes to have to be recognized as contact
     /// - Throws: if a database error happens
     /// - Returns: list of contacts
-    func getContacts(for day: DayDate, overlappingTimeInverval: TimeInterval = 0, contactThreshold: Int = 1) throws -> [Contact] {
-
+    func getContacts(for day: DayDate, overlappingTimeInverval: TimeInterval = 0, contactThreshold _: Int = 1) throws -> [Contact] {
         // if the day is older than .numberOfDaysToKeepData we can skip fetching contacts from the databae
         // since we dont keep them so long anyway
         if day.dayMin.timeIntervalSinceNow > TimeInterval(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day {
@@ -97,7 +96,7 @@ class ContactsStorage {
         let dayMin = day.dayMin.addingTimeInterval(-overlappingTimeInverval).millisecondsSince1970
         let dayMax = day.dayMax.addingTimeInterval(overlappingTimeInverval).millisecondsSince1970
 
-        let query = table.filter(dayMin...dayMax ~= dateColumn)
+        let query = table.filter(dayMin ... dayMax ~= dateColumn)
 
         var contacts = [Contact]()
         for row in try database.prepare(query) {

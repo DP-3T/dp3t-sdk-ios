@@ -10,17 +10,16 @@ import Foundation
 /// Implements the ephID and secretkey handling
 /// as specified in https://github.com/DP-3T/documents
 class DP3TCryptoModule {
-
     private let store: SecureStorageProtocol
 
     #if CALIBRATION
-    weak var debugSecretKeysStorageDelegate: SecretKeysStorageDelegate? {
-        didSet {
-            if let storage = self.store as? SecureStorage {
-                storage.debugSecretKeysStorageDelegate = debugSecretKeysStorageDelegate
+        weak var debugSecretKeysStorageDelegate: SecretKeysStorageDelegate? {
+            didSet {
+                if let storage = store as? SecureStorage {
+                    storage.debugSecretKeysStorageDelegate = debugSecretKeysStorageDelegate
+                }
             }
         }
-    }
     #endif
 
     /// Initilized the module
@@ -64,7 +63,7 @@ class DP3TCryptoModule {
     /// - Returns: the secret key
     internal func getCurrentSK(day: DayDate = DayDate()) throws -> Data {
         var keys = try store.getSecretKeys()
-        if let key = keys.first(where: { $0.day == day }){
+        if let key = keys.first(where: { $0.day == day }) {
             return key.keyData
         }
         while keys.first!.day < day {
@@ -72,7 +71,7 @@ class DP3TCryptoModule {
             keys = try store.getSecretKeys()
         }
         guard let firstKey = keys.first,
-              firstKey.day.timestamp == day.timestamp else {
+            firstKey.day.timestamp == day.timestamp else {
             throw CryptoError.dataIntegrity
         }
         return firstKey.keyData

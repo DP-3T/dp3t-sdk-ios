@@ -76,7 +76,7 @@ class DP3TDatabase {
             self.connection = connection
         } else {
             var filePath = DP3TDatabase.getDatabasePath()
-            self.connection = try Connection(filePath.absoluteString, readonly: false)
+            connection = try Connection(filePath.absoluteString, readonly: false)
             try? filePath.addExcludedFromBackupAttribute()
         }
         _knownCasesStorage = try KnownCasesStorage(database: connection)
@@ -94,8 +94,8 @@ class DP3TDatabase {
         }
     }
 
-    //deletes data older than CryptoConstants.numberOfDaysToKeepData
-    func deleteOldDate() throws{
+    // deletes data older than CryptoConstants.numberOfDaysToKeepData
+    func deleteOldDate() throws {
         try contactsStorage.deleteOldContacts()
         try handshakesStorage.deleteOldHandshakes()
         try knownCasesStorage.deleteOldKnownCases()
@@ -112,7 +112,7 @@ class DP3TDatabase {
         let contacts = ContactFactory.contacts(from: handshakes)
         contacts.forEach(contactsStorage.add(contact:))
         #if !CALIBRATION
-        try handshakesStorage.delete(handshakes)
+            try handshakesStorage.delete(handshakes)
         #endif
         try contactsStorage.deleteOldContacts()
     }

@@ -5,8 +5,8 @@
  */
 
 import Foundation
-import UIKit
 import SwiftJWT
+import UIKit
 
 protocol ExposeeServiceClientProtocol {
     typealias ExposeeResult = Result<[KnownCaseModel]?, DP3TNetworkingError>
@@ -86,7 +86,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
         if let date = httpResponse.date,
             abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
-                return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
+            return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
         }
 
         let httpStatus = httpResponse.statusCode
@@ -105,7 +105,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
 
         // Validate JWT
-        if let verifier = self.jwtVerifier {
+        if let verifier = jwtVerifier {
             guard let jwtString = httpResponse.value(for: "Signature") else {
                 return .failure(.jwtSignatureError(code: 1, debugDescription: "No Signature field found in the header of the response. If the app specifies a JWT public key certificate for verification use, the server must send a `Signature` header field"))
             }
@@ -157,7 +157,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
     func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
-
         // addExposee endpoint
         let url = managingExposeeEndpoint.addExposee()
 
@@ -176,7 +175,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
         request.httpBody = payload
 
-        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
             guard error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))
                 return
@@ -201,7 +200,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     /// - Parameters:
     ///   - enviroment: The environment to use
     ///   - completion: The completion block
-    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared , completion: @escaping (Result<[ApplicationDescriptor], DP3TNetworkingError>) -> Void) {
+    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared, completion: @escaping (Result<[ApplicationDescriptor], DP3TNetworkingError>) -> Void) {
         let url = enviroment.discoveryEndpoint
         let request = URLRequest(url: url)
 
@@ -225,7 +224,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 completion(.failure(.noDataReturned))
                 return
             }
-            
+
             do {
                 let discoveryResponse = try JSONDecoder().decode(DiscoveryServiceResponse.self, from: responseData)
                 return completion(.success(discoveryResponse.applications))
@@ -254,13 +253,13 @@ internal extension HTTPURLResponse {
         if #available(iOS 13.0, *) {
             return value(forHTTPHeaderField: key)
         } else {
-            //https://bugs.swift.org/browse/SR-2429
+            // https://bugs.swift.org/browse/SR-2429
             return (allHeaderFields as NSDictionary)[key] as? String
         }
     }
 }
 
-fileprivate struct ExposeeClaims: Claims {
+private struct ExposeeClaims: Claims {
     let iss: String
     let iat: Date
     let exp: Date
@@ -276,8 +275,7 @@ fileprivate struct ExposeeClaims: Claims {
     }
 }
 
-
-fileprivate extension URLSession {
+private extension URLSession {
     func synchronousDataTask(with request: URLRequest) -> (Data?, URLResponse?, Error?) {
         var data: Data?
         var response: URLResponse?

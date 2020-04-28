@@ -14,107 +14,107 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
-  struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
-  typealias Version = _2
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+    struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
+    typealias Version = _2
 }
 
 struct ProtoExposedList {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
 
-  var batchReleaseTime: Int64 = 0
+    var batchReleaseTime: Int64 = 0
 
-  var exposed: [ProtoExposee] = []
+    var exposed: [ProtoExposee] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+    var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+    init() {}
 }
 
 struct ProtoExposee {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
 
-  var key: Data = SwiftProtobuf.Internal.emptyData
+    var key: Data = SwiftProtobuf.Internal.emptyData
 
-  var keyDate: Int64 = 0
+    var keyDate: Int64 = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+    var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+    init() {}
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension ProtoExposedList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "ProtoExposedList"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "batchReleaseTime"),
-    2: .same(proto: "exposed"),
-  ]
+    static let protoMessageName: String = "ProtoExposedList"
+    static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+        1: .same(proto: "batchReleaseTime"),
+        2: .same(proto: "exposed"),
+    ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      switch fieldNumber {
-      case 1: try decoder.decodeSingularInt64Field(value: &self.batchReleaseTime)
-      case 2: try decoder.decodeRepeatedMessageField(value: &self.exposed)
-      default: break
-      }
+    mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+        while let fieldNumber = try decoder.nextFieldNumber() {
+            switch fieldNumber {
+            case 1: try decoder.decodeSingularInt64Field(value: &batchReleaseTime)
+            case 2: try decoder.decodeRepeatedMessageField(value: &exposed)
+            default: break
+            }
+        }
     }
-  }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.batchReleaseTime != 0 {
-      try visitor.visitSingularInt64Field(value: self.batchReleaseTime, fieldNumber: 1)
+    func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+        if batchReleaseTime != 0 {
+            try visitor.visitSingularInt64Field(value: batchReleaseTime, fieldNumber: 1)
+        }
+        if !exposed.isEmpty {
+            try visitor.visitRepeatedMessageField(value: exposed, fieldNumber: 2)
+        }
+        try unknownFields.traverse(visitor: &visitor)
     }
-    if !self.exposed.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.exposed, fieldNumber: 2)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
 
-  static func ==(lhs: ProtoExposedList, rhs: ProtoExposedList) -> Bool {
-    if lhs.batchReleaseTime != rhs.batchReleaseTime {return false}
-    if lhs.exposed != rhs.exposed {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
+    static func == (lhs: ProtoExposedList, rhs: ProtoExposedList) -> Bool {
+        if lhs.batchReleaseTime != rhs.batchReleaseTime { return false }
+        if lhs.exposed != rhs.exposed { return false }
+        if lhs.unknownFields != rhs.unknownFields { return false }
+        return true
+    }
 }
 
 extension ProtoExposee: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "ProtoExposee"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "key"),
-    3: .same(proto: "keyDate"),
-  ]
+    static let protoMessageName: String = "ProtoExposee"
+    static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+        2: .same(proto: "key"),
+        3: .same(proto: "keyDate"),
+    ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      switch fieldNumber {
-      case 2: try decoder.decodeSingularBytesField(value: &self.key)
-      case 3: try decoder.decodeSingularInt64Field(value: &self.keyDate)
-      default: break
-      }
+    mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+        while let fieldNumber = try decoder.nextFieldNumber() {
+            switch fieldNumber {
+            case 2: try decoder.decodeSingularBytesField(value: &key)
+            case 3: try decoder.decodeSingularInt64Field(value: &keyDate)
+            default: break
+            }
+        }
     }
-  }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.key.isEmpty {
-      try visitor.visitSingularBytesField(value: self.key, fieldNumber: 2)
+    func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+        if !key.isEmpty {
+            try visitor.visitSingularBytesField(value: key, fieldNumber: 2)
+        }
+        if keyDate != 0 {
+            try visitor.visitSingularInt64Field(value: keyDate, fieldNumber: 3)
+        }
+        try unknownFields.traverse(visitor: &visitor)
     }
-    if self.keyDate != 0 {
-      try visitor.visitSingularInt64Field(value: self.keyDate, fieldNumber: 3)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
 
-  static func ==(lhs: ProtoExposee, rhs: ProtoExposee) -> Bool {
-    if lhs.key != rhs.key {return false}
-    if lhs.keyDate != rhs.keyDate {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
+    static func == (lhs: ProtoExposee, rhs: ProtoExposee) -> Bool {
+        if lhs.key != rhs.key { return false }
+        if lhs.keyDate != rhs.keyDate { return false }
+        if lhs.unknownFields != rhs.unknownFields { return false }
+        return true
+    }
 }

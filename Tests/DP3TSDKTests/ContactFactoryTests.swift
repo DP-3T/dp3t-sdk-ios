@@ -1,8 +1,8 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
 @testable import DP3TSDK
 import XCTest
@@ -20,11 +20,11 @@ final class ContactFactoryTests: XCTestCase {
         let bucketStart = date.timeIntervalSince1970 - date.timeIntervalSince1970.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
 
         XCTAssertEqual(contacts.count, 1)
-        XCTAssertEqual(contacts.first?.date , Date(timeIntervalSince1970: bucketStart))
+        XCTAssertEqual(contacts.first?.date, Date(timeIntervalSince1970: bucketStart))
         XCTAssertEqual(contacts.first?.ephID, token)
     }
 
-    func testShouldNotGroup(){
+    func testShouldNotGroup() {
         let token1 = Data(base64Encoded: "30+i6bJjzmOWMa0uUPH9LA==")!
         let token2 = Data(base64Encoded: "/B9V3P3dk6g73AuO2iEgzQ==")!
         let date = DP3TCryptoModule.getEpochStart()
@@ -46,7 +46,7 @@ final class ContactFactoryTests: XCTestCase {
         XCTAssertEqual(contacts.count, 2)
     }
 
-    func testShouldFilterOut(){
+    func testShouldFilterOut() {
         let token = Data(base64Encoded: "30+i6bJjzmOWMa0uUPH9LA==")!
         let date = DP3TCryptoModule.getEpochStart().addingTimeInterval(.minute * 30)
         let handshake1 = HandshakeModel(identifier: 0, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
@@ -55,7 +55,7 @@ final class ContactFactoryTests: XCTestCase {
         XCTAssertTrue(contacts.isEmpty)
     }
 
-    func testShouldNotFilterOut(){
+    func testShouldNotFilterOut() {
         let token = Data(base64Encoded: "30+i6bJjzmOWMa0uUPH9LA==")!
         let date = DP3TCryptoModule.getEpochStart().addingTimeInterval(.minute * 30)
         let handshake1 = HandshakeModel(identifier: 0, timestamp: date, ephID: token, TXPowerlevel: nil, RSSI: -30)
@@ -69,6 +69,6 @@ final class ContactFactoryTests: XCTestCase {
         ("testShouldGrouping", testShouldGrouping),
         ("testShouldNotGroup", testShouldNotGroup),
         ("testShouldFilterOut", testShouldFilterOut),
-        ("testShouldNotFilterOut", testShouldNotFilterOut)
+        ("testShouldNotFilterOut", testShouldNotFilterOut),
     ]
 }

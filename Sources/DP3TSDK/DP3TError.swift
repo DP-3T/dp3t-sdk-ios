@@ -8,7 +8,6 @@ import Foundation
 
 /// SDK Errors
 public enum DP3TTracingError: Error {
-
     /// NetworkingError
     case networkingError(error: DP3TNetworkingError)
 
@@ -26,7 +25,6 @@ public enum DP3TTracingError: Error {
 
     /// Bluetooth permission error
     case permissonError
-
 }
 
 /// A set of networking errors returned from the SDK
@@ -68,7 +66,7 @@ public enum DP3TNetworkingError: Error {
             return 600
         case .timeInconsistency:
             return 700
-        case .HTTPFailureResponse(status: let status):
+        case let .HTTPFailureResponse(status: status):
             // Combines the HTTP Status error with the error
             return 8000 + status
         case .jwtSignatureError(code: let code, debugDescription: _):

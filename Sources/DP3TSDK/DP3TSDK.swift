@@ -100,12 +100,12 @@ class DP3TSDK {
                              backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded()
-        
+
         if #available(iOS 13.0, *) {
             let backgroundTaskManager = DP3TBackgroundTaskManager()
             self.backgroundTaskManager = backgroundTaskManager
             #if CALIBRATION
-            backgroundTaskManager.logger = self
+                backgroundTaskManager.logger = self
             #endif
             backgroundTaskManager.register()
         } else {
@@ -168,11 +168,11 @@ class DP3TSDK {
             case let .success(service):
                 self?.synchronizer.sync(service: service) { [weak self] result in
                     DispatchQueue.main.async {
-                        switch result{
+                        switch result {
                         case .success:
                             self?.state.lastSync = Date()
                             callback?(.success(()))
-                        case .failure(let error):
+                        case let .failure(error):
                             callback?(.failure(.networkingError(error: error)))
                         }
                     }
@@ -199,11 +199,11 @@ class DP3TSDK {
     }
 
     #if CALIBRATION
-    func getSecretKeyRepresentationForToday() throws -> String {
-        let key = try crypto.getCurrentSK()
-        let keyRepresentation = key.base64EncodedString()
-        return "****** ****** " + String(keyRepresentation.suffix(6))
-    }
+        func getSecretKeyRepresentationForToday() throws -> String {
+            let key = try crypto.getCurrentSK()
+            let keyRepresentation = key.base64EncodedString()
+            return "****** ****** " + String(keyRepresentation.suffix(6))
+        }
     #endif
 
     /// used to construct a new tracing service client
@@ -221,11 +221,11 @@ class DP3TSDK {
                     switch result {
                     case .success:
                         do {
-                            let desc = try self.database.applicationStorage.descriptor(for: appId) 
+                            let desc = try self.database.applicationStorage.descriptor(for: appId)
                             let client = ExposeeServiceClient(descriptor: desc)
                             self.cachedTracingServiceClient = client
                             callback(.success(client))
-                        } catch  {
+                        } catch {
                             callback(.failure(DP3TTracingError.databaseError(error: error)))
                         }
                     case let .failure(error):
@@ -345,7 +345,7 @@ extension DP3TSDK: BluetoothPermissionDelegate {
     func noIssues() {
         state.trackingState = .active
     }
-    
+
     func deviceTurnedOff() {
         state.trackingState = .inactive(error: .bluetoothTurnedOff)
     }
@@ -362,7 +362,7 @@ extension DP3TSDK: BluetoothPermissionDelegate {
             switch DP3TMode.current {
             case .production:
                 appVersion = "-"
-            case .calibration(_, let av):
+            case let .calibration(_, av):
                 appVersion = av
             }
 

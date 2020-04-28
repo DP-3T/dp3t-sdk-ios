@@ -53,12 +53,11 @@ class KnownCasesStorage {
     }
 
     /// Deletes knownCases older than CryptoConstants.numberOfDaysToKeepData
-       func deleteOldKnownCases() throws {
-           let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day)
-           let deleteQuery = table.filter(batchTimestampColumn < thresholdDate.millisecondsSince1970)
-           try database.run(deleteQuery.delete())
-       }
-
+    func deleteOldKnownCases() throws {
+        let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day)
+        let deleteQuery = table.filter(batchTimestampColumn < thresholdDate.millisecondsSince1970)
+        try database.run(deleteQuery.delete())
+    }
 
     /// add a known case
     /// - Parameter kc: known case

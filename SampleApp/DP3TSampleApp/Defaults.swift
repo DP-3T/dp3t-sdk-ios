@@ -4,8 +4,8 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import Foundation
 import DP3TSDK_CALIBRATION
+import Foundation
 
 /// UserDefaults Storage Singleton
 class Default {
@@ -32,13 +32,13 @@ class Default {
     }
 
     var batchLength: Double {
-           get {
+        get {
             return (store.object(forKey: "org.dpppt.sampleapp.batchLength") as? Double) ?? DP3TTracing.batchLength
-           }
-           set(newValue) {
-               store.set(newValue, forKey: "org.dpppt.sampleapp.batchLength")
-           }
-       }
+        }
+        set(newValue) {
+            store.set(newValue, forKey: "org.dpppt.sampleapp.batchLength")
+        }
+    }
 
     enum TracingMode: Int {
         case none = 0
