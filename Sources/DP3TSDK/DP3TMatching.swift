@@ -58,8 +58,10 @@ class DP3TMatcher: DP3TMatcherProtocol {
                 try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
             }
 
-            let matchedContact = MatchedContact(identifier: knownCaseId, reportDate: DayDate(date: knownCase.batchTimestamp).dayMin)
-            try database.matchedContactsStorage.add(matchedContact: matchedContact)
+            let matchedDay = ExposureDay(identifier: knownCaseId,
+                                             exposedDate: Date(),
+                                             reportDate: DayDate(date: knownCase.batchTimestamp).dayMin)
+            try database.exposureDaysStorage.add(matchedDay)
             delegate.didFindMatch()
         }
     }
