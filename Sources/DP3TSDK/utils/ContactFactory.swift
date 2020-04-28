@@ -7,10 +7,11 @@
 import Foundation
 
 enum ContactFactory {
+    
     static let badRssiThreshold: Double = -85.0
-    //TODO: set correct value
+
     static let contactRssiThreshold: Double = -80.0
-    //TODO: set correct value
+
     static let eventThreshold: Double = 0.8
 
     static let numberOfWindowsForExposure: Int = 10
@@ -52,12 +53,16 @@ enum ContactFactory {
 
             for windowIndex in (0 ..< windowLength) {
                 let start = epochStart.addingTimeInterval(Double(windowIndex) * ContactFactory.windowDuration)
-                let end = start.addingTimeInterval(.minute)
+                let end = start.addingTimeInterval(ContactFactory.windowDuration)
+
                 let values = rssiValues.filter { (timestamp, rssi) -> Bool in
                     return timestamp > start && timestamp <= end
                 }.map{ $0.1 }
+
                 guard !values.isEmpty else { continue }
+
                 let windowMean = values.reduce(0.0, +) / Double(values.count)
+
                 let eventDetector = windowMean / epochMean
 
                 if eventDetector > ContactFactory.eventThreshold,
