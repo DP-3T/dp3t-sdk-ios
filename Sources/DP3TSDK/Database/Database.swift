@@ -40,11 +40,11 @@ class DP3TDatabase {
         return _contactsStorage
     }
 
-    /// contacts Storage
-    private let _matchedContactsStorage: MatchedContactsStorage
-    var matchedContactsStorage: MatchedContactsStorage {
+    /// exposure days Storage
+    private let _exposureDaysStorage: ExposureDaysStorage
+    var exposureDaysStorage: ExposureDaysStorage {
         guard !isDestroyed else { fatalError("Database is destroyed") }
-        return _matchedContactsStorage
+        return _exposureDaysStorage
     }
 
     /// knowncase Storage
@@ -82,7 +82,7 @@ class DP3TDatabase {
         _knownCasesStorage = try KnownCasesStorage(database: connection)
         _handshakesStorage = try HandshakesStorage(database: connection)
         _contactsStorage = try ContactsStorage(database: connection, knownCasesStorage: _knownCasesStorage)
-        _matchedContactsStorage = try MatchedContactsStorage(database: connection, knownCasesStorage: _knownCasesStorage)
+        _exposureDaysStorage = try ExposureDaysStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
         #if CALIBRATION
             _logggingStorage = try LoggingStorage(database: connection)
@@ -99,7 +99,7 @@ class DP3TDatabase {
         try contactsStorage.deleteOldContacts()
         try handshakesStorage.deleteOldHandshakes()
         try knownCasesStorage.deleteOldKnownCases()
-        try matchedContactsStorage.deleteExpiredMatchedContacts()
+        try exposureDaysStorage.deleteExpiredExpsureDays()
     }
 
     /// Generates contacts from handshakes and deletes handshakes
@@ -128,7 +128,7 @@ class DP3TDatabase {
                 try secretKeysStorage.emptyStorage()
             #endif
             try contactsStorage.emptyStorage()
-            try matchedContactsStorage.emptyStorage()
+            try exposureDaysStorage.emptyStorage()
         }
     }
 

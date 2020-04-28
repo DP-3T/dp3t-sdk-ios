@@ -50,16 +50,46 @@ class DP3TMatcher: DP3TMatcherProtocol {
             (try? database.contactsStorage.getContacts(for: day)) ?? []
         }
 
-        let totalWindowCount = matchingContacts.map { $0.windowCount }.reduce(0,+)
-        if totalWindowCount > ContactFactory.numberOfWindowsForExposure,
-            let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
-            try matchingContacts.forEach { contact in
-                guard let contactId = contact.identifier else { return }
-                try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
-            }
+        // we can return here if we didn't find any new matching contacts
+        guard matchingContacts.isEmpty == false else {
+            return
+        }
 
-            let matchedContact = MatchedContact(identifier: knownCaseId, reportDate: DayDate(date: knownCase.batchTimestamp).dayMin)
-            try database.matchedContactsStorage.add(matchedContact: matchedContact)
+        guard let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) else {
+            fatalError("Known case has to be in database at this point")
+        }
+
+        /// Store all matching links in database
+        try matchingContacts.forEach { contact in
+            guard let contactId = contact.identifier else { return }
+            try database.contactsStorage.addKnownCase(knownCaseId, to: contactId)
+        }
+
+        /// Retreive all contacts which have a corresponsing knownCase
+        let contacts = try database.contactsStorage.getAllMatchedContacts()
+
+        /// Group contacts by date and associated windowCounts
+        let groups = contacts.reduce(into: [Date: Int]()) { groups, current in
+            let existing = groups[current.date] ?? 0
+            groups[current.date] = existing + current.windowCount
+        }
+
+        let matchedDays = groups.compactMap { (day, windowCount) -> ExposureDay? in
+            guard windowCount > ContactFactory.numberOfWindowsForExposure else { return nil }
+            return ExposureDay(identifier: nil,
+                               exposedDate: day,
+                               reportDate: Date())
+        }
+
+        let daysBefore = try database.exposureDaysStorage.getExposureDays()
+
+        /// Save the matchedDays
+        try matchedDays.forEach(database.exposureDaysStorage.add(_:))
+
+        let daysAfter = try database.exposureDaysStorage.getExposureDays()
+
+        /// Inform the delegate if we found a new match
+        if daysBefore != daysAfter {
             delegate.didFindMatch()
         }
     }

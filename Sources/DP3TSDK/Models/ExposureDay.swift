@@ -6,8 +6,9 @@
 
 import Foundation
 
-/// Mobdel used for showing matched contacts
-public struct MatchedContact {
-    public let identifier: Int
+/// Mobdel used for showing exposure days
+public struct ExposureDay: Equatable {
+    public let identifier: Int?
+    public let exposedDate: Date
     public let reportDate: Date
 }
