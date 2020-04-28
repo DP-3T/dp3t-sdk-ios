@@ -1,6 +1,6 @@
 # Changelog for DP3T-SDK iOS
 
-## Latest
+## Version 0.1.9 (28.4.2020)
 - Fixed issue contact date calculation
 - Adds fake request flag to exposed method
 - Adds new contact matching logic
