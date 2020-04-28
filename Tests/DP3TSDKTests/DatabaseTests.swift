@@ -128,7 +128,7 @@ final class DatabaseTests: XCTestCase {
 
         let contact = Contact(identifier: nil, ephID: token, day: day, windowCount: 0, associatedKnownCase: nil)
         XCTAssertEqual(try! database.contactsStorage.count(), 0)
-        
+        sleep(1)
         database.contactsStorage.add(contact: contact)
         var count = try! database.contactsStorage.count()
         XCTAssertEqual(count, 1)
