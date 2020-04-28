@@ -89,7 +89,9 @@ class DP3TDatabase {
             _secretKeysStorage = try SecretKeysStorage(database: connection)
         #endif
 
-        try deleteOldDate()
+        DispatchQueue.global(qos: .background).async {
+            try? self.deleteOldDate()
+        }
     }
 
     //deletes data older than CryptoConstants.numberOfDaysToKeepData
