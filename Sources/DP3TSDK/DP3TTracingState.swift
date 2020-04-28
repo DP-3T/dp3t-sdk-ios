@@ -17,13 +17,13 @@ public enum InfectionStatus {
     case infected
 
     static func getInfectionState(with database: DP3TDatabase) -> InfectionStatus {
-        let numberOfMatchedContacts = try? database.exposureDaysStorage.count()
-        let hasMatchedContacts: Bool = (numberOfMatchedContacts ?? 0) > 0
+        let matchingDays = try? database.exposureDaysStorage.count()
+        let hasMatchingDays: Bool = (matchingDays ?? 0) > 0
         if Default.shared.didMarkAsInfected {
             return .infected
-        } else if hasMatchedContacts,
-            let matchedContacts = try? database.exposureDaysStorage.getExposureDays() {
-            return .exposed(days: matchedContacts)
+        } else if hasMatchingDays,
+            let matchedDays = try? database.exposureDaysStorage.getExposureDays() {
+            return .exposed(days: matchedDays)
         } else {
             return .healthy
         }
