@@ -46,11 +46,11 @@ enum ContactFactory {
             let epochMean = rssiValues.map{ $0.1 }.reduce(0.0, +) / Double(rssiValues.count)
 
             let epochStart = DP3TCryptoModule.getEpochStart(timestamp: firstValue.0)
-            let windowLenght = Int(CryptoConstants.secondsPerEpoch / ContactFactory.windowDuration)
+            let windowLength = Int(CryptoConstants.secondsPerEpoch / ContactFactory.windowDuration)
 
             var numberOfMatchingWindows = 0
 
-            for windowIndex in (0 ..< windowLenght) {
+            for windowIndex in (0 ..< windowLength) {
                 let start = epochStart.addingTimeInterval(Double(windowIndex) * ContactFactory.windowDuration)
                 let end = start.addingTimeInterval(.minute)
                 let values = rssiValues.filter { (timestamp, rssi) -> Bool in

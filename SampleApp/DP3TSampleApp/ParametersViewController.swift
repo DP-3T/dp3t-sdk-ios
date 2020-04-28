@@ -11,7 +11,7 @@ class ParametersViewController: UIViewController {
     let stackView = UIStackView()
 
     let reconnectionDelayInput = UITextField()
-    let batchLenghtInput = UITextField()
+    let batchLengthInput = UITextField()
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -71,20 +71,20 @@ class ParametersViewController: UIViewController {
 
         do {
             let label = UILabel()
-            label.text = "Set buckets batch lenght (seconds)"
+            label.text = "Set buckets batch length (seconds)"
             stackView.addArrangedSubview(label)
 
-            batchLenghtInput.text = "\(Default.shared.batchLenght)"
-            batchLenghtInput.delegate = self
-            batchLenghtInput.font = UIFont.systemFont(ofSize: 15)
-            batchLenghtInput.borderStyle = UITextField.BorderStyle.roundedRect
-            batchLenghtInput.autocorrectionType = UITextAutocorrectionType.no
-            batchLenghtInput.keyboardType = UIKeyboardType.numberPad
-            batchLenghtInput.returnKeyType = UIReturnKeyType.done
-            batchLenghtInput.clearButtonMode = UITextField.ViewMode.whileEditing
-            batchLenghtInput.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
-            batchLenghtInput.delegate = self
-            stackView.addArrangedSubview(batchLenghtInput)
+            batchLengthInput.text = "\(Default.shared.batchLength)"
+            batchLengthInput.delegate = self
+            batchLengthInput.font = UIFont.systemFont(ofSize: 15)
+            batchLengthInput.borderStyle = UITextField.BorderStyle.roundedRect
+            batchLengthInput.autocorrectionType = UITextAutocorrectionType.no
+            batchLengthInput.keyboardType = UIKeyboardType.numberPad
+            batchLengthInput.returnKeyType = UIReturnKeyType.done
+            batchLengthInput.clearButtonMode = UITextField.ViewMode.whileEditing
+            batchLengthInput.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
+            batchLengthInput.delegate = self
+            stackView.addArrangedSubview(batchLengthInput)
 
             let button = UIButton()
             if #available(iOS 13.0, *) {
@@ -95,7 +95,7 @@ class ParametersViewController: UIViewController {
                 button.setTitleColor(.black, for: .highlighted)
             }
             button.setTitle("Update", for: .normal)
-            button.addTarget(self, action: #selector(batchLenghtUpdate), for: .touchUpInside)
+            button.addTarget(self, action: #selector(batchLengthUpdate), for: .touchUpInside)
             stackView.addArrangedSubview(button)
         }
 
@@ -111,13 +111,13 @@ class ParametersViewController: UIViewController {
         reconnectionDelayInput.resignFirstResponder()
     }
 
-    @objc func batchLenghtUpdate() {
-        let lenght = batchLenghtInput.text ?? "7200"
-        let double = Double(lenght) ?? 7200.0
-        Default.shared.batchLenght = double
-        batchLenghtInput.text = "\(Default.shared.batchLenght)"
-        DP3TTracing.batchLenght = Default.shared.batchLenght
-        batchLenghtInput.resignFirstResponder()
+    @objc func batchLengthUpdate() {
+        let length = batchLengthInput.text ?? "7200"
+        let double = Double(length) ?? 7200.0
+        Default.shared.batchLength = double
+        batchLengthInput.text = "\(Default.shared.batchLength)"
+        DP3TTracing.batchLength = Default.shared.batchLength
+        batchLengthInput.resignFirstResponder()
     }
 }
 

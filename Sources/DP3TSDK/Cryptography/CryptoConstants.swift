@@ -14,7 +14,7 @@ extension TimeInterval {
 }
 
 enum CryptoConstants {
-    static let keyLenght: Int = 16
+    static let keyLength: Int = 16
     static let numberOfDaysToKeepData: Int = 21
     static let numberOfEpochsPerDay: Int = 24 * 4
     static let secondsPerEpoch: TimeInterval = .day / Double(CryptoConstants.numberOfEpochsPerDay)

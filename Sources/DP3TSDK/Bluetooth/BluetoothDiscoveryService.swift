@@ -150,7 +150,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
         if let serviceData = advertisementData[CBAdvertisementDataServiceDataKey] as? [CBUUID: Data],
            let data: EphID = serviceData[BluetoothConstants.serviceCBUUID],
-           data.count == CryptoConstants.keyLenght {
+           data.count == CryptoConstants.keyLength {
 
             try? delegate?.didDiscover(data: data,
                                        TXPowerlevel: txPowerlevel,
@@ -376,7 +376,7 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             return
         }
 
-        guard data.count == CryptoConstants.keyLenght else {
+        guard data.count == CryptoConstants.keyLength else {
             #if CALIBRATION
                 logger?.log(type: .receiver, " → ❌ Received wrong number of bytes (\(data.count) bytes) from \(peripheral.identifier) at \(Date())")
             #endif

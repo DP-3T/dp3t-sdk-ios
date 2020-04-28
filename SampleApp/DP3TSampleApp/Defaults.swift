@@ -31,12 +31,12 @@ class Default {
         }
     }
 
-    var batchLenght: Double {
+    var batchLength: Double {
            get {
-            return (store.object(forKey: "org.dpppt.sampleapp.batchLenght") as? Double) ?? DP3TTracing.batchLenght
+            return (store.object(forKey: "org.dpppt.sampleapp.batchLength") as? Double) ?? DP3TTracing.batchLength
            }
            set(newValue) {
-               store.set(newValue, forKey: "org.dpppt.sampleapp.batchLenght")
+               store.set(newValue, forKey: "org.dpppt.sampleapp.batchLength")
            }
        }
 

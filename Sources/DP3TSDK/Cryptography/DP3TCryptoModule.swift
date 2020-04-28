@@ -85,15 +85,15 @@ class DP3TCryptoModule {
     internal static func createEphIDs(secretKey: Data) throws -> [EphID] {
         let hmac = Crypto.hmac(msg: CryptoConstants.broadcastKey, key: secretKey)
 
-        let zeroData = Data(count: CryptoConstants.keyLenght * CryptoConstants.numberOfEpochsPerDay)
+        let zeroData = Data(count: CryptoConstants.keyLength * CryptoConstants.numberOfEpochsPerDay)
 
         let aes = try Crypto.AESCTREncrypt(keyData: hmac)
 
         var ephIDs = [Data]()
         let prgData = try aes.encrypt(data: zeroData)
         for i in 0 ..< CryptoConstants.numberOfEpochsPerDay {
-            let pos = i * CryptoConstants.keyLenght
-            ephIDs.append(prgData[pos ..< pos + CryptoConstants.keyLenght])
+            let pos = i * CryptoConstants.keyLength
+            ephIDs.append(prgData[pos ..< pos + CryptoConstants.keyLength])
         }
 
         ephIDs.shuffle()
