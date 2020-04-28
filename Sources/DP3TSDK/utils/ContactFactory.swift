@@ -15,7 +15,7 @@ enum ContactFactory {
 
     static let eventThreshold: Double = 0.8
 
-    static let numberOfWindowsForExposure: Int = 10
+    static let numberOfWindowsForExposure: Int = 15
 
     static let windowDuration: TimeInterval = .minute
 
