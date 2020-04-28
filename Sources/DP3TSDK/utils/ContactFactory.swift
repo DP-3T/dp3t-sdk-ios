@@ -67,10 +67,11 @@ enum ContactFactory {
             }
 
             if numberOfMatchingWindows != 0 {
-                let day = DayDate(date: firstValue.0)
+                let timestamp = firstValue.0.timeIntervalSince1970
+                let bucketTimestamp = timestamp - timestamp.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
                 return Contact(identifier: nil,
                                ephID: ephID,
-                               day: day,
+                               date: Date(timeIntervalSince1970: bucketTimestamp),
                                windowCount: numberOfMatchingWindows,
                                associatedKnownCase: nil)
             }

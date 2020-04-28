@@ -167,7 +167,8 @@ class DP3TCryptoModule {
             // generate all ephIDs for day
             let ephIDs = Set(try DP3TCryptoModule.createEphIDs(secretKey: secretKeyForDay))
             // check all handshakes if they match any of the ephIDs
-            for contact in contactsOnDay {
+            // make sure that all contact date is before bucket date
+            for contact in contactsOnDay where bucketDate >= contact.date {
                 if ephIDs.contains(contact.ephID) {
                     matchingContacts.append(contact)
                 }
