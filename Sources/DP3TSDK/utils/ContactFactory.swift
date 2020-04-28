@@ -7,11 +7,11 @@
 import Foundation
 
 enum ContactFactory {
-    static let defaultTxPowerLevel: Double = 12
+    static let defaultTxPowerLevel: Double = 12.0
 
-    static let badAttenuationThreshold: Double = 100000//TBD
+    static let badAttenuationThreshold: Double = 64.0
 
-    static let contactAttenuationThreshold: Double = 100000//TBD
+    static let contactAttenuationThreshold: Double = 54.0
 
     static let eventThreshold: Double = 0.8
 
@@ -44,7 +44,7 @@ enum ContactFactory {
 
                 let attenuation = abs(txPower) - rssi
 
-                //guard attenuation <=> ContactFactory.badAttenuationThreshold else { return nil }
+                guard attenuation <= ContactFactory.badAttenuationThreshold else { return nil }
 
                 return (handshake.timestamp, attenuation)
             }
@@ -73,8 +73,8 @@ enum ContactFactory {
 
                 let eventDetector = windowMean / epochMean
 
-                if eventDetector > ContactFactory.eventThreshold/*,
-                    windowMean <=> ContactFactory.contactAttenuationThreshold*/ {
+                if eventDetector > ContactFactory.eventThreshold,
+                    windowMean < ContactFactory.contactAttenuationThreshold {
                     numberOfMatchingWindows += 1
                 }
             }
