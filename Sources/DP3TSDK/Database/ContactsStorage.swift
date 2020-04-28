@@ -78,6 +78,23 @@ class ContactsStorage {
         try database.run(contactRow.update(associatedKnownCaseColumn <- knownCaseId))
     }
 
+    /// Retreive all contacted with a associated known case
+    /// - Throws: if a database error happens
+    /// - Returns: list of contacts
+    func getAllMatchedContacts() throws -> [Contact] {
+        let query = table.filter(associatedKnownCaseColumn != nil)
+        var contacts: [Contact] = []
+        for row in try database.prepare(query) {
+            let model = Contact(identifier: row[idColumn],
+                                ephID: row[ephIDColumn],
+                                date: Date(milliseconds: row[dateColumn]),
+                                windowCount: row[windowCountColumn],
+                                associatedKnownCase: row[associatedKnownCaseColumn])
+            contacts.append(model)
+        }
+        return contacts
+    }
+
     /// Helper function to retrieve Contacts from Handshakes
     /// - Parameters:
     ///   - day: the day for which to retreive contact
