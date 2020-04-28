@@ -130,6 +130,8 @@ final class DatabaseTests: XCTestCase {
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
         let contact = Contact(identifier: nil, ephID: token, date: date, windowCount: 0, associatedKnownCase: nil)
+        XCTAssertEqual(try! database.contactsStorage.count(), 0)
+        sleep(1)
         database.contactsStorage.add(contact: contact)
         var count = try! database.contactsStorage.count()
         XCTAssertEqual(count, 1)
