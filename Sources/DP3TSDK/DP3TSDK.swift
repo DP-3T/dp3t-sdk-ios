@@ -42,7 +42,7 @@ class DP3TSDK {
 
     /// The background task manager. This is marked as Any? because it is only available as of iOS 13 and properties cannot be
     /// marked with @available without causing the whole class to be restricted also.
-    private let backgroundTaskManager: Any?
+    private static var backgroundTaskManager: Any? = nil;
 
     /// delegate
     public weak var delegate: DP3TTracingDelegate?
@@ -78,6 +78,27 @@ class DP3TSDK {
         }
     }
 
+    public static func initializeBackgroundTaskManager() {
+        initializeBackgroundTaskManager(nil)
+    }
+
+    private static func initializeBackgroundTaskManager(_ sdk: DP3TSDK?) {
+        guard backgroundTaskManager == nil else {
+            return
+        }
+
+        if #available(iOS 13.0, *) {
+            let backgroundTaskManager = DP3TBackgroundTaskManager()
+            self.backgroundTaskManager = backgroundTaskManager
+            #if CALIBRATION
+                backgroundTaskManager.logger = sdk
+            #endif
+            backgroundTaskManager.register()
+        } else {
+            backgroundTaskManager = nil
+        }
+    }
+
     /// Initializer
     /// - Parameters:
     ///   - appInfo: applicationInfot to use (either discovery or manually initialized)
@@ -101,16 +122,7 @@ class DP3TSDK {
 
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded()
 
-        if #available(iOS 13.0, *) {
-            let backgroundTaskManager = DP3TBackgroundTaskManager()
-            self.backgroundTaskManager = backgroundTaskManager
-            #if CALIBRATION
-                backgroundTaskManager.logger = self
-            #endif
-            backgroundTaskManager.register()
-        } else {
-            backgroundTaskManager = nil
-        }
+        DP3TSDK.initializeBackgroundTaskManager(self)
 
         broadcaster.bluetoothDelegate = self
         discoverer.bluetoothDelegate = self

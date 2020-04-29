@@ -51,6 +51,12 @@ public enum DP3TTracing {
         }
     }
 
+    /// You have to call this in your onCreate() handler if you do not intend to call DP3TTracing.initialize(), or background task registration will crash your app on iOS > 13
+    /// If you call DP3TTracing.initialize() in your onCreate() handler, this is not useful.
+    public static func preInitialize() {
+        DP3TSDK.initializeBackgroundTaskManager();
+    }
+
     /// initialize the SDK
     /// - Parameters:
     ///   - appId: application identifier used for the discovery call
@@ -145,6 +151,12 @@ public enum DP3TTracing {
         instance = nil
     }
 
+    /// is the SDK initialized ?
+    /// You are not allowed to do anything except initialize if it isn't
+    public static var isInitialized: Bool {
+        return instance != nil
+    }
+
     #if CALIBRATION
         public static func startAdvertising() throws {
             guard let instance = instance else {
@@ -173,10 +185,6 @@ public enum DP3TTracing {
 
         public static func numberOfHandshakes() throws -> Int {
             try instance.numberOfHandshakes()
-        }
-
-        public static var isInitialized: Bool {
-            return instance != nil
         }
 
         public static func getSecretKeyRepresentationForToday() throws -> String {

@@ -10,6 +10,8 @@ import UIKit.UIApplication
 
 private class SyncOperation: Operation {
     override func main() {
+        guard DP3TTracing.isInitialized else { return }
+
         DP3TTracing.sync { result in
             switch result {
             case .failure:
