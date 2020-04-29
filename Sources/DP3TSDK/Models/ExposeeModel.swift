@@ -26,7 +26,7 @@ struct ExposeeModel: Encodable {
         // Encode auth if present only
         try container.encodeIfPresent(authData, forKey: .authData)
         // Compute date
-        let startOfDayTimestamp = Int(onset.dayMin.timeIntervalSince1970)
+        let startOfDayTimestamp = Int(onset.dayMin.millisecondsSince1970)
         try container.encode(startOfDayTimestamp, forKey: .onset)
 
         try container.encode(fake ? 1 : 0, forKey: .fake)
