@@ -42,7 +42,7 @@ enum ContactFactory {
 
                 let txPower = handshake.TXPowerlevel ?? ContactFactory.defaultTxPowerLevel
 
-                let attenuation = abs(txPower) - rssi
+                let attenuation = txPower - rssi
 
                 guard attenuation <= ContactFactory.badAttenuationThreshold else { return nil }
 
