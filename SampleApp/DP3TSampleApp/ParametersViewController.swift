@@ -106,22 +106,18 @@ class ParametersViewController: UIViewController {
     }
 
     @objc func updateReconnectionDelay() {
-        var params = DP3TTracing.parameters
         let delay = reconnectionDelayInput.text ?? "0"
         let intDelay = Int(delay) ?? 0
         reconnectionDelayInput.text = "\(intDelay)"
-        params.bluetooth.peripheralReconnectDelay = intDelay
-        DP3TTracing.parameters = params
+        DP3TTracing.parameters.bluetooth.peripheralReconnectDelay = intDelay
         reconnectionDelayInput.resignFirstResponder()
     }
 
     @objc func batchLengthUpdate() {
-        var params = DP3TTracing.parameters
         let length = batchLengthInput.text ?? "7200"
         let double = Double(length) ?? 7200.0
         batchLengthInput.text = "\(double)"
-        params.networking.batchLength = double
-        DP3TTracing.parameters = params
+        DP3TTracing.parameters.networking.batchLength = double
         batchLengthInput.resignFirstResponder()
     }
 }

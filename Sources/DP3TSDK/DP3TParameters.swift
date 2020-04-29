@@ -7,7 +7,16 @@
 import Foundation
 import CoreBluetooth
 
+
 public struct DP3TParameters: Codable {
+
+    static let parameterVersion: Int = 1
+
+    let version: Int
+
+    init() {
+        version = DP3TParameters.parameterVersion
+    }
 
     public var bluetooth = Bluetooth()
 
