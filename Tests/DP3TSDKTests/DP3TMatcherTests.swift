@@ -97,7 +97,7 @@ final class DP3TMatcherTests: XCTestCase {
 
         let days = try! database.exposureDaysStorage.getExposureDays()
         XCTAssertEqual(days.isEmpty, false)
-        XCTAssertEqual(days.first!.exposedDate, currentBatchStartDate)
+        XCTAssertEqual(days.first!.exposedDate, DayDate(date: currentBatchStartDate).dayMin)
     }
 
     func testFindMatchSingleNotEnaughtWindows() {
@@ -142,6 +142,34 @@ final class DP3TMatcherTests: XCTestCase {
         try! matcher.checkNewKnownCase(knownCase)
 
         XCTAssert(!delegate.didFindMatchStorage)
+    }
+
+    func testFindMatchMulipleContactsToReachThresholdMultipleDistance() {
+        let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
+        let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
+
+        let parts = Int(ceil(Double(ContactFactory.numberOfWindowsForExposure + 1) / 3.0))
+
+        let dayStart = DayDate(date: currentBatchStartDate).dayMin
+
+        let c1 = Contact(identifier: nil, ephID: token, date: dayStart.addingTimeInterval(.hour * 1), windowCount: parts, associatedKnownCase: nil)
+        database.contactsStorage.add(contact: c1)
+
+        let c2 = Contact(identifier: nil, ephID: token, date: dayStart.addingTimeInterval(.hour * 5), windowCount: parts, associatedKnownCase: nil)
+        database.contactsStorage.add(contact: c2)
+
+        let c3 = Contact(identifier: nil, ephID: token, date: dayStart.addingTimeInterval(.hour * 6), windowCount: parts, associatedKnownCase: nil)
+        database.contactsStorage.add(contact: c3)
+
+        let knownCase = KnownCaseModel(id: nil,
+                                       key: key,
+                                       onset: Date().addingTimeInterval(-.day),
+                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
+        try! database.knownCasesStorage.update(knownCases: [knownCase])
+
+        try! matcher.checkNewKnownCase(knownCase)
+
+        XCTAssert(delegate.didFindMatchStorage)
     }
 
     func testFindMatchMulipleContactsNotToReachThreshold() {
