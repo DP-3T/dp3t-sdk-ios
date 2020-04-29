@@ -41,6 +41,16 @@ public enum DP3TTracing {
     /// The current version of the SDK
     public static let frameworkVersion: String = "0.1.9"
 
+    /// sets global parameter values which are used throughout the sdk
+    public static var parameters: DP3TParameters {
+        get {
+            return Default.shared.parameters
+        }
+        set {
+            Default.shared.parameters = newValue
+        }
+    }
+
     /// initialize the SDK
     /// - Parameters:
     ///   - appId: application identifier used for the discovery call
@@ -167,24 +177,6 @@ public enum DP3TTracing {
 
         public static var isInitialized: Bool {
             return instance != nil
-        }
-
-        public static var reconnectionDelay: Int {
-            get {
-                return BluetoothConstants.peripheralReconnectDelay
-            }
-            set {
-                BluetoothConstants.peripheralReconnectDelay = newValue
-            }
-        }
-
-        public static var batchLength: TimeInterval {
-            get {
-                return NetworkingConstants.batchLength
-            }
-            set {
-                NetworkingConstants.batchLength = newValue
-            }
         }
 
         public static func getSecretKeyRepresentationForToday() throws -> String {

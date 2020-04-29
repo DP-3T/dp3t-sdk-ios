@@ -40,7 +40,7 @@ final class DP3TMatcherTests: XCTestCase {
     override func setUp() {
         nowTs = Date().timeIntervalSince1970
 
-        currentBatchStart = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+        currentBatchStart = nowTs - nowTs.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
 
         currentBatchStartDate = Date(timeIntervalSince1970: currentBatchStart)
 
@@ -59,13 +59,13 @@ final class DP3TMatcherTests: XCTestCase {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskoc==")!
 
-        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: ContactFactory.numberOfWindowsForExposure + 1, associatedKnownCase: nil)
+        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c)
 
         let knownCase = KnownCaseModel(id: nil,
                                        key: key,
                                        onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
+                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
         try! matcher.checkNewKnownCase(knownCase)
@@ -77,13 +77,13 @@ final class DP3TMatcherTests: XCTestCase {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
 
-        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: ContactFactory.numberOfWindowsForExposure + 1, associatedKnownCase: nil)
+        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c)
 
         let knownCase = KnownCaseModel(id: nil,
                                        key: key,
                                        onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
+                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
         try! matcher.checkNewKnownCase(knownCase)
@@ -93,7 +93,7 @@ final class DP3TMatcherTests: XCTestCase {
         let contacts = try! database.contactsStorage.getAllMatchedContacts()
         XCTAssertEqual(contacts.isEmpty, false)
         XCTAssertEqual(contacts.first!.date, currentBatchStartDate)
-        XCTAssertEqual(contacts.first!.windowCount, ContactFactory.numberOfWindowsForExposure + 1)
+        XCTAssertEqual(contacts.first!.windowCount, Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1)
 
         let days = try! database.exposureDaysStorage.getExposureDays()
         XCTAssertEqual(days.isEmpty, false)
@@ -104,13 +104,13 @@ final class DP3TMatcherTests: XCTestCase {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
 
-        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: ContactFactory.numberOfWindowsForExposure, associatedKnownCase: nil)
+        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c)
 
         let knownCase = KnownCaseModel(id: nil,
                                        key: key,
                                        onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
+                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
         try! matcher.checkNewKnownCase(knownCase)
@@ -122,7 +122,7 @@ final class DP3TMatcherTests: XCTestCase {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
 
-        let parts = Int(ceil(Double(ContactFactory.numberOfWindowsForExposure + 1) / 3.0))
+        let parts = Int(ceil(Double(Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1) / 3.0))
 
         let c1 = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: parts, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c1)
@@ -136,7 +136,7 @@ final class DP3TMatcherTests: XCTestCase {
         let knownCase = KnownCaseModel(id: nil,
                                        key: key,
                                        onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
+                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
         try! matcher.checkNewKnownCase(knownCase)
@@ -148,7 +148,7 @@ final class DP3TMatcherTests: XCTestCase {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
 
-        let parts = Int(ceil(Double(ContactFactory.numberOfWindowsForExposure + 1) / 3.0))
+        let parts = Int(ceil(Double(Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1) / 3.0))
 
         let c1 = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: parts, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c1)
@@ -159,7 +159,7 @@ final class DP3TMatcherTests: XCTestCase {
         let knownCase = KnownCaseModel(id: nil,
                                        key: key,
                                        onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
+                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
         try! matcher.checkNewKnownCase(knownCase)
@@ -171,13 +171,13 @@ final class DP3TMatcherTests: XCTestCase {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
 
-        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: ContactFactory.numberOfWindowsForExposure + 1, associatedKnownCase: nil)
+        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c)
 
         let knownCase = KnownCaseModel(id: nil,
                                        key: key,
                                        onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
+                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
         try! matcher.checkNewKnownCase(knownCase)
@@ -198,7 +198,7 @@ final class DP3TMatcherTests: XCTestCase {
         let c = Contact(identifier: nil,
                         ephID: token,
                         date: currentBatchStartDate,
-                        windowCount: ContactFactory.numberOfWindowsForExposure + 1,
+                        windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1,
                         associatedKnownCase: nil)
 
         database.contactsStorage.add(contact: c)
@@ -206,7 +206,7 @@ final class DP3TMatcherTests: XCTestCase {
         let knownCase = KnownCaseModel(id: nil,
                                        key: key,
                                        onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
+                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
         try! matcher.checkNewKnownCase(knownCase)
@@ -218,14 +218,14 @@ final class DP3TMatcherTests: XCTestCase {
         let c2 = Contact(identifier: nil,
                          ephID: token,
                          date: currentBatchStartDate.addingTimeInterval(-.day),
-                         windowCount: ContactFactory.numberOfWindowsForExposure + 1,
+                         windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1,
                          associatedKnownCase: nil)
         database.contactsStorage.add(contact: c2)
 
         let knownCase1 = KnownCaseModel(id: nil,
                                         key: key,
                                         onset: Date().addingTimeInterval(-.day * 2),
-                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(-.day + NetworkingConstants.batchLength))
+                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(-.day + Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase1])
 
         try! matcher.checkNewKnownCase(knownCase1)

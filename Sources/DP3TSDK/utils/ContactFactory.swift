@@ -7,21 +7,11 @@
 import Foundation
 
 enum ContactFactory {
-    static let defaultTxPowerLevel: Double = 12.0
-
-    static let badAttenuationThreshold: Double = 64.0
-
-    static let contactAttenuationThreshold: Double = 54.0
-
-    static let eventThreshold: Double = 0.8
-
-    static let numberOfWindowsForExposure: Int = 15
-
-    static let windowDuration: TimeInterval = .minute
 
     /// Helper function to create contacts from handshakes
     /// - Returns: list of contacts
     static func contacts(from handshakes: [HandshakeModel]) -> [Contact] {
+        let parameters = Default.shared.parameters.contactMatching
         var groupedHandshakes = [EphID: [HandshakeModel]]()
 
         // group handhakes by id
@@ -40,11 +30,11 @@ enum ContactFactory {
             let attenutationValues: [(Date, Double)] = handshakes.compactMap { handshake -> (Date, Double)? in
                 guard let rssi = handshake.RSSI else { return nil }
 
-                let txPower = handshake.TXPowerlevel ?? ContactFactory.defaultTxPowerLevel
+                let txPower = handshake.TXPowerlevel ?? parameters.defaultTxPowerLevel
 
                 let attenuation = abs(txPower) - rssi
 
-                guard attenuation <= ContactFactory.badAttenuationThreshold else { return nil }
+                guard attenuation <= parameters.badAttenuationThreshold else { return nil }
 
                 return (handshake.timestamp, attenuation)
             }
@@ -55,13 +45,13 @@ enum ContactFactory {
 
             let epochStart = DP3TCryptoModule.getEpochStart(timestamp: firstValue.0)
 
-            let windowLength = Int(CryptoConstants.secondsPerEpoch / ContactFactory.windowDuration)
+            let windowLength = Int(Default.shared.parameters.crypto.secondsPerEpoch / parameters.windowDuration)
 
             var numberOfMatchingWindows = 0
 
             for windowIndex in 0 ..< windowLength {
-                let start = epochStart.addingTimeInterval(Double(windowIndex) * ContactFactory.windowDuration)
-                let end = start.addingTimeInterval(ContactFactory.windowDuration)
+                let start = epochStart.addingTimeInterval(Double(windowIndex) * parameters.windowDuration)
+                let end = start.addingTimeInterval(parameters.windowDuration)
 
                 let values = attenutationValues.filter { (timestamp, _) -> Bool in
                     timestamp > start && timestamp <= end
@@ -73,15 +63,15 @@ enum ContactFactory {
 
                 let eventDetector = windowMean / epochMean
 
-                if eventDetector > ContactFactory.eventThreshold,
-                    windowMean < ContactFactory.contactAttenuationThreshold {
+                if eventDetector > parameters.eventThreshold,
+                    windowMean < parameters.contactAttenuationThreshold {
                     numberOfMatchingWindows += 1
                 }
             }
 
             if numberOfMatchingWindows != 0 {
                 let timestamp = firstValue.0.timeIntervalSince1970
-                let bucketTimestamp = timestamp - timestamp.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+                let bucketTimestamp = timestamp - timestamp.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
                 return Contact(identifier: nil,
                                ephID: ephID,
                                date: Date(timeIntervalSince1970: bucketTimestamp),

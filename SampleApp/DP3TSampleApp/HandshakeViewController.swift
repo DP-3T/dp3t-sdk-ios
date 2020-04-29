@@ -162,6 +162,7 @@ class HandshakeViewController: UIViewController {
     }
 
     private func generateIntervalsFrom(grouppedHandshakes: [String: [HandshakeModel]]) -> [HandshakeInterval] {
+        let params = DP3TTracing.parameters
         var intervals: [HandshakeInterval] = []
         for (_, group) in grouppedHandshakes.enumerated() {
             let sortedGroup = group.value.sorted(by: { $0.timestamp < $1.timestamp })
@@ -169,11 +170,11 @@ class HandshakeViewController: UIViewController {
             var end = 1
             while end < sortedGroup.count {
                 let timeDelay = abs(sortedGroup[end].timestamp.timeIntervalSince(sortedGroup[end - 1].timestamp))
-                if timeDelay > Double(MAX_NUMBER_OF_MISSING_HANDSHAKES * DP3TTracing.reconnectionDelay) {
+                if timeDelay > Double(MAX_NUMBER_OF_MISSING_HANDSHAKES * params.bluetooth.peripheralReconnectDelay) {
                     let startTime = sortedGroup[start].timestamp
                     let endTime = sortedGroup[end - 1].timestamp
                     let elapsedTime = abs(startTime.timeIntervalSince(endTime))
-                    let expectedCount: Int = 1 + Int(ceil(elapsedTime) / Double(DP3TTracing.reconnectionDelay))
+                    let expectedCount: Int = 1 + Int(ceil(elapsedTime) / Double(params.bluetooth.peripheralReconnectDelay))
                     let interval = HandshakeInterval(identifier: group.key, start: startTime, end: endTime, count: end - start, expectedCount: expectedCount)
                     intervals.append(interval)
                     start = end
@@ -183,7 +184,7 @@ class HandshakeViewController: UIViewController {
             let startTime = sortedGroup[start].timestamp
             let endTime = sortedGroup[end - 1].timestamp
             let elapsedTime = abs(startTime.timeIntervalSince(endTime))
-            let expectedCount: Int = 1 + Int(ceil(elapsedTime) / Double(DP3TTracing.reconnectionDelay))
+            let expectedCount: Int = 1 + Int(ceil(elapsedTime) / Double(params.bluetooth.peripheralReconnectDelay))
             let interval = HandshakeInterval(identifier: group.key, start: startTime, end: endTime, count: end - start, expectedCount: expectedCount)
             intervals.append(interval)
         }

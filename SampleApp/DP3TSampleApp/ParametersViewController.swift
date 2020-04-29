@@ -39,12 +39,15 @@ class ParametersViewController: UIViewController {
         }
         stackView.axis = .vertical
 
+
+        let params = DP3TTracing.parameters
+
         do {
             let label = UILabel()
             label.text = "Set Reconnection Delay (seconds)"
             stackView.addArrangedSubview(label)
 
-            reconnectionDelayInput.text = "\(Default.shared.reconnectionDelay)"
+            reconnectionDelayInput.text = "\(params.bluetooth.peripheralReconnectDelay)"
             reconnectionDelayInput.delegate = self
             reconnectionDelayInput.font = UIFont.systemFont(ofSize: 15)
             reconnectionDelayInput.borderStyle = UITextField.BorderStyle.roundedRect
@@ -74,7 +77,7 @@ class ParametersViewController: UIViewController {
             label.text = "Set buckets batch length (seconds)"
             stackView.addArrangedSubview(label)
 
-            batchLengthInput.text = "\(Default.shared.batchLength)"
+            batchLengthInput.text = "\(params.networking.batchLength)"
             batchLengthInput.delegate = self
             batchLengthInput.font = UIFont.systemFont(ofSize: 15)
             batchLengthInput.borderStyle = UITextField.BorderStyle.roundedRect
@@ -103,20 +106,22 @@ class ParametersViewController: UIViewController {
     }
 
     @objc func updateReconnectionDelay() {
+        var params = DP3TTracing.parameters
         let delay = reconnectionDelayInput.text ?? "0"
         let intDelay = Int(delay) ?? 0
-        Default.shared.reconnectionDelay = intDelay
-        reconnectionDelayInput.text = "\(Default.shared.reconnectionDelay)"
-        DP3TTracing.reconnectionDelay = Default.shared.reconnectionDelay
+        reconnectionDelayInput.text = "\(intDelay)"
+        params.bluetooth.peripheralReconnectDelay = intDelay
+        DP3TTracing.parameters = params
         reconnectionDelayInput.resignFirstResponder()
     }
 
     @objc func batchLengthUpdate() {
+        var params = DP3TTracing.parameters
         let length = batchLengthInput.text ?? "7200"
         let double = Double(length) ?? 7200.0
-        Default.shared.batchLength = double
-        batchLengthInput.text = "\(Default.shared.batchLength)"
-        DP3TTracing.batchLength = Default.shared.batchLength
+        batchLengthInput.text = "\(double)"
+        params.networking.batchLength = double
+        DP3TTracing.parameters = params
         batchLengthInput.resignFirstResponder()
     }
 }

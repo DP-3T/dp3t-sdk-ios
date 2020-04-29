@@ -75,7 +75,7 @@ class DP3TMatcher: DP3TMatcherProtocol {
         }
 
         let matchedDays = groups.compactMap { (day, windowCount) -> ExposureDay? in
-            guard windowCount > ContactFactory.numberOfWindowsForExposure else { return nil }
+            guard windowCount > Default.shared.parameters.contactMatching.numberOfWindowsForExposure else { return nil }
             return ExposureDay(identifier: 0,
                                exposedDate: day,
                                reportDate: Date())

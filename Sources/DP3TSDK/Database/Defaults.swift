@@ -66,4 +66,28 @@ class Default: DefaultStorage {
             store.set(newValue, forKey: "org.dpppt.didMarkAsInfected")
         }
     }
+
+    /// Parameters
+    var parameters: DP3TParameters {
+        get {
+            guard let obj = store.object(forKey: "org.dpppt.parameters") as? Data else {
+                return .init()
+            }
+
+            let decoder = JSONDecoder()
+
+            guard let decoded = try? decoder.decode(DP3TParameters.self, from: obj) else {
+                return .init()
+            }
+
+            return decoded
+        }
+        set(newValue) {
+            let encoder = JSONEncoder()
+
+            if let encoded = try? encoder.encode(newValue) {
+                store.set(encoded, forKey: "org.dpppt.parameters")
+            }
+        }
+    }
 }

@@ -61,7 +61,7 @@ class HandshakesStorage {
 
     /// Deletes handshakes older than CryptoConstants.numberOfDaysToKeepData
     func deleteOldHandshakes() throws {
-        let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day)
+        let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(Default.shared.parameters.crypto.numberOfDaysToKeepData) * TimeInterval.day)
         let deleteQuery = table.filter(timestampColumn < thresholdDate.millisecondsSince1970)
         try database.run(deleteQuery.delete())
     }
