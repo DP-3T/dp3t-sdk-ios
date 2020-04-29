@@ -42,6 +42,8 @@ class DP3TSDK {
 
     /// The background task manager. This is marked as Any? because it is only available as of iOS 13 and properties cannot be
     /// marked with @available without causing the whole class to be restricted also.
+    ///
+    /// This can be initialized while initializing the SDK, or preemptively using initializeBackgroundTaskManager()
     private static var backgroundTaskManager: Any? = nil;
 
     /// delegate
