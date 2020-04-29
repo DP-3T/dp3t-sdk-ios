@@ -264,29 +264,4 @@ final class DP3TMatcherTests: XCTestCase {
         XCTAssertEqual(days.count, 2)
     }
 
-    func testMatchingWithGivenSql(){
-        let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
-
-        try! connection.execute("""
-            INSERT INTO "contacts" ("id", "date", "ephID", "associated_known_case", "windowsCount") VALUES
-            ('1', '1588159500000', X'1E8F776BD0EB845B5900262166FE1153', NULL, '2'),
-            ('2', '1588158900000', X'75F02545B18FDD3E4E4693B2208A4915', '13', '5'),
-            ('3', '1588159800000', X'C966F5F4929EC2D63BEF1069C76EC7F1', '13', '5'),
-            ('4', '1588160700000', X'A8353DBEF149D988C014127241D5AC88', NULL, '7'),
-            ('5', '1588161000000', X'C67FF2C99FE2036F81EB0779A5C44FCC', '13', '2'),
-            ('6', '1588161600000', X'C52CC74AC52D51F47B13AC107899A92B', '13', '5'),
-            ('7', '1588161600000', X'BAF3EEDF833B98BB5750F3F5EAB8D23B', NULL, '9');
-            """
-        )
-
-        let knownCase1 = KnownCaseModel(id: nil,
-                                        key: key,
-                                        onset: Date().addingTimeInterval(-.day * 2),
-                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(-.day + NetworkingConstants.batchLength))
-        try! database.knownCasesStorage.update(knownCases: [knownCase1])
-
-        try! matcher.checkNewKnownCase(knownCase1)
-
-        XCTAssert(delegate.didFindMatchStorage)
-    }
 }
