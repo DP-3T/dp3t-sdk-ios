@@ -1,5 +1,10 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 0.1.10 (29.4.2020)
+- Fixed bugs in contact matching
+- Fixed bug in attenuation calculation
+- disables timeInconsistency check for now
+
 ## Version 0.1.9 (28.4.2020)
 - Fixed issue contact date calculation
 - Adds fake request flag to exposed method

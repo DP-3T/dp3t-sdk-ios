@@ -101,7 +101,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         }
     }
 
-    func testTimeInconsistency() {
+    /*func testTimeInconsistency() {
         let timeStamp = Date().addingTimeInterval(NetworkingConstants.timeShiftThreshold * (-1))
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: timeStamp)]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
@@ -123,7 +123,7 @@ final class ExposeeServiceClientTests: XCTestCase {
         case .success:
             XCTFail("Should not succeed due to timeInconsistency")
         }
-    }
+    }*/
 
     func testSettingAcceptHeaderProtobuf() {
         let batchTimestamp = Date()
@@ -145,7 +145,6 @@ final class ExposeeServiceClientTests: XCTestCase {
         ("testExposeeEmpty", testExposeeEmpty),
         ("testExposeeSingle", testExposeeSingle),
         ("testWithDifferentEtagExposeeSingle", testWithDifferentEtagExposeeSingle),
-        ("testTimeInconsistency", testTimeInconsistency),
         ("testSettingAcceptHeaderProtobuf", testSettingAcceptHeaderProtobuf),
     ]
 }

@@ -84,10 +84,10 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             return .failure(.notHTTPResponse)
         }
 
-        if let date = httpResponse.date,
+        /*if let date = httpResponse.date,
             abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
             return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
-        }
+        }*/
 
         let httpStatus = httpResponse.statusCode
         switch httpStatus {
