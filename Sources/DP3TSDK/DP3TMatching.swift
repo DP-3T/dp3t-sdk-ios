@@ -51,9 +51,9 @@ class DP3TMatcher: DP3TMatcherProtocol {
         }
 
         // we can return here if we didn't find any new matching contacts
-        guard matchingContacts.isEmpty == false else {
-            return
-        }
+        //guard matchingContacts.isEmpty == false else {
+        //    return
+        //}
 
         guard let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) else {
             fatalError("Known case has to be in database at this point")
