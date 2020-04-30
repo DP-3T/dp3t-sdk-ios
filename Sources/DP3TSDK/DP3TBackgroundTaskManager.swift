@@ -48,7 +48,7 @@ class DP3TBackgroundTaskManager {
         guard !didRegisterBackgroundTask else { return }
         didRegisterBackgroundTask = true
         #if CALIBRATION
-            logger?.log(type: .sdk, "DP3TBackgroundTaskManager.register")
+            logger?.log(type: .backgroundTask, "DP3TBackgroundTaskManager.register")
         #endif
         BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .global()) { task in
             self.handleBackgroundTask(task)
@@ -57,7 +57,7 @@ class DP3TBackgroundTaskManager {
 
     private func handleBackgroundTask(_ task: BGTask) {
         #if CALIBRATION
-            logger?.log(type: .sdk, "DP3TBackgroundTaskManager.handleBackgroundTask")
+            logger?.log(type: .backgroundTask, "DP3TBackgroundTaskManager.handleBackgroundTask")
         #endif
 
         scheduleBackgroundTask()
@@ -81,13 +81,13 @@ class DP3TBackgroundTaskManager {
         let syncTask = BGAppRefreshTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         syncTask.earliestBeginDate = Date(timeIntervalSinceNow: DP3TBackgroundTaskManager.syncInterval)
         #if CALIBRATION
-            logger?.log(type: .sdk, "DP3TBackgroundTaskManager.scheduleBackgroundTask earliestBeginDate: \(syncTask.earliestBeginDate!)")
+            logger?.log(type: .backgroundTask, "DP3TBackgroundTaskManager.scheduleBackgroundTask earliestBeginDate: \(syncTask.earliestBeginDate!)")
         #endif
         do {
             try BGTaskScheduler.shared.submit(syncTask)
         } catch {
             #if CALIBRATION
-                logger?.log(type: .sdk, "Unable to submit task: \(error.localizedDescription)")
+                logger?.log(type: .backgroundTask, "Unable to submit task: \(error.localizedDescription)")
             #endif
         }
     }

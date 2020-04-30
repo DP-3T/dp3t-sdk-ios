@@ -14,6 +14,7 @@ import Foundation
         case crypto = 3
         case sdk = 4
         case database = 5
+        case backgroundTask = 6
 
         public var description: String {
             switch self {
@@ -29,6 +30,8 @@ import Foundation
                 return "[Crypo]"
             case .database:
                 return "[Database]"
+            case .backgroundTask:
+                return "[Background]"
             }
         }
     }
