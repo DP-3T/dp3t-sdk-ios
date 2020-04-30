@@ -59,7 +59,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             if case .success = result {
                 XCTAssertEqual(service.requests, 0)
                 let nowTs = Date().timeIntervalSince1970
-                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
                 XCTAssertEqual(defaults.lastLoadedBatchReleaseTime!.timeIntervalSince1970, lastBatchTs, accuracy: 1.0)
             } else {
                 XCTFail()
@@ -74,8 +74,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
     func testNotFirstLaunch() {
         let defaults = MockDefaults()
         do {
-            let nowTs = Date().addingTimeInterval(NetworkingConstants.batchLength * 100 * (-1)).timeIntervalSince1970
-            let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+            let nowTs = Date().addingTimeInterval(Default.shared.parameters.networking.batchLength * 100 * (-1)).timeIntervalSince1970
+            let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
             defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: lastBatchTs)
         }
         let matcher = MockMatcher()
@@ -92,7 +92,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             if case .success = result {
                 XCTAssertEqual(service.requests, 100)
                 let nowTs = Date().timeIntervalSince1970
-                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
                 XCTAssertEqual(defaults.lastLoadedBatchReleaseTime!.timeIntervalSince1970, lastBatchTs, accuracy: 1.0)
             } else {
                 XCTFail()
@@ -120,7 +120,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             if case .success = result {
                 XCTAssertEqual(service.requests, 0)
                 let nowTs = Date().timeIntervalSince1970
-                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
                 XCTAssertEqual(defaults.lastLoadedBatchReleaseTime!.timeIntervalSince1970, lastBatchTs, accuracy: 1.0)
             } else {
                 XCTFail()
@@ -133,12 +133,12 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         exposeeExpectation = expectation(description: "exposee")
 
-        let nextSync = Date().addingTimeInterval(NetworkingConstants.batchLength * 24)
+        let nextSync = Date().addingTimeInterval(Default.shared.parameters.networking.batchLength * 24)
         synchronizer.sync(service: service, now: nextSync) { result in
             if case .success = result {
                 XCTAssertEqual(service.requests, 24)
                 let nowTs = nextSync.timeIntervalSince1970
-                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+                let lastBatchTs = nowTs - nowTs.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
                 XCTAssertEqual(defaults.lastLoadedBatchReleaseTime!.timeIntervalSince1970, lastBatchTs, accuracy: 1.0)
             } else {
                 XCTFail()
@@ -155,8 +155,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let key = Data(base64Encoded: b64Key)!
         let defaults = MockDefaults()
         let now = Date().timeIntervalSince1970
-        let ts = now - now.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
-        defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: ts - NetworkingConstants.batchLength)
+        let ts = now - now.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
+        defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: ts - Default.shared.parameters.networking.batchLength)
         let matcher = MockMatcher()
         let knownCase = KnownCaseModel(id: nil, key: key, onset: Date(), batchTimestamp: Date())
         let service = getMockService(array: [knownCase])

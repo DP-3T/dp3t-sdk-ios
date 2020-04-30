@@ -17,7 +17,7 @@ final class ContactFactoryTests: XCTestCase {
         let handshakes = [handshake1, handshake2]
         let contacts = ContactFactory.contacts(from: handshakes)
 
-        let bucketStart = date.timeIntervalSince1970 - date.timeIntervalSince1970.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+        let bucketStart = date.timeIntervalSince1970 - date.timeIntervalSince1970.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
 
         XCTAssertEqual(contacts.count, 1)
         XCTAssertEqual(contacts.first?.date, Date(timeIntervalSince1970: bucketStart))

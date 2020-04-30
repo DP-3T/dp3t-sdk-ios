@@ -85,7 +85,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
 
         /*if let date = httpResponse.date,
-            abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
+            abs(Date().timeIntervalSince(date)) > Default.shared.parameters.networking.timeShiftThreshold {
             return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
         }*/
 

@@ -53,7 +53,7 @@ class DP3TCryptoModule {
         let nextDay = firstKey.day.getNext()
         let sKt1 = getSKt1(SKt0: firstKey.keyData)
         keys.insert(SecretKey(day: nextDay, keyData: sKt1), at: 0)
-        let keysToStore = Array(keys.prefix(CryptoConstants.numberOfDaysToKeepData))
+        let keysToStore = Array(keys.prefix(Default.shared.parameters.crypto.numberOfDaysToKeepData))
         try store.setSecretKeys(keysToStore)
     }
 
@@ -82,17 +82,17 @@ class DP3TCryptoModule {
     /// - Throws: throws if a error happens
     /// - Returns: the ephIDs
     internal static func createEphIDs(secretKey: Data) throws -> [EphID] {
-        let hmac = Crypto.hmac(msg: CryptoConstants.broadcastKey, key: secretKey)
+        let hmac = Crypto.hmac(msg: Default.shared.parameters.crypto.broadcastKey, key: secretKey)
 
-        let zeroData = Data(count: CryptoConstants.keyLength * CryptoConstants.numberOfEpochsPerDay)
+        let zeroData = Data(count: Default.shared.parameters.crypto.keyLength * Default.shared.parameters.crypto.numberOfEpochsPerDay)
 
         let aes = try Crypto.AESCTREncrypt(keyData: hmac)
 
         var ephIDs = [Data]()
         let prgData = try aes.encrypt(data: zeroData)
-        for i in 0 ..< CryptoConstants.numberOfEpochsPerDay {
-            let pos = i * CryptoConstants.keyLength
-            ephIDs.append(prgData[pos ..< pos + CryptoConstants.keyLength])
+        for i in 0 ..< Default.shared.parameters.crypto.numberOfEpochsPerDay {
+            let pos = i * Default.shared.parameters.crypto.keyLength
+            ephIDs.append(prgData[pos ..< pos + Default.shared.parameters.crypto.keyLength])
         }
 
         ephIDs.shuffle()
@@ -133,14 +133,14 @@ class DP3TCryptoModule {
     ///   - timestamp: the timestamp
     /// - Returns: the count of the current epoch
     public static func getEpochCounter(day: DayDate, timestamp: Date) -> Int {
-        return Int((timestamp.timeIntervalSince1970 - day.timestamp) / Double(CryptoConstants.secondsPerEpoch))
+        return Int((timestamp.timeIntervalSince1970 - day.timestamp) / Double(Default.shared.parameters.crypto.secondsPerEpoch))
     }
 
     /// get the timestamp when the current epoch started
     public static func getEpochStart(timestamp: Date = Date()) -> Date {
         let currentDay = DayDate(date: timestamp)
         let counter = DP3TCryptoModule.getEpochCounter(day: currentDay, timestamp: timestamp)
-        return currentDay.dayMin.addingTimeInterval(Double(counter * Int(CryptoConstants.secondsPerEpoch)))
+        return currentDay.dayMin.addingTimeInterval(Double(counter * Int(Default.shared.parameters.crypto.secondsPerEpoch)))
     }
 
     /// check if we had handshakes with a contact given its secretkey

@@ -102,7 +102,7 @@ final class ExposeeServiceClientTests: XCTestCase {
     }
 
     /*func testTimeInconsistency() {
-        let timeStamp = Date().addingTimeInterval(NetworkingConstants.timeShiftThreshold * (-1))
+        let timeStamp = Date().addingTimeInterval(Default.shared.parameters.networking.timeShiftThreshold * (-1))
         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: timeStamp)]
         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
         let session = MockSession(data: Data(), urlResponse: response, error: nil)

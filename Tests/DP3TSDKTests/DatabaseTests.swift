@@ -52,7 +52,7 @@ final class DatabaseTests: XCTestCase {
 
         try! database.generateContactsFromHandshakes()
 
-        let bucketStart = epochStart.timeIntervalSince1970 - epochStart.timeIntervalSince1970.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+        let bucketStart = epochStart.timeIntervalSince1970 - epochStart.timeIntervalSince1970.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
 
         let c = try! database.contactsStorage.getContacts(for: day)
         XCTAssertEqual(c.count, 1)
@@ -61,7 +61,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testContactGenerationUnique() {
-        let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
+        let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-Default.shared.parameters.crypto.secondsPerEpoch)
         let day = DayDate(date: ts)
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
@@ -72,7 +72,7 @@ final class DatabaseTests: XCTestCase {
         try! database.handshakesStorage.add(handshake: h2)
         try! database.generateContactsFromHandshakes()
 
-        let bucketStart = ts.timeIntervalSince1970 - ts.timeIntervalSince1970.truncatingRemainder(dividingBy: NetworkingConstants.batchLength)
+        let bucketStart = ts.timeIntervalSince1970 - ts.timeIntervalSince1970.truncatingRemainder(dividingBy: Default.shared.parameters.networking.batchLength)
 
         let c = try! database.contactsStorage.getContacts(for: day, overlappingTimeInverval: .day, contactThreshold: 1)
         XCTAssertEqual(c.count, 1)
@@ -81,7 +81,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testContactGenerationUniqueDifferentEpoch() {
-        let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-CryptoConstants.secondsPerEpoch)
+        let ts = DP3TCryptoModule.getEpochStart().addingTimeInterval(-Default.shared.parameters.crypto.secondsPerEpoch)
         let day = DayDate(date: ts)
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
@@ -122,7 +122,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testDeleteOldContacts() {
-        let date = DayDate().dayMin.addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day + 1))
+        let date = DayDate().dayMin.addingTimeInterval(-(Double(Default.shared.parameters.crypto.numberOfDaysToKeepData) * TimeInterval.day + 1))
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
@@ -138,7 +138,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testNotDeleteNewContacts() {
-        let date = Date().addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day * 0.5))
+        let date = Date().addingTimeInterval(-(Double(Default.shared.parameters.crypto.numberOfDaysToKeepData) * TimeInterval.day * 0.5))
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
@@ -152,7 +152,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testDeleteOldHandshakes() {
-        let date = DayDate().dayMin.addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day + 1))
+        let date = DayDate().dayMin.addingTimeInterval(-(Double(Default.shared.parameters.crypto.numberOfDaysToKeepData) * TimeInterval.day + 1))
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 
@@ -166,7 +166,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testNotDeleteNewHandshakes() {
-        let date = Date().addingTimeInterval(-(Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day * 0.5))
+        let date = Date().addingTimeInterval(-(Double(Default.shared.parameters.crypto.numberOfDaysToKeepData) * TimeInterval.day * 0.5))
 
         let token = Data(base64Encoded: "MSjnTLwp9z6qIJxGklwPPw==")!
 

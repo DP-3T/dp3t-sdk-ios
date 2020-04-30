@@ -64,7 +64,7 @@ class ContactsStorage {
 
     /// Deletes contacts older than CryptoConstants.numberOfDaysToKeepData
     func deleteOldContacts() throws {
-        let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day)
+        let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(Default.shared.parameters.crypto.numberOfDaysToKeepData) * TimeInterval.day)
         let deleteQuery = table.filter(dateColumn < thresholdDate.millisecondsSince1970)
         try database.run(deleteQuery.delete())
     }
@@ -105,7 +105,7 @@ class ContactsStorage {
     func getContacts(for day: DayDate, overlappingTimeInverval: TimeInterval = 0, contactThreshold _: Int = 1) throws -> [Contact] {
         // if the day is older than .numberOfDaysToKeepData we can skip fetching contacts from the databae
         // since we dont keep them so long anyway
-        if day.dayMin.timeIntervalSinceNow > TimeInterval(CryptoConstants.numberOfDaysToKeepData) * TimeInterval.day {
+        if day.dayMin.timeIntervalSinceNow > TimeInterval(Default.shared.parameters.crypto.numberOfDaysToKeepData) * TimeInterval.day {
             return []
         }
 
