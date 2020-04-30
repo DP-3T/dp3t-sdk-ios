@@ -148,7 +148,7 @@ final class DP3TMatcherTests: XCTestCase {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
 
-        let parts = Int(ceil(Double(ContactFactory.numberOfWindowsForExposure + 1) / 3.0))
+        let parts = Int(ceil(Double(Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1) / 3.0))
 
         let dayStart = DayDate(date: currentBatchStartDate).dayMin
 
@@ -164,7 +164,7 @@ final class DP3TMatcherTests: XCTestCase {
         let knownCase = KnownCaseModel(id: nil,
                                        key: key,
                                        onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(NetworkingConstants.batchLength))
+                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
         try! matcher.checkNewKnownCase(knownCase)
