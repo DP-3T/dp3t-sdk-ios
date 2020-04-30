@@ -230,7 +230,7 @@ class DP3TSDK {
 
                     if isFakeRequest {
                         // Send random data if request is fake
-                        day = DayDate()
+                        day = DayDate(date: onset)
                         key = (try? Crypto.generateRandomKey()) ?? Data()
                     } else {
                         (day, key) = try self.crypto.getSecretKeyForPublishing(onsetDate: onset)
