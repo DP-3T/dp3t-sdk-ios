@@ -96,7 +96,7 @@ class DP3TSDK {
                              numberOfContacts: (try? database.contactsStorage.count()) ?? 0,
                              trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
-                             infectionStatus: InfectionStatus.getInfectionState(with: database),
+                             infectionStatus: InfectionStatus.getInfectionState(from: database),
                              backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded()
@@ -348,7 +348,7 @@ class DP3TSDK {
 
 extension DP3TSDK: DP3TMatcherDelegate {
     func didFindMatch() {
-        state.infectionStatus = InfectionStatus.getInfectionState(with: database)
+        state.infectionStatus = InfectionStatus.getInfectionState(from: database)
     }
 
     func handShakeAdded(_ handshake: HandshakeModel) {
