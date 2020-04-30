@@ -129,6 +129,9 @@ class DP3TSDK {
 
     /// start tracing
     func startTracing() throws {
+        if case .infected = state.infectionStatus {
+            throw DP3TTracingError.userAlreadyMarkedAsInfected
+        }
         state.trackingState = .active
         discoverer.startScanning()
         broadcaster.startService()
@@ -143,11 +146,17 @@ class DP3TSDK {
 
     #if CALIBRATION
         func startAdvertising() throws {
+            if case .infected = state.infectionStatus {
+                throw DP3TTracingError.userAlreadyMarkedAsInfected
+            }
             state.trackingState = .activeAdvertising
             broadcaster.startService()
         }
 
         func startReceiving() throws {
+            if case .infected = state.infectionStatus {
+                throw DP3TTracingError.userAlreadyMarkedAsInfected
+            }
             state.trackingState = .activeReceiving
             discoverer.startScanning()
         }
@@ -199,6 +208,12 @@ class DP3TSDK {
                      authentication: ExposeeAuthMethod,
                      isFakeRequest: Bool = false,
                      callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+
+        if !isFakeRequest,
+            case .infected = state.infectionStatus {
+            callback(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
+        }
+
         getATracingServiceClient(forceRefresh: false) { [weak self] result in
             guard let self = self else {
                 return
@@ -234,6 +249,7 @@ class DP3TSDK {
                             case .success:
                                 if !isFakeRequest {
                                     self?.state.infectionStatus = .infected
+                                    self?.stopTracing()
                                 }
                                 callback(.success(()))
                             case let .failure(error):

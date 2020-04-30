@@ -25,6 +25,9 @@ public enum DP3TTracingError: Error {
 
     /// Bluetooth permission error
     case permissonError
+
+    /// The user was marked as infected
+    case userAlreadyMarkedAsInfected
 }
 
 /// A set of networking errors returned from the SDK
