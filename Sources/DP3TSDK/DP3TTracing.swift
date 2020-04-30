@@ -39,7 +39,7 @@ private var instance: DP3TSDK!
 /// DP3TTracing
 public enum DP3TTracing {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "0.1.9"
+    public static let frameworkVersion: String = "0.1.10"
 
     /// initialize the SDK
     /// - Parameters:
