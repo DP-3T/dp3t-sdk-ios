@@ -485,6 +485,8 @@ extension DP3TTracingError {
             return "networkingError \(error.localizedDescription)"
         case .permissonError:
             return "networkingError"
+        case .userAlreadyMarkedAsInfected:
+            return "userAlreadyMarkedAsInfected"
         }
     }
 }
