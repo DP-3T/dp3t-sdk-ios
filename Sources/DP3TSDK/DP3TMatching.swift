@@ -69,15 +69,16 @@ class DP3TMatcher: DP3TMatcherProtocol {
         let contacts = try database.contactsStorage.getAllMatchedContacts()
 
         /// Group contacts by date and associated windowCounts
-        let groups = contacts.reduce(into: [Date: Int]()) { groups, current in
-            let existing = groups[current.date] ?? 0
-            groups[current.date] = existing + current.windowCount
+        let groups = contacts.reduce(into: [DayDate: Int]()) { groups, current in
+            let day = DayDate(date: current.date)
+            let existing = groups[day] ?? 0
+            groups[day] = existing + current.windowCount
         }
 
         let matchedDays = groups.compactMap { (day, windowCount) -> ExposureDay? in
             guard windowCount > Default.shared.parameters.contactMatching.numberOfWindowsForExposure else { return nil }
             return ExposureDay(identifier: 0,
-                               exposedDate: day,
+                               exposedDate: day.dayMin,
                                reportDate: Date())
         }
 
