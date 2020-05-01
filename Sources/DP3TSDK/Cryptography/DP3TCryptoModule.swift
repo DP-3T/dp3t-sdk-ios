@@ -208,6 +208,12 @@ class DP3TCryptoModule {
         store.removeAllObject()
     }
 
+    /// Reset and generate new key after it was published
+    public func reinitialize() throws {
+        reset()
+        try generateInitialSecretKey()
+    }
+
     /// generate initial secret key
     /// - Throws: throws if a error occurs
     private func generateInitialSecretKey() throws {

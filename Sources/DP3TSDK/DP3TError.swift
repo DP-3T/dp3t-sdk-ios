@@ -17,7 +17,7 @@ public enum DP3TTracingError: Error {
     /// Cryptography Error
     case cryptographyError(error: String)
 
-    /// Databse Error
+    /// Database Error
     case databaseError(error: Error?)
 
     /// Bluetooth device turned off
