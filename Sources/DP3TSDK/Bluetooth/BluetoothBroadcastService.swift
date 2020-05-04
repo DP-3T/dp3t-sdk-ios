@@ -122,7 +122,9 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
 
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
+        #if CALIBRATION
         logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
+        #endif
         if let error = error {
             #if CALIBRATION
             logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
