@@ -1,5 +1,9 @@
 # Changelog for DP3T-SDK iOS
 
+## Latest
+
+- Change 16bit UUID to DP3T registered FD68
+
 ## Version 0.1.11 (04.5.2020)
 - Stop tracing and purge keys after a person was marked as exposed
 
