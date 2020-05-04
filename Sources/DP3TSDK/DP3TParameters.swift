@@ -10,7 +10,7 @@ import CoreBluetooth
 
 public struct DP3TParameters: Codable {
 
-    static let parameterVersion: Int = 1
+    static let parameterVersion: Int = 2
 
     let version: Int
 
