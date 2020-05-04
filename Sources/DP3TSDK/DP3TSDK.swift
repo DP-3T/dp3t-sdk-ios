@@ -199,6 +199,7 @@ class DP3TSDK {
     }
 
     /// tell the SDK that the user was exposed
+    /// This will stop tracing and reset the secret key
     /// - Parameters:
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
@@ -250,6 +251,7 @@ class DP3TSDK {
                                 if !isFakeRequest {
                                     self?.state.infectionStatus = .infected
                                     self?.stopTracing()
+                                    try! self?.crypto.reinitialize()
                                 }
                                 callback(.success(()))
                             case let .failure(error):
