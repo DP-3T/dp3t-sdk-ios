@@ -27,8 +27,8 @@ public struct DP3TParameters: Codable {
     public var contactMatching = ContactMatching()
 
     public struct Bluetooth: Codable {
-        /// Predefined Service CBUUID
-        public var serviceUUID = "FD6F"
+        /// DP-3T Bluetooth UUID
+        public var serviceUUID = "FD68"
 
         var serviceCBUUID: CBUUID {
             get {
