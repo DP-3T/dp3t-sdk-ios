@@ -1,5 +1,8 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 0.1.11 (04.5.2020)
+- Stop tracing and purge keys after a person was marked as exposed
+
 ## Version 0.1.10 (29.4.2020)
 - Fixed bugs in contact matching
 - Fixed bug in attenuation calculation
