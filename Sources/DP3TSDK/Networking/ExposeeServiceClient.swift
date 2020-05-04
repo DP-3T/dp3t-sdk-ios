@@ -85,7 +85,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
 
         /*if let date = httpResponse.date,
-            abs(Date().timeIntervalSince(date)) > NetworkingConstants.timeShiftThreshold {
+            abs(Date().timeIntervalSince(date)) > Default.shared.parameters.networking.timeShiftThreshold {
             return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
         }*/
 
@@ -107,7 +107,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         // Validate JWT
         if #available(iOS 11.0, *), let verifier = jwtVerifier {
             do {
-                let claims: ExposeeClaims = try verifier.verify(httpResponse: httpResponse, httpBody: responseData)
+                let claims = try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
 
                 // Verify the batch time
                 let batchReleaseTimeRaw = claims.batchReleaseTime

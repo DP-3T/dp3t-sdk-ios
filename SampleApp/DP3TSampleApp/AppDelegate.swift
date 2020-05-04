@@ -11,7 +11,6 @@ import UIKit
 func initializeSDK() {
     /// Can be initialized either by:
     /// - using the discovery:
-    DP3TTracing.batchLength = Default.shared.batchLength
     let appVersion: String
     if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
@@ -31,8 +30,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        DP3TTracing.reconnectionDelay = Default.shared.reconnectionDelay
-
         initializeSDK()
 
         if application.applicationState != .background {

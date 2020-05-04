@@ -188,19 +188,6 @@ The SDK supports iOS 13 Background tasks. To enable them the app has to support 
 </array>
 ```
 
-To support background fetch on devices with older iOS versions make sure to foreward the `performFetchWithCompletionHandler` call to the SDK.
-
-
-
-```swift
-func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {  
-        DP3TTracing.performFetch(with: completionHandler)
-    }
-```
-
-#### 
-
-
 
 ## License
 This project is licensed under the terms of the MPL 2 license. See the [LICENSE](LICENSE) file.

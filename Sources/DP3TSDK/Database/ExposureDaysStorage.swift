@@ -71,7 +71,7 @@ class ExposureDaysStorage {
 
     /// Deletes contacts older than CryptoConstants.numberOfDaysToKeepData
     func deleteExpiredExpsureDays() throws {
-        let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(CryptoConstants.numberOfDaysToKeepMatchedContacts) * TimeInterval.day)
+        let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(Default.shared.parameters.crypto.numberOfDaysToKeepMatchedContacts) * TimeInterval.day)
         let deleteQuery = table.filter(reportDateColumn < thresholdDate.millisecondsSince1970)
         try database.run(deleteQuery.delete())
     }

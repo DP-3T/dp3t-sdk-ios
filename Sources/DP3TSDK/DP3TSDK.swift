@@ -96,7 +96,7 @@ class DP3TSDK {
                              numberOfContacts: (try? database.contactsStorage.count()) ?? 0,
                              trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
-                             infectionStatus: InfectionStatus.getInfectionState(with: database),
+                             infectionStatus: InfectionStatus.getInfectionState(from: database),
                              backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded()
@@ -129,6 +129,9 @@ class DP3TSDK {
 
     /// start tracing
     func startTracing() throws {
+        if case .infected = state.infectionStatus {
+            throw DP3TTracingError.userAlreadyMarkedAsInfected
+        }
         state.trackingState = .active
         discoverer.startScanning()
         broadcaster.startService()
@@ -143,11 +146,17 @@ class DP3TSDK {
 
     #if CALIBRATION
         func startAdvertising() throws {
+            if case .infected = state.infectionStatus {
+                throw DP3TTracingError.userAlreadyMarkedAsInfected
+            }
             state.trackingState = .activeAdvertising
             broadcaster.startService()
         }
 
         func startReceiving() throws {
+            if case .infected = state.infectionStatus {
+                throw DP3TTracingError.userAlreadyMarkedAsInfected
+            }
             state.trackingState = .activeReceiving
             discoverer.startScanning()
         }
@@ -190,6 +199,7 @@ class DP3TSDK {
     }
 
     /// tell the SDK that the user was exposed
+    /// This will stop tracing and reset the secret key
     /// - Parameters:
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
@@ -199,6 +209,12 @@ class DP3TSDK {
                      authentication: ExposeeAuthMethod,
                      isFakeRequest: Bool = false,
                      callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+
+        if !isFakeRequest,
+            case .infected = state.infectionStatus {
+            callback(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
+        }
+
         getATracingServiceClient(forceRefresh: false) { [weak self] result in
             guard let self = self else {
                 return
@@ -215,7 +231,7 @@ class DP3TSDK {
 
                     if isFakeRequest {
                         // Send random data if request is fake
-                        day = DayDate()
+                        day = DayDate(date: onset)
                         key = (try? Crypto.generateRandomKey()) ?? Data()
                     } else {
                         (day, key) = try self.crypto.getSecretKeyForPublishing(onsetDate: onset)
@@ -234,6 +250,8 @@ class DP3TSDK {
                             case .success:
                                 if !isFakeRequest {
                                     self?.state.infectionStatus = .infected
+                                    self?.stopTracing()
+                                    try! self?.crypto.reinitialize()
                                 }
                                 callback(.success(()))
                             case let .failure(error):
@@ -332,7 +350,7 @@ class DP3TSDK {
 
 extension DP3TSDK: DP3TMatcherDelegate {
     func didFindMatch() {
-        state.infectionStatus = InfectionStatus.getInfectionState(with: database)
+        state.infectionStatus = InfectionStatus.getInfectionState(from: database)
     }
 
     func handShakeAdded(_ handshake: HandshakeModel) {

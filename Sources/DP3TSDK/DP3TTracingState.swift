@@ -16,12 +16,14 @@ public enum InfectionStatus {
     /// The user is infected and has signaled it himself
     case infected
 
-    static func getInfectionState(with database: DP3TDatabase) -> InfectionStatus {
+    static func getInfectionState(from database: DP3TDatabase) -> InfectionStatus {
+        guard Default.shared.didMarkAsInfected == false else {
+            return .infected
+        }
+
         let matchingDays = try? database.exposureDaysStorage.count()
         let hasMatchingDays: Bool = (matchingDays ?? 0) > 0
-        if Default.shared.didMarkAsInfected {
-            return .infected
-        } else if hasMatchingDays,
+        if hasMatchingDays,
             let matchedDays = try? database.exposureDaysStorage.getExposureDays() {
             return .exposed(days: matchedDays)
         } else {

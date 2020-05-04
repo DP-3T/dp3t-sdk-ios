@@ -17,7 +17,7 @@ public enum DP3TTracingError: Error {
     /// Cryptography Error
     case cryptographyError(error: String)
 
-    /// Databse Error
+    /// Database Error
     case databaseError(error: Error?)
 
     /// Bluetooth device turned off
@@ -25,6 +25,9 @@ public enum DP3TTracingError: Error {
 
     /// Bluetooth permission error
     case permissonError
+
+    /// The user was marked as infected
+    case userAlreadyMarkedAsInfected
 }
 
 /// A set of networking errors returned from the SDK

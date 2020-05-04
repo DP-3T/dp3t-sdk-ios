@@ -67,9 +67,9 @@ class BluetoothBroadcastService: NSObject {
         guard peripheralManager?.state == .some(.poweredOn) else {
             return
         }
-        service = CBMutableService(type: BluetoothConstants.serviceCBUUID,
+        service = CBMutableService(type: Default.shared.parameters.bluetooth.serviceCBUUID,
                                    primary: true)
-        let characteristic = CBMutableCharacteristic(type: BluetoothConstants.characteristicsCBUUID,
+        let characteristic = CBMutableCharacteristic(type: Default.shared.parameters.bluetooth.characteristicsCBUUID,
                                                      properties: [.read, .notify],
                                                      value: nil,
                                                      permissions: .readable)
@@ -77,7 +77,7 @@ class BluetoothBroadcastService: NSObject {
         peripheralManager?.add(service!)
 
         #if CALIBRATION
-            logger?.log(type: .sender, "added Service with \(BluetoothConstants.serviceCBUUID.uuidString)")
+            logger?.log(type: .sender, "added Service with \(Default.shared.parameters.bluetooth.serviceCBUUID.uuidString)")
         #endif
     }
 }
@@ -109,7 +109,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
         #endif
 
         peripheralManager?.startAdvertising([
-            CBAdvertisementDataServiceUUIDsKey: [BluetoothConstants.serviceCBUUID],
+            CBAdvertisementDataServiceUUIDsKey: [Default.shared.parameters.bluetooth.serviceCBUUID],
             CBAdvertisementDataLocalNameKey: "",
         ])
     }
@@ -154,7 +154,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
     func peripheralManager(_: CBPeripheralManager, willRestoreState dict: [String: Any]) {
         if let services: [CBMutableService] = dict[CBPeripheralManagerRestoredStateServicesKey] as? [CBMutableService],
-            let service = services.first(where: { $0.uuid == BluetoothConstants.serviceCBUUID }) {
+            let service = services.first(where: { $0.uuid == Default.shared.parameters.bluetooth.serviceCBUUID }) {
             self.service = service
             #if CALIBRATION
                 logger?.log(type: .sender, "PeripheralManager#willRestoreState services :\(services.count)")

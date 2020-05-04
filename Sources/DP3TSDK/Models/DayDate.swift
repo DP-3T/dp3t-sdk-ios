@@ -12,7 +12,7 @@ struct DayDate: Codable, CustomStringConvertible, Equatable, Hashable, Comparabl
 
     init(date: Date = Date()) {
         var calendar = Calendar.current
-        calendar.timeZone = CryptoConstants.timeZone
+        calendar.timeZone = Default.shared.parameters.crypto.timeZone
         let components = calendar.dateComponents([.year, .day, .month], from: date)
         timestamp = calendar.date(from: components)!.timeIntervalSince1970
     }

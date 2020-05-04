@@ -58,12 +58,12 @@ class BluetoothDiscoveryService: NSObject {
     /// Update all services
     private func updateServices() {
         guard manager?.state == .some(.poweredOn) else { return }
-        manager?.scanForPeripherals(withServices: [BluetoothConstants.serviceCBUUID], options: [
+        manager?.scanForPeripherals(withServices: [Default.shared.parameters.bluetooth.serviceCBUUID], options: [
             CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
         ])
         #if CALIBRATION
             DispatchQueue.main.async {
-                self.logger?.log(type: .receiver, " scanning for \(BluetoothConstants.serviceCBUUID.uuidString)")
+                self.logger?.log(type: .receiver, " scanning for \(Default.shared.parameters.bluetooth.serviceCBUUID.uuidString)")
             }
         #endif
     }
@@ -75,11 +75,11 @@ class BluetoothDiscoveryService: NSObject {
         #endif
         if manager != nil {
             manager?.stopScan()
-            manager?.scanForPeripherals(withServices: [BluetoothConstants.serviceCBUUID], options: [
+            manager?.scanForPeripherals(withServices: [Default.shared.parameters.bluetooth.serviceCBUUID], options: [
                 CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
             ])
             #if CALIBRATION
-                logger?.log(type: .receiver, " scanning for \(BluetoothConstants.serviceCBUUID.uuidString)")
+                logger?.log(type: .receiver, " scanning for \(Default.shared.parameters.bluetooth.serviceCBUUID.uuidString)")
             #endif
         } else {
             manager = CBCentralManager(delegate: self, queue: nil, options: [
@@ -112,9 +112,9 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         case .poweredOn:
             permissionDelegate?.noIssues()
             #if CALIBRATION
-                logger?.log(type: .receiver, " scanning for \(BluetoothConstants.serviceCBUUID.uuidString)")
+                logger?.log(type: .receiver, " scanning for \(Default.shared.parameters.bluetooth.serviceCBUUID.uuidString)")
             #endif
-            manager?.scanForPeripherals(withServices: [BluetoothConstants.serviceCBUUID], options: [
+            manager?.scanForPeripherals(withServices: [Default.shared.parameters.bluetooth.serviceCBUUID], options: [
                 CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
             ])
             peripheralsToDiscard?.forEach { peripheral in
@@ -148,8 +148,8 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         tidyUpPendingPeripherals()
 
         if let serviceData = advertisementData[CBAdvertisementDataServiceDataKey] as? [CBUUID: Data],
-            let data: EphID = serviceData[BluetoothConstants.serviceCBUUID],
-            data.count == CryptoConstants.keyLength {
+            let data: EphID = serviceData[Default.shared.parameters.bluetooth.serviceCBUUID],
+            data.count == Default.shared.parameters.crypto.keyLength {
             try? delegate?.didDiscover(data: data,
                                        TXPowerlevel: txPowerlevel,
                                        RSSI: Double(truncating: RSSI),
@@ -180,9 +180,9 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
         for (peripheral, metaData) in pendingPeripherals {
             if let lastConnection = metaData.lastConnection,
-                Date().timeIntervalSince(lastConnection) > BluetoothConstants.peripheralDisposeInterval {
+                Date().timeIntervalSince(lastConnection) > Default.shared.parameters.bluetooth.peripheralDisposeInterval {
                 peripheralsToDiscard?.append(peripheral)
-            } else if Date().timeIntervalSince(metaData.discovery) > BluetoothConstants.peripheralDisposeIntervalSinceDiscovery {
+            } else if Date().timeIntervalSince(metaData.discovery) > Default.shared.parameters.bluetooth.peripheralDisposeIntervalSinceDiscovery {
                 peripheralsToDiscard?.append(peripheral)
             }
         }
@@ -204,7 +204,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
     func cancelPeripheralConnectionIfNeeded(_ peripheral: CBPeripheral) {
         guard let metaData = pendingPeripherals[peripheral] else { return }
         guard let ephID = metaData.ephID else {
-            if metaData.rssiReadings < BluetoothConstants.rssiValueRequirement {
+            if metaData.rssiReadings < Default.shared.parameters.bluetooth.rssiValueRequirement {
                 peripheral.readRSSI()
             }
             return
@@ -220,7 +220,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         pendingPeripherals[peripheral]?.rssiValues.removeAll()
 
         /// only cancel connection if we have 5 rsssiValues and received the ephID
-        if metaData.rssiReadings >= BluetoothConstants.rssiValueRequirement {
+        if metaData.rssiReadings >= Default.shared.parameters.bluetooth.rssiValueRequirement {
             #if CALIBRATION
                 logger?.log(type: .receiver, "cancelling connection to: \(peripheral)")
             #endif
@@ -239,14 +239,14 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         pendingPeripherals[peripheral]?.lastConnection = Date()
         tidyUpPendingPeripherals()
         peripheral.delegate = self
-        peripheral.discoverServices([BluetoothConstants.serviceCBUUID])
+        peripheral.discoverServices([Default.shared.parameters.bluetooth.serviceCBUUID])
         peripheral.readRSSI()
     }
 
     func centralManager(_: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         if let metaData = pendingPeripherals[peripheral],
             let lastConnection = metaData.lastConnection {
-            if Date().timeIntervalSince(lastConnection) > BluetoothConstants.peripheralDisposeInterval {
+            if Date().timeIntervalSince(lastConnection) > Default.shared.parameters.bluetooth.peripheralDisposeInterval {
                 #if CALIBRATION
                     logger?.log(type: .receiver, " didDisconnectPeripheral dispose because last connection was \(Date().timeIntervalSince(lastConnection))seconds ago")
                 #endif
@@ -279,13 +279,13 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
         if let metaData = pendingPeripherals[peripheral] {
             if let lastConnection = metaData.lastConnection,
-                Date().timeIntervalSince(lastConnection) > BluetoothConstants.peripheralDisposeInterval {
+                Date().timeIntervalSince(lastConnection) > Default.shared.parameters.bluetooth.peripheralDisposeInterval {
                 #if CALIBRATION
                     logger?.log(type: .receiver, " didFailToConnect dispose because last connection was \(Date().timeIntervalSince(lastConnection))seconds ago")
                 #endif
                 pendingPeripherals.removeValue(forKey: peripheral)
                 return
-            } else if Date().timeIntervalSince(metaData.discovery) > BluetoothConstants.peripheralDisposeIntervalSinceDiscovery {
+            } else if Date().timeIntervalSince(metaData.discovery) > Default.shared.parameters.bluetooth.peripheralDisposeIntervalSinceDiscovery {
                 #if CALIBRATION
                     logger?.log(type: .receiver, " didFailToConnect dispose because connection never suceeded and was \(Date().timeIntervalSince(metaData.discovery))seconds ago")
                 #endif
@@ -303,7 +303,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         #endif
         var options: [String: Any]?
         if delayed {
-            options = [CBConnectPeripheralOptionStartDelayKey: NSNumber(integerLiteral: BluetoothConstants.peripheralReconnectDelay)]
+            options = [CBConnectPeripheralOptionStartDelayKey: NSNumber(integerLiteral: Default.shared.parameters.bluetooth.peripheralReconnectDelay)]
         }
         manager?.connect(peripheral, options: options)
     }
@@ -317,7 +317,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
             peripherals
                 .forEach {
-                    let metaData = PeripheralMetaData(discovery: Date().addingTimeInterval(-BluetoothConstants.peripheralStateRestorationDiscoveryOffset))
+                    let metaData = PeripheralMetaData(discovery: Date().addingTimeInterval(-Default.shared.parameters.bluetooth.peripheralStateRestorationDiscoveryOffset))
                     pendingPeripherals[$0] = metaData
                 }
             #if CALIBRATION
@@ -345,7 +345,7 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             #endif
             return
         }
-        let cbuuid = BluetoothConstants.characteristicsCBUUID
+        let cbuuid = Default.shared.parameters.bluetooth.characteristicsCBUUID
         guard let characteristic = service.characteristics?.first(where: { $0.uuid == cbuuid }) else {
             return
         }
@@ -372,7 +372,7 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             return
         }
 
-        guard data.count == CryptoConstants.keyLength else {
+        guard data.count == Default.shared.parameters.crypto.keyLength else {
             #if CALIBRATION
                 logger?.log(type: .receiver, " → ❌ Received wrong number of bytes (\(data.count) bytes) from \(peripheral.identifier) at \(Date())")
             #endif
@@ -399,8 +399,8 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             #endif
             return
         }
-        if let service = peripheral.services?.first(where: { $0.uuid == BluetoothConstants.serviceCBUUID }) {
-            peripheral.discoverCharacteristics([BluetoothConstants.characteristicsCBUUID], for: service)
+        if let service = peripheral.services?.first(where: { $0.uuid == Default.shared.parameters.bluetooth.serviceCBUUID }) {
+            peripheral.discoverCharacteristics([Default.shared.parameters.bluetooth.characteristicsCBUUID], for: service)
         } else {
             #if CALIBRATION
                 logger?.log(type: .receiver, " No service found found: -> (\(peripheral.services?.description ?? "none"))")

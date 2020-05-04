@@ -66,4 +66,54 @@ class Default: DefaultStorage {
             store.set(newValue, forKey: "org.dpppt.didMarkAsInfected")
         }
     }
+
+    /// Parameters
+    private func saveParameters(_ parameters: DP3TParameters) {
+        let encoder = JSONEncoder()
+
+        if let encoded = try? encoder.encode(parameters) {
+            store.set(encoded, forKey: "org.dpppt.parameters")
+        }
+    }
+
+    private var parametersCache: DP3TParameters? {
+        didSet {
+            guard oldValue != nil, let parametersCache = parametersCache else { return }
+            saveParameters(parametersCache)
+        }
+    }
+
+    var parameters: DP3TParameters {
+        get {
+            if let cache = parametersCache {
+                return cache
+            }
+
+            guard let obj = store.object(forKey: "org.dpppt.parameters") as? Data else {
+                parametersCache = .init()
+                saveParameters(parametersCache!)
+                return parametersCache!
+            }
+
+            let decoder = JSONDecoder()
+
+            guard let decoded = try? decoder.decode(DP3TParameters.self, from: obj) else {
+                parametersCache = .init()
+                saveParameters(parametersCache!)
+                return parametersCache!
+            }
+
+            guard decoded.version == DP3TParameters.parameterVersion else {
+                parametersCache = .init()
+                saveParameters(parametersCache!)
+                return parametersCache!
+            }
+
+            parametersCache = decoded
+            return parametersCache!
+        }
+        set(newValue) {
+            parametersCache = newValue
+        }
+    }
 }

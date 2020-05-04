@@ -15,7 +15,7 @@ final class CryptoModuleTest: XCTestCase {
         let currentEphID = try! crypto.getCurrentEphID()
         var matchingCount = 0
         for ephID in allEphsOfToday {
-            XCTAssert(ephID.count == CryptoConstants.keyLength)
+            XCTAssert(ephID.count == Default.shared.parameters.crypto.keyLength)
             if ephID == currentEphID {
                 matchingCount += 1
             }
@@ -228,7 +228,7 @@ final class CryptoModuleTest: XCTestCase {
 
         let matchedContacts = try! crypto.checkContacts(secretKey: key,
                                                         onsetDate: DayDate(date: Date().addingTimeInterval(-1 * .day)),
-                                                        bucketDate: Date().addingTimeInterval(NetworkingConstants.batchLength * 2),
+                                                        bucketDate: Date().addingTimeInterval(Default.shared.parameters.networking.batchLength * 2),
                                                         getContacts: { (_) -> ([Contact]) in
                                                             contacts
         })
@@ -244,13 +244,13 @@ final class CryptoModuleTest: XCTestCase {
             let date = Date().addingTimeInterval(Double(day) * .day)
             let day = DayDate(date: date)
             let secretKey = try! crypto.getCurrentSK(day: day)
-            XCTAssertLessThanOrEqual(store.keys.count, CryptoConstants.numberOfDaysToKeepData)
+            XCTAssertLessThanOrEqual(store.keys.count, Default.shared.parameters.crypto.numberOfDaysToKeepData)
             XCTAssertEqual(day, store.keys.first!.day)
             XCTAssertEqual(secretKey, store.keys.first!.keyData)
 
             let ephID = try! crypto.getCurrentEphID(timestamp: date)
             XCTAssertNotNil(store.ephIDs)
-            XCTAssertEqual(store.ephIDs!.ephIDs.count, CryptoConstants.numberOfEpochsPerDay)
+            XCTAssertEqual(store.ephIDs!.ephIDs.count, Default.shared.parameters.crypto.numberOfEpochsPerDay)
             XCTAssertEqual(store.ephIDs!.day, day)
             XCTAssertTrue(store.ephIDs!.ephIDs.contains(ephID))
         }
@@ -266,13 +266,13 @@ final class CryptoModuleTest: XCTestCase {
             let date = Date().addingTimeInterval(Double(currentDay) * .day)
             let day = DayDate(date: date)
             let secretKey = try! crypto.getCurrentSK(day: day)
-            XCTAssertLessThanOrEqual(store.keys.count, CryptoConstants.numberOfDaysToKeepData)
+            XCTAssertLessThanOrEqual(store.keys.count, Default.shared.parameters.crypto.numberOfDaysToKeepData)
             XCTAssertEqual(day, store.keys.first!.day)
             XCTAssertEqual(secretKey, store.keys.first!.keyData)
 
             let ephID = try! crypto.getCurrentEphID(timestamp: date)
             XCTAssertNotNil(store.ephIDs)
-            XCTAssertEqual(store.ephIDs!.ephIDs.count, CryptoConstants.numberOfEpochsPerDay)
+            XCTAssertEqual(store.ephIDs!.ephIDs.count, Default.shared.parameters.crypto.numberOfEpochsPerDay)
             XCTAssertEqual(store.ephIDs!.day, day)
             XCTAssertTrue(store.ephIDs!.ephIDs.contains(ephID))
         }
@@ -312,7 +312,7 @@ final class CryptoModuleTest: XCTestCase {
         let crypto: DP3TCryptoModule = try! DP3TCryptoModule(store: store)
         let now = Date()
         let ephIDNow: EphID = try! crypto.getCurrentEphID(timestamp: now)
-        let nextEpoch = now.addingTimeInterval(CryptoConstants.secondsPerEpoch)
+        let nextEpoch = now.addingTimeInterval(Default.shared.parameters.crypto.secondsPerEpoch)
         let ephIDNext: EphID = try! crypto.getCurrentEphID(timestamp: nextEpoch)
         XCTAssertNotEqual(ephIDNow, ephIDNext)
     }
