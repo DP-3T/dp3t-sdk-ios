@@ -124,7 +124,16 @@ class DP3TSDK {
             crypto.debugSecretKeysStorageDelegate = database.secretKeysStorage
         #endif
 
-        NotificationCenter.default.addObserver(self, selector: #selector(backgroundRefreshStatusDidChange), name: UIApplication.backgroundRefreshStatusDidChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(backgroundRefreshStatusDidChange),
+                                               name: UIApplication.backgroundRefreshStatusDidChangeNotification,
+                                               object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self,
+                                                  name: UIApplication.backgroundRefreshStatusDidChangeNotification,
+                                                  object: nil)
     }
 
     /// start tracing
