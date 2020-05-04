@@ -22,7 +22,7 @@ class BluetoothBroadcastService: NSObject {
     private var localName: String = UUID().uuidString
 
     /// An object that can handle bluetooth permission requests and errors
-    public weak var permissionDelegate: BluetoothPermissionDelegate?
+    public weak var bluetoothDelegate: BluetoothDelegate?
 
     #if CALIBRATION
         /// A logger to output messages
@@ -92,18 +92,24 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
         switch peripheral.state {
         case .poweredOn where service == nil:
-            permissionDelegate?.noIssues()
+            bluetoothDelegate?.noIssues()
             addService()
         case .poweredOff:
-            permissionDelegate?.deviceTurnedOff()
+            bluetoothDelegate?.deviceTurnedOff()
         case .unauthorized:
-            permissionDelegate?.unauthorized()
+            bluetoothDelegate?.unauthorized()
         default:
             break
         }
     }
 
-    func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error _: Error?) {
+    func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
+        if let error = error {
+            #if CALIBRATION
+            logger?.log(type: .sender, "peripheraldidAddservice error: \(error.localizedDescription)")
+            #endif
+            bluetoothDelegate?.errorOccured(error: .coreBluetoothError(error: error))
+        }
         #if CALIBRATION
             logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerdidAddservice")
         #endif
@@ -114,14 +120,16 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
         ])
     }
 
-    #if CALIBRATION
-        func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
-            logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
-            if let error = error {
-                logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
-            }
+
+    func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
+        logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
+        if let error = error {
+            #if CALIBRATION
+            logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
+            #endif
+            bluetoothDelegate?.errorOccured(error: .coreBluetoothError(error: error))
         }
-    #endif
+    }
 
     func peripheralManager(_: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         #if CALIBRATION

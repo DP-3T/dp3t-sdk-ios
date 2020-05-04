@@ -36,7 +36,7 @@ class BluetoothDiscoveryService: NSObject {
     public weak var delegate: BluetoothDiscoveryDelegate?
 
     /// A  delegate capable of responding to permission requests
-    public weak var permissionDelegate: BluetoothPermissionDelegate?
+    public weak var bluetoothDelegate: BluetoothDelegate?
 
     /// A logger for debugging
     #if CALIBRATION
@@ -110,7 +110,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         #endif
         switch central.state {
         case .poweredOn:
-            permissionDelegate?.noIssues()
+            bluetoothDelegate?.noIssues()
             #if CALIBRATION
                 logger?.log(type: .receiver, " scanning for \(Default.shared.parameters.bluetooth.serviceCBUUID.uuidString)")
             #endif
@@ -122,9 +122,9 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             }
             peripheralsToDiscard = nil
         case .poweredOff:
-            permissionDelegate?.deviceTurnedOff()
+            bluetoothDelegate?.deviceTurnedOff()
         case .unauthorized:
-            permissionDelegate?.unauthorized()
+            bluetoothDelegate?.unauthorized()
         default:
             break
         }
