@@ -20,6 +20,9 @@ public enum DP3TTracingError: Error {
     /// Database Error
     case databaseError(error: Error?)
 
+    /// Core bluetooth error
+    case coreBluetoothError(error: Error)
+
     /// Bluetooth device turned off
     case bluetoothTurnedOff
 
