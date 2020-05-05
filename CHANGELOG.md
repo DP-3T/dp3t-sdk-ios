@@ -1,8 +1,8 @@
 # Changelog for DP3T-SDK iOS
 
-## Latest
-
+## Version 0.1.12 (05.5.2020)
 - Change 16bit UUID to DP3T registered FD68
+- simplified handshake to contact conversion
 
 ## Version 0.1.11 (04.5.2020)
 - Stop tracing and purge keys after a person was marked as exposed
