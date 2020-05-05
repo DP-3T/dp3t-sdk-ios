@@ -34,14 +34,10 @@ enum ContactFactory {
 
                 let attenuation = txPower - rssi
 
-                guard attenuation <= parameters.badAttenuationThreshold else { return nil }
-
                 return (handshake.timestamp, attenuation)
             }
 
             guard let firstValue = attenutationValues.first else { return nil }
-
-            let epochMean = attenutationValues.map { $0.1 }.reduce(0.0, +) / Double(attenutationValues.count)
 
             let epochStart = DP3TCryptoModule.getEpochStart(timestamp: firstValue.0)
 
@@ -61,10 +57,7 @@ enum ContactFactory {
 
                 let windowMean = values.reduce(0.0, +) / Double(values.count)
 
-                let eventDetector = windowMean / epochMean
-
-                if eventDetector > parameters.eventThreshold,
-                    windowMean < parameters.contactAttenuationThreshold {
+                if windowMean < parameters.contactAttenuationThreshold {
                     numberOfMatchingWindows += 1
                 }
             }
