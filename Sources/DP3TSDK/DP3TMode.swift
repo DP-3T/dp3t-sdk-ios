@@ -7,8 +7,10 @@
 /// This is used to differentiate between production and calibration mode
 public enum DP3TMode: Equatable {
 
+    #if canImport(ExposureNotification)
     @available(iOS 13.4, *)
     case exposureNotificationFramework
+    #endif
 
     @available(iOS, deprecated: 13.4, renamed: "exposureNotificationFramework")
     case customImplementation

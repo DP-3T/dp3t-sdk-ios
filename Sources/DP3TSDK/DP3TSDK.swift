@@ -98,6 +98,8 @@ class DP3TSDK {
             secretKeyProvider = crypto
             tracer = try CustomBluetoothTracer(database: database, crypto: crypto)
             matcher = try CustomImplementationMatcher(database: database, crypto: crypto)
+
+        #if canImport(ExposureNotification)
         case .exposureNotificationFramework:
             if #available(iOS 13.4, *) {
                 let manager = ENManager()
@@ -107,6 +109,7 @@ class DP3TSDK {
             } else {
                 fatalError("ExposureNotification is only available from 13.4 upwards")
             }
+        #endif
         }
 
         synchronizer = KnownCasesSynchronizer(appInfo: appInfo, database: database, matcher: matcher)
@@ -379,8 +382,10 @@ extension DP3TSDK: TracerDelegate {
                 appVersion = "-"
             case let .customImplementationCalibration(_, av):
                 appVersion = av
+            #if canImport(ExposureNotification)
             case .exposureNotificationFramework:
                 appVersion = "-"
+            #endif
             }
 
             let logString = "[\(appVersion)|\(DP3TTracing.frameworkVersion)] \(type.description): \(string)"

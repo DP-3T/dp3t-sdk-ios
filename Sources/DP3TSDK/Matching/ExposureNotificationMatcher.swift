@@ -7,7 +7,7 @@
 import Foundation
 #if canImport(ExposureNotification)
 import ExposureNotification
-#endif
+
 
 
 @available(iOS 13.4, *)
@@ -103,3 +103,4 @@ extension ENTemporaryExposureKey {
     }
 }
 
+#endif
