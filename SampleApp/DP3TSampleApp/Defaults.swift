@@ -25,8 +25,6 @@ class Default {
     enum TracingMode: Int {
         case none = 0
         case active = 1
-        case activeReceiving = 2
-        case activeAdvertising = 3
     }
 
     var tracingMode: TracingMode {

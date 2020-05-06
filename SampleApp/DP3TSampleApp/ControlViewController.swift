@@ -106,34 +106,6 @@ class ControlViewController: UIViewController {
             label.text = "Start / Stop Bluetooth Service"
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(segmentedControl)
-
-            if #available(iOS 13.0, *) {
-                startAdvertisingButton.setTitleColor(.systemBlue, for: .normal)
-                startAdvertisingButton.setTitleColor(.systemGray, for: .highlighted)
-                startAdvertisingButton.setTitleColor(.systemGray2, for: .disabled)
-            } else {
-                startAdvertisingButton.setTitleColor(.blue, for: .normal)
-                startAdvertisingButton.setTitleColor(.black, for: .highlighted)
-                startAdvertisingButton.setTitleColor(.lightGray, for: .disabled)
-            }
-            startAdvertisingButton.setTitle("Start Advertising", for: .normal)
-            startAdvertisingButton.addTarget(self, action: #selector(startAdvertising), for: .touchUpInside)
-
-            stackView.addArrangedSubview(startAdvertisingButton)
-
-            if #available(iOS 13.0, *) {
-                startReceivingButton.setTitleColor(.systemBlue, for: .normal)
-                startReceivingButton.setTitleColor(.systemGray, for: .highlighted)
-                startReceivingButton.setTitleColor(.systemGray2, for: .disabled)
-            } else {
-                startReceivingButton.setTitleColor(.blue, for: .normal)
-                startReceivingButton.setTitleColor(.black, for: .highlighted)
-                startReceivingButton.setTitleColor(.lightGray, for: .disabled)
-            }
-            startReceivingButton.setTitle("Start Receiving", for: .normal)
-            startReceivingButton.addTarget(self, action: #selector(startReceiving), for: .touchUpInside)
-
-            stackView.addArrangedSubview(startReceivingButton)
         }
 
         stackView.addSpacerView(12)
@@ -368,16 +340,6 @@ class ControlViewController: UIViewController {
         }
     }
 
-    @objc func startAdvertising() {
-        try? DP3TTracing.startAdvertising()
-        Default.shared.tracingMode = .activeAdvertising
-    }
-
-    @objc func startReceiving() {
-        try? DP3TTracing.startReceiving()
-        Default.shared.tracingMode = .activeReceiving
-    }
-
     func updateUI(_ state: TracingState) {
         var elements: [String] = []
         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
@@ -396,7 +358,7 @@ class ControlViewController: UIViewController {
             break
         }
         switch state.trackingState {
-        case .active, .activeReceiving, .activeAdvertising:
+        case .active:
             segmentedControl.selectedSegmentIndex = 0
             startReceivingButton.isEnabled = false
             startAdvertisingButton.isEnabled = false
@@ -458,10 +420,6 @@ private extension TrackingState {
         switch self {
         case .active:
             return "active"
-        case .activeAdvertising:
-            return "activeAdvertising"
-        case .activeReceiving:
-            return "activeReceiving"
         case let .inactive(error):
             return "inactive \(error.localizedDescription)"
         case .stopped:
@@ -489,6 +447,8 @@ extension DP3TTracingError {
             return "userAlreadyMarkedAsInfected"
         case let .coreBluetoothError(error: error):
             return "coreBluetoothError \(error.localizedDescription)"
+        case let .exposureNotificationError(error: error):
+            return "exposureNotificationError \(error.localizedDescription)"
         }
     }
 }

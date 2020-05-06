@@ -18,7 +18,7 @@ class KnownCasesSynchronizer {
     private var defaults: DefaultStorage
 
     /// A DP3T matcher
-    private weak var matcher: DP3TMatcherProtocol?
+    private weak var matcher: Matcher?
 
     /// Create a known case synchronizer
     /// - Parameters:
@@ -27,7 +27,7 @@ class KnownCasesSynchronizer {
     ///   - matcher: The matcher for DP3T resolution and checks
     init(appInfo: DP3TApplicationInfo,
          database: DP3TDatabase,
-         matcher: DP3TMatcherProtocol,
+         matcher: Matcher,
          defaults: DefaultStorage = Default.shared) {
         self.appInfo = appInfo
         self.database = database.knownCasesStorage
@@ -93,9 +93,8 @@ class KnownCasesSynchronizer {
             case let .success(knownCases):
                 if let knownCases = knownCases {
                     try? database.update(knownCases: knownCases)
-                    for knownCase in knownCases {
-                        try? matcher?.checkNewKnownCase(knownCase)
-                    }
+
+                    try? matcher?.checkNewKnownCases(knownCases)
                 }
                 defaults.lastLoadedBatchReleaseTime = currentReleaseTime
             }

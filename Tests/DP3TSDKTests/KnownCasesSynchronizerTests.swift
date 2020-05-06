@@ -9,10 +9,15 @@ import Foundation
 import SQLite
 import XCTest
 
-private class MockMatcher: DP3TMatcherProtocol {
+private class MockMatcher: Matcher {
+
+
+    var delegate: MatcherDelegate?
+
     var knownCaseKeys: [Data] = []
-    func checkNewKnownCase(_ knownCase: KnownCaseModel) throws {
-        knownCaseKeys.append(knownCase.key)
+
+    func checkNewKnownCases(_ knownCases: [KnownCaseModel]) throws {
+        knownCaseKeys.append(contentsOf: knownCases.map(\.key))
     }
 }
 

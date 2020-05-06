@@ -11,15 +11,15 @@ import UIKit
 func initializeSDK() {
     /// Can be initialized either by:
     /// - using the discovery:
-    let appVersion: String
+    /*let appVersion: String
     if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
         appVersion = "\(version)(\(build))"
     } else {
         appVersion = "N/A"
-    }
+    }*/
     try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
-                                mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? "", appVersion: appVersion))
+                                mode: .exposureNotificationFramework)
     /// - passing the url:
     // try! DP3TTracing.initialize(with: .manual(.init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: nil)),
     //                            mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
@@ -41,10 +41,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             break
         case .active:
             try? DP3TTracing.startTracing()
-        case .activeAdvertising:
-            try? DP3TTracing.startAdvertising()
-        case .activeReceiving:
-            try? DP3TTracing.startReceiving()
         }
 
         return true

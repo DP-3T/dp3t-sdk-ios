@@ -58,7 +58,7 @@ public enum DP3TTracing {
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
     public static func initialize(with appInfo: DP3TApplicationInfo,
                                   urlSession: URLSession = .shared,
-                                  mode: DP3TMode = .production) throws {
+                                  mode: DP3TMode = .customImplementation) throws {
         guard instance == nil else {
             fatalError("DP3TSDK already initialized")
         }
@@ -146,20 +146,6 @@ public enum DP3TTracing {
     }
 
     #if CALIBRATION
-        public static func startAdvertising() throws {
-            guard let instance = instance else {
-                fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-            }
-            try instance.startAdvertising()
-        }
-
-        public static func startReceiving() throws {
-            guard let instance = instance else {
-                fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-            }
-            try instance.startReceiving()
-        }
-
         public static func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
             try instance.getHandshakes(request: request)
         }

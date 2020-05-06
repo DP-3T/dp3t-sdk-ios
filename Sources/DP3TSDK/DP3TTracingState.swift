@@ -36,12 +36,6 @@ public enum InfectionStatus {
 public enum TrackingState {
     /// The tracking is active and working fine
     case active
-
-    #if CALIBRATION
-        case activeReceiving
-        case activeAdvertising
-    #endif
-
     /// The tracking is stopped by the user
     case stopped
     /// The tracking is facing some issues that needs to be solved

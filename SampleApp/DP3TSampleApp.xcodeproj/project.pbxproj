@@ -29,6 +29,7 @@
 		F812AC58243E02A1005F26AE /* ControlViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlViewController.swift; sourceTree = "<group>"; };
 		F812AC5A243E02AF005F26AE /* ParametersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParametersViewController.swift; sourceTree = "<group>"; };
 		F812AC5C243E02B9005F26AE /* HandshakeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandshakeViewController.swift; sourceTree = "<group>"; };
+		F82F4BEB2462F5E100F7F9FA /* Entitlements.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = Entitlements.entitlements; sourceTree = "<group>"; };
 		F83BE136242DDC450043FA1E /* DP3TSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DP3TSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83BE139242DDC450043FA1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F83BE142242DDC460043FA1E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -74,6 +75,7 @@
 		F83BE138242DDC450043FA1E /* DP3TSampleApp */ = {
 			isa = PBXGroup;
 			children = (
+				F82F4BEB2462F5E100F7F9FA /* Entitlements.entitlements */,
 				F83BE139242DDC450043FA1E /* AppDelegate.swift */,
 				F85D4F3F243EFC6A00529168 /* Defaults.swift */,
 				F812AC55243DF459005F26AE /* RootViewController.swift */,
@@ -269,6 +271,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = DP3TSampleApp/Entitlements.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JH7CQD4MLU;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;
@@ -345,6 +348,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = DP3TSampleApp/Entitlements.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JH7CQD4MLU;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;

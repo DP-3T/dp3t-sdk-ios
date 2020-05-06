@@ -8,7 +8,7 @@
 import SQLite
 import XCTest
 
-private class MockMatcherDelegate: DP3TMatcherDelegate {
+private class MockMatcherDelegate: MatcherDelegate {
     var didFindMatchStorage: Bool = false
 
     func didFindMatch() {
@@ -29,7 +29,7 @@ final class DP3TMatcherTests: XCTestCase {
 
     fileprivate var delegate: MockMatcherDelegate!
 
-    var matcher: DP3TMatcher!
+    var matcher: Matcher!
 
     var nowTs: TimeInterval!
 
@@ -47,7 +47,7 @@ final class DP3TMatcherTests: XCTestCase {
         store = KeyStoreMock()
         crypto = try! DP3TCryptoModule(store: store)
         delegate = MockMatcherDelegate()
-        matcher = try! DP3TMatcher(database: database, crypto: crypto)
+        matcher = try! CustomImplementationMatcher(database: database, crypto: crypto)
         matcher.delegate = delegate
     }
 
@@ -68,7 +68,7 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCase(knownCase)
+        try! matcher.checkNewKnownCases([knownCase])
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
@@ -86,7 +86,7 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCase(knownCase)
+        try! matcher.checkNewKnownCases([knownCase])
 
         XCTAssert(delegate.didFindMatchStorage)
 
@@ -113,7 +113,7 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCase(knownCase)
+        try! matcher.checkNewKnownCases([knownCase])
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
@@ -139,7 +139,7 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCase(knownCase)
+        try! matcher.checkNewKnownCases([knownCase])
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
@@ -167,7 +167,7 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCase(knownCase)
+        try! matcher.checkNewKnownCases([knownCase])
 
         XCTAssert(delegate.didFindMatchStorage)
     }
@@ -190,7 +190,7 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCase(knownCase)
+        try! matcher.checkNewKnownCases([knownCase])
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
@@ -208,13 +208,13 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCase(knownCase)
+        try! matcher.checkNewKnownCases([knownCase])
 
         XCTAssert(delegate.didFindMatchStorage)
 
         delegate.didFindMatchStorage = false
 
-        try! matcher.checkNewKnownCase(knownCase)
+        try! matcher.checkNewKnownCases([knownCase])
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
@@ -237,7 +237,7 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCase(knownCase)
+        try! matcher.checkNewKnownCases([knownCase])
 
         XCTAssert(delegate.didFindMatchStorage)
 
@@ -256,7 +256,7 @@ final class DP3TMatcherTests: XCTestCase {
                                         batchTimestamp: currentBatchStartDate.addingTimeInterval(-.day + Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase1])
 
-        try! matcher.checkNewKnownCase(knownCase1)
+        try! matcher.checkNewKnownCases([knownCase1])
 
         XCTAssert(delegate.didFindMatchStorage)
 
