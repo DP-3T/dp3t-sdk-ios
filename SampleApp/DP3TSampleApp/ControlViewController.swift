@@ -487,6 +487,8 @@ extension DP3TTracingError {
             return "networkingError"
         case .userAlreadyMarkedAsInfected:
             return "userAlreadyMarkedAsInfected"
+        case let .coreBluetoothError(error: error):
+            return "coreBluetoothError \(error.localizedDescription)"
         }
     }
 }

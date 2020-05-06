@@ -112,8 +112,8 @@ class DP3TSDK {
             backgroundTaskManager = nil
         }
 
-        broadcaster.permissionDelegate = self
-        discoverer.permissionDelegate = self
+        broadcaster.bluetoothDelegate = self
+        discoverer.bluetoothDelegate = self
         discoverer.delegate = matcher
         matcher.delegate = self
 
@@ -124,7 +124,16 @@ class DP3TSDK {
             crypto.debugSecretKeysStorageDelegate = database.secretKeysStorage
         #endif
 
-        NotificationCenter.default.addObserver(self, selector: #selector(backgroundRefreshStatusDidChange), name: UIApplication.backgroundRefreshStatusDidChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(backgroundRefreshStatusDidChange),
+                                               name: UIApplication.backgroundRefreshStatusDidChangeNotification,
+                                               object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self,
+                                                  name: UIApplication.backgroundRefreshStatusDidChangeNotification,
+                                                  object: nil)
     }
 
     /// start tracing
@@ -365,7 +374,7 @@ extension DP3TSDK: DP3TMatcherDelegate {
 
 // MARK: BluetoothPermissionDelegate implementation
 
-extension DP3TSDK: BluetoothPermissionDelegate {
+extension DP3TSDK: BluetoothDelegate {
     func noIssues() {
         state.trackingState = .active
     }
@@ -376,6 +385,10 @@ extension DP3TSDK: BluetoothPermissionDelegate {
 
     func unauthorized() {
         state.trackingState = .inactive(error: .permissonError)
+    }
+
+    func errorOccured(error: DP3TTracingError) {
+        state.trackingState = .inactive(error: error)
     }
 }
 

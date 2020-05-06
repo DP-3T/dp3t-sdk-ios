@@ -10,7 +10,7 @@ import CoreBluetooth
 
 public struct DP3TParameters: Codable {
 
-    static let parameterVersion: Int = 1
+    static let parameterVersion: Int = 3
 
     let version: Int
 
@@ -27,8 +27,8 @@ public struct DP3TParameters: Codable {
     public var contactMatching = ContactMatching()
 
     public struct Bluetooth: Codable {
-        /// Predefined Service CBUUID
-        public var serviceUUID = "FD6F"
+        /// DP-3T Bluetooth UUID
+        public var serviceUUID = "FD68"
 
         var serviceCBUUID: CBUUID {
             get {
@@ -95,11 +95,7 @@ public struct DP3TParameters: Codable {
     public struct ContactMatching: Codable {
         public var defaultTxPowerLevel: Double = 12.0
 
-        public var badAttenuationThreshold: Double = 64.0
-
-        public var contactAttenuationThreshold: Double = 54.0
-
-        public var eventThreshold: Double = 0.8
+        public var contactAttenuationThreshold: Double = 73.0
 
         public var numberOfWindowsForExposure: Int = 15
 
