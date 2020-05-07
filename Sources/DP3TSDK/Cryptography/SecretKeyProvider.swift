@@ -8,17 +8,22 @@ import ExposureNotification
 
 
 protocol SecretKeyProvider {
-    func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[SecretKey], DP3TTracingError>) -> Void)
+    func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
     func reinitialize() throws
     func reset()
 }
 
 
 extension DP3TCryptoModule: SecretKeyProvider {
-    func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[SecretKey], DP3TTracingError>) -> Void) {
+    func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         do {
             let (day, key) = try getSecretKeyForPublishing(onsetDate: onsetDate)
-            completionHandler(.success([SecretKey(day: day, keyData: key)]))
+            let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
+            let diagnosisKey = CodableDiagnosisKey(keyData: key,
+                                                   rollingPeriod: rollingPeriod,
+                                                   rollingStartNumber: day.period,
+                                                   transmissionRiskLevel: 0)
+            completionHandler(.success([diagnosisKey]))
         } catch let error as DP3TTracingError {
             completionHandler(.failure(error))
         } catch {
@@ -29,12 +34,12 @@ extension DP3TCryptoModule: SecretKeyProvider {
 
 @available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
-    func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[SecretKey], DP3TTracingError>) -> Void) {
+    func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         getDiagnosisKeys { (keys, error) in
             if let error = error {
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
-                completionHandler(.success(keys.map(SecretKey.init(key: ))))
+                completionHandler(.success(keys.map(CodableDiagnosisKey.init(key: ))))
             } else {
                 fatalError("getDiagnosisKeys returned neither an error nor a keys")
             }
@@ -49,10 +54,11 @@ extension ENManager: SecretKeyProvider {
 }
 
 @available(iOS 13.5, *)
-extension SecretKey {
+extension CodableDiagnosisKey {
     init(key: ENTemporaryExposureKey) {
         self.keyData = key.keyData
-        let date = Date(timeIntervalSince1970: Double(key.rollingStartNumber) * TimeInterval.minute * 10.0)
-        self.day = DayDate(date: date)
+        self.rollingPeriod = key.rollingPeriod
+        self.rollingStartNumber = key.rollingStartNumber
+        self.transmissionRiskLevel = key.transmissionRiskLevel
     }
 }

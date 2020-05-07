@@ -184,6 +184,51 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         task.resume()
     }
 
+    /// Adds an exposee list
+    /// - Parameters:
+    ///   - exposees: The exposees to add
+    ///   - completion: The completion block
+    ///   - authentication: The authentication to use for the request
+    func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
+        // addExposee endpoint
+        let url = managingExposeeEndpoint.addExposee()
+
+        guard let payload = try? JSONEncoder().encode(exposees) else {
+            completion(.failure(.couldNotEncodeBody))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue(String(payload.count), forHTTPHeaderField: "Content-Length")
+        request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
+        if case let ExposeeAuthMethod.HTTPAuthorizationBearer(token: token) = authentication {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        request.httpBody = payload
+
+        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
+            guard error == nil else {
+                completion(.failure(.networkSessionError(error: error!)))
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(.failure(.notHTTPResponse))
+                return
+            }
+
+            let statusCode = httpResponse.statusCode
+            guard statusCode == 200 else {
+                completion(.failure(.HTTPFailureResponse(status: statusCode)))
+                return
+            }
+
+            completion(.success(()))
+        })
+        task.resume()
+    }
+
     /// Returns the list of all available application descriptors registered with the backend
     /// - Parameters:
     ///   - enviroment: The environment to use

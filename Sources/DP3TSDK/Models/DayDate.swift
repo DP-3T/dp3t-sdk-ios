@@ -37,4 +37,8 @@ struct DayDate: Codable, CustomStringConvertible, Equatable, Hashable, Comparabl
     var description: String {
         return "<DayDate \(Date(timeIntervalSince1970: timestamp))>"
     }
+
+    var period: UInt32 {
+        return UInt32(timestamp.truncatingRemainder(dividingBy: 10 * .minute))
+    }
 }

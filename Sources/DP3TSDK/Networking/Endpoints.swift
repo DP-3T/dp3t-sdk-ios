@@ -32,6 +32,15 @@ struct ExposeeEndpoint {
         let milliseconds = batchTimestamp.millisecondsSince1970
         return baseURLVersionned.appendingPathComponent("exposed").appendingPathComponent(String(milliseconds))
     }
+
+    /// Get the URL for the exposed people endpoint at a day for GAEN
+    /// - Parameter batchTimestamp: batchTimestamp
+    func getExposeeGaen(batchTimestamp: Date) -> URL {
+        let milliseconds = batchTimestamp.millisecondsSince1970
+        return baseURLVersionned.appendingPathComponent("gaen")
+                                .appendingPathComponent("exposed")
+                                .appendingPathComponent(String(milliseconds))
+    }
 }
 
 /// An endpoint for adding and removing exposed people
@@ -57,6 +66,11 @@ struct ManagingExposeeEndpoint {
     /// Get the add exposee endpoint URL
     func addExposee() -> URL {
         baseURLVersionned.appendingPathComponent("exposed")
+    }
+
+    /// Get the add exposeeList endpoint URL
+    func addExposeeGaen() -> URL {
+        baseURLVersionned.appendingPathComponent("gaen").appendingPathComponent("exposed")
     }
 
     /// Get the remove exposee endpoint URL

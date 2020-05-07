@@ -229,13 +229,18 @@ class DP3TSDK {
 
         let group = DispatchGroup()
 
-        var secretKeyResult: Result<[SecretKey], DP3TTracingError> = .success([])
+        var secretKeyResult: Result<[CodableDiagnosisKey], DP3TTracingError> = .success([])
 
         if isFakeRequest {
             // Send random data if request is fake
             let day = DayDate(date: onset)
             let key = (try? Crypto.generateRandomKey()) ?? Data()
-            secretKeyResult = .success([SecretKey(day: day, keyData: key)])
+            let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
+            let diagnosisKey = CodableDiagnosisKey(keyData: key,
+                                                   rollingPeriod: rollingPeriod,
+                                                   rollingStartNumber: day.period,
+                                                   transmissionRiskLevel: 0)
+            secretKeyResult = .success([diagnosisKey])
         } else {
             group.enter()
             secretKeyProvider.getDiagnosisKeys(onsetDate: onset) { (result) in
@@ -243,6 +248,7 @@ class DP3TSDK {
                 group.leave()
             }
         }
+
         group.notify(queue: .main) {
             switch secretKeyResult {
             case let .failure(error):
@@ -264,12 +270,8 @@ class DP3TSDK {
                         } else {
                             authData = nil
                         }
-                        // TODO: Send all keys when we have a new endpoint
-                        // submit only first key for now
-                        let key = keys.first!
 
-                        let model = ExposeeModel(key: key.keyData, keyDate: key.day, authData: authData, fake: isFakeRequest)
-                        service.addExposee(model, authentication: authentication) { [weak self] result in
+                        let completionHandler: (Result<Void, DP3TNetworkingError>) -> Void = { [weak self] result in
                             DispatchQueue.main.async {
                                 switch result {
                                 case .success:
@@ -283,6 +285,17 @@ class DP3TSDK {
                                     callback(.failure(.networkingError(error: error)))
                                 }
                             }
+                        }
+                        switch DP3TMode.current {
+                        case .customImplementation, .customImplementationCalibration:
+                            assert(keys.count == 1, "we only submit one single key in custom implementation")
+                            let firstKey = keys.first!
+                            let keyDate = Date(timeIntervalSince1970: TimeInterval(firstKey.rollingStartNumber) * 10 * TimeInterval.minute)
+                            let model = ExposeeModel(key: firstKey.keyData, keyDate: DayDate(date: keyDate), authData: authData, fake: isFakeRequest)
+                            service.addExposee(model, authentication: authentication, completion: completionHandler)
+                        case .exposureNotificationFramework:
+                            let model = ExposeeListModel(exposedKeys: keys, authData: authData, fake: isFakeRequest)
+                            service.addExposeeList(model, authentication: authentication, completion: completionHandler)
                         }
                     }
                 }
