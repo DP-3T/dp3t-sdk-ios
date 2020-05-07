@@ -101,13 +101,13 @@ class DP3TSDK {
 
         #if canImport(ExposureNotification)
         case .exposureNotificationFramework:
-            if #available(iOS 13.4, *) {
+            if #available(iOS 13.5, *) {
                 let manager = ENManager()
                 tracer = ExposureNotificationTracer(manager: manager)
                 matcher = ExposureNotificationMatcher(manager: manager, database: database)
                 secretKeyProvider = manager
             } else {
-                fatalError("ExposureNotification is only available from 13.4 upwards")
+                fatalError("ExposureNotification is only available from 13.5 upwards")
             }
         #endif
         }

@@ -8,9 +8,10 @@
 import Foundation
 #if canImport(ExposureNotification)
 import ExposureNotification
+#endif
 
 
-@available(iOS 13.4, *)
+@available(iOS 13.5, *)
 class ExposureNotificationTracer: Tracer {
 
     private let manager: ENManager
@@ -49,7 +50,7 @@ class ExposureNotificationTracer: Tracer {
     }
 }
 
-@available(iOS 13.4, *)
+@available(iOS 13.5, *)
 extension TrackingState {
     init(state: ENStatus) {
         switch state {
@@ -64,4 +65,3 @@ extension TrackingState {
         }
     }
 }
-#endif

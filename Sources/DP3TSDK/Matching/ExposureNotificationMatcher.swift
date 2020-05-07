@@ -7,10 +7,9 @@
 import Foundation
 #if canImport(ExposureNotification)
 import ExposureNotification
+#endif
 
-
-
-@available(iOS 13.4, *)
+@available(iOS 13.5, *)
 class ExposureNotificationMatcher: Matcher {
 
     weak var delegate: MatcherDelegate?
@@ -26,7 +25,7 @@ class ExposureNotificationMatcher: Matcher {
     }
 
     func checkNewKnownCases(_ knownCases: [KnownCaseModel]) throws {
-        let session = ENExposureDetectionSession()
+        /*let session = ENExposureDetectionSession()
 
         var outstandingCases = knownCases
 
@@ -80,11 +79,11 @@ class ExposureNotificationMatcher: Matcher {
         if let error = getExposureInfoError {
             throw error
         }
-
+         */
     }
 }
 
-@available(iOS 13.4, *)
+@available(iOS 13.5, *)
 extension ExposureDay {
     init(exposureInfo: ENExposureInfo) {
         identifier = 0
@@ -93,14 +92,12 @@ extension ExposureDay {
     }
 }
 
-@available(iOS 13.4, *)
+@available(iOS 13.5, *)
 extension ENTemporaryExposureKey {
     convenience init(knownCase: KnownCaseModel) {
         self.init()
         keyData = knownCase.key
         rollingStartNumber = UInt32(knownCase.batchTimestamp.timeIntervalSince1970 / (TimeInterval.minute * 10.0))
-        transmissionRiskLevel = .invalid
+        transmissionRiskLevel = .zero
     }
 }
-
-#endif

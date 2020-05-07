@@ -27,8 +27,7 @@ extension DP3TCryptoModule: SecretKeyProvider {
     }
 }
 
-#if canImport(ExposureNotification)
-@available(iOS 13.4, *)
+@available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[SecretKey], DP3TTracingError>) -> Void) {
         getDiagnosisKeys { (keys, error) in
@@ -49,7 +48,7 @@ extension ENManager: SecretKeyProvider {
     }
 }
 
-@available(iOS 13.4, *)
+@available(iOS 13.5, *)
 extension SecretKey {
     init(key: ENTemporaryExposureKey) {
         self.keyData = key.keyData
@@ -57,4 +56,3 @@ extension SecretKey {
         self.day = DayDate(date: date)
     }
 }
-#endif

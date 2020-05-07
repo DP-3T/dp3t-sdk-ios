@@ -24,7 +24,7 @@ public enum DP3TTracingError: Error {
     case coreBluetoothError(error: Error)
 
     /// Expsure notification framework error
-    @available(iOS 13.4, *)
+    @available(iOS 13.5, *)
     case exposureNotificationError(error: Error)
 
     /// Bluetooth device turned off
