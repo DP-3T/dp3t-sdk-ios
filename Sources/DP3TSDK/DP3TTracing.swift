@@ -56,14 +56,18 @@ public enum DP3TTracing {
     ///   - appId: application identifier used for the discovery call
     ///   - enviroment: enviroment to use
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
+    ///   - backgroundOperations: a list of operations which have to be performed on the background task
     public static func initialize(with appInfo: DP3TApplicationInfo,
                                   urlSession: URLSession = .shared,
-                                  mode: DP3TMode = .customImplementation) throws {
+                                  mode: DP3TMode = .customImplementation,
+                                  backgroundOperations: [Operation] = []) throws {
         guard instance == nil else {
             fatalError("DP3TSDK already initialized")
         }
         DP3TMode.current = mode
-        instance = try DP3TSDK(appInfo: appInfo, urlSession: urlSession)
+        instance = try DP3TSDK(appInfo: appInfo,
+                               urlSession: urlSession,
+                               backgroundOperations: backgroundOperations)
     }
 
     /// The delegate

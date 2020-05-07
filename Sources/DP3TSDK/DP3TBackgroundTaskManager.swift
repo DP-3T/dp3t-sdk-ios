@@ -34,17 +34,10 @@ class DP3TBackgroundTaskManager {
         public weak var logger: LoggingDelegate?
     #endif
 
-    init() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(didEnterBackground),
-                                               name: UIApplication.didEnterBackgroundNotification,
-                                               object: nil)
-    }
+    let operations: [Operation]
 
-    deinit {
-        NotificationCenter.default.removeObserver(self,
-                                                  name: UIApplication.didEnterBackgroundNotification,
-                                                  object: nil)
+    init(operations: [Operation]) {
+        self.operations = operations
     }
 
     /// Register a background task
@@ -68,16 +61,18 @@ class DP3TBackgroundTaskManager {
             logger?.log(type: .backgroundTask, "DP3TBackgroundTaskManager.handleBackgroundTask")
         #endif
 
-        scheduleBackgroundTask()
-
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
 
         queue.addOperation(SyncOperation())
 
+        operations.forEach(queue.addOperation(_:))
+
         task.expirationHandler = {
             queue.cancelAllOperations()
         }
+
+        scheduleBackgroundTask()
 
         let lastOperation = queue.operations.last
         lastOperation?.completionBlock = {
@@ -95,10 +90,5 @@ class DP3TBackgroundTaskManager {
                 logger?.log(type: .backgroundTask, "Unable to submit task: \(error.localizedDescription)")
             #endif
         }
-    }
-
-    @objc
-    private func didEnterBackground() {
-        scheduleBackgroundTask()
     }
 }
