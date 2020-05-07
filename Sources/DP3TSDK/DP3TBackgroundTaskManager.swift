@@ -27,9 +27,7 @@ private var didRegisterBackgroundTask: Bool = false
 
 @available(iOS 13.0, *)
 class DP3TBackgroundTaskManager {
-    static let taskIdentifier: String = "org.dpppt.synctask"
-
-    static let syncInterval: TimeInterval = 15 * .minute
+    static let taskIdentifier: String = "org.dpppt.exposure-notification"
 
     /// A logger for debugging
     #if CALIBRATION
@@ -53,12 +51,16 @@ class DP3TBackgroundTaskManager {
     func register() {
         guard !didRegisterBackgroundTask else { return }
         didRegisterBackgroundTask = true
+
         #if CALIBRATION
             logger?.log(type: .backgroundTask, "DP3TBackgroundTaskManager.register")
         #endif
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .global()) { task in
+
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .main) { task in
             self.handleBackgroundTask(task)
         }
+
+        scheduleBackgroundTask()
     }
 
     private func handleBackgroundTask(_ task: BGTask) {
@@ -84,15 +86,12 @@ class DP3TBackgroundTaskManager {
     }
 
     private func scheduleBackgroundTask() {
-        let syncTask = BGAppRefreshTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
-        syncTask.earliestBeginDate = Date(timeIntervalSinceNow: DP3TBackgroundTaskManager.syncInterval)
-        #if CALIBRATION
-            logger?.log(type: .backgroundTask, "DP3TBackgroundTaskManager.scheduleBackgroundTask earliestBeginDate: \(syncTask.earliestBeginDate!)")
-        #endif
+        let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
+        taskRequest.requiresNetworkConnectivity = true
         do {
-            try BGTaskScheduler.shared.submit(syncTask)
+            try BGTaskScheduler.shared.submit(taskRequest)
         } catch {
-            #if CALIBRATION
+           #if CALIBRATION
                 logger?.log(type: .backgroundTask, "Unable to submit task: \(error.localizedDescription)")
             #endif
         }
