@@ -97,8 +97,8 @@ public struct DP3TParameters: Codable {
 
         public var contactAttenuationThreshold: Double = 73.0
 
-        public var numberOfWindowsForExposure: Int = 5
+        public var numberOfWindowsForExposure: Int = 3
 
-        public var windowDuration: TimeInterval = .minute * 3
+        public var windowDuration: TimeInterval = .minute * 5
     }
 }
