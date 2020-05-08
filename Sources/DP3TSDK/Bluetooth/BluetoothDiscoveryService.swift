@@ -117,10 +117,6 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             manager?.scanForPeripherals(withServices: [Default.shared.parameters.bluetooth.serviceCBUUID], options: [
                 CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
             ])
-            peripheralsToDiscard?.forEach { peripheral in
-                self.manager?.cancelPeripheralConnection(peripheral)
-            }
-            peripheralsToDiscard = nil
         case .poweredOff:
             bluetoothDelegate?.deviceTurnedOff()
         case .unauthorized:
@@ -162,9 +158,15 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             #endif
 
         } else {
-            // Only connect if we didn't got a EphId in the Advertisement
+            // Only connect if we didn't get a EphId in the Advertisement
 
-            pendingPeripherals[peripheral] = .init()
+            /// In order to not cause memory leaks, only init if the peripheral is not in the pending list yet
+            if !pendingPeripherals.keys.contains(peripheral) {
+                pendingPeripherals[peripheral] = .init()
+            } else {
+                /// TBD: Do we want to reset ephID in case it was already in existance?
+                pendingPeripherals[peripheral]?.ephID = nil
+            }
 
             pendingPeripherals[peripheral]?.rssiValues[Date()] = Double(truncating: RSSI)
 
@@ -187,11 +189,10 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             }
         }
 
-        if let toDiscard = peripheralsToDiscard,
-            toDiscard.count > 0 {
-            toDiscard.forEach {
-                manager?.cancelPeripheralConnection($0)
-                pendingPeripherals.removeValue(forKey: $0)
+        if let toDiscard = peripheralsToDiscard, toDiscard.count > 0 {
+            toDiscard.forEach { peripheral in
+                manager?.cancelPeripheralConnection(peripheral)
+                pendingPeripherals.removeValue(forKey: peripheral)
             }
 
             #if CALIBRATION
@@ -219,7 +220,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
 
         pendingPeripherals[peripheral]?.rssiValues.removeAll()
 
-        /// only cancel connection if we have 5 rsssiValues and received the ephID
+        /// only cancel connection if we have 5 rssiValues and received the ephID
         if metaData.rssiReadings >= Default.shared.parameters.bluetooth.rssiValueRequirement {
             #if CALIBRATION
                 logger?.log(type: .receiver, "cancelling connection to: \(peripheral)")
@@ -238,9 +239,12 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         #endif
         pendingPeripherals[peripheral]?.lastConnection = Date()
         tidyUpPendingPeripherals()
-        peripheral.delegate = self
-        peripheral.discoverServices([Default.shared.parameters.bluetooth.serviceCBUUID])
-        peripheral.readRSSI()
+        /// Better safe than sorry: Make sure that after tidying up the peripherals this one was not disconnected already for some freak-reason
+        if pendingPeripherals.keys.contains(peripheral) {
+            peripheral.delegate = self
+            peripheral.discoverServices([Default.shared.parameters.bluetooth.serviceCBUUID])
+            peripheral.readRSSI()
+        }
     }
 
     func centralManager(_: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
@@ -313,13 +317,10 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             logger?.log(type: .receiver, " CentralManager#willRestoreState")
         #endif
         if let peripherals: [CBPeripheral] = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
-            peripheralsToDiscard = []
-
-            peripherals
-                .forEach {
-                    let metaData = PeripheralMetaData(discovery: Date().addingTimeInterval(-Default.shared.parameters.bluetooth.peripheralStateRestorationDiscoveryOffset))
-                    pendingPeripherals[$0] = metaData
-                }
+            peripherals.forEach { peripheral in
+                let metaData = PeripheralMetaData(discovery: Date().addingTimeInterval(-Default.shared.parameters.bluetooth.peripheralStateRestorationDiscoveryOffset))
+                pendingPeripherals[peripheral] = metaData
+            }
             #if CALIBRATION
                 logger?.log(type: .receiver, "CentralManager#willRestoreState restoring peripherals \(pendingPeripherals) discarded \(peripheralsToDiscard.debugDescription) \n")
             #endif
