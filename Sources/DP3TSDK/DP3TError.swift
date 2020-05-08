@@ -25,6 +25,9 @@ public enum DP3TTracingError: Error {
 
     /// Bluetooth device turned off
     case bluetoothTurnedOff
+    
+    /// Bluetooth service setup failed
+    case bluetoothServiceFailed
 
     /// Bluetooth permission error
     case permissonError
