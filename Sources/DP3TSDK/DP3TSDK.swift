@@ -181,12 +181,14 @@ class DP3TSDK {
         try? state.numberOfContacts = database.contactsStorage.count()
         try? state.numberOfHandshakes = database.handshakesStorage.count()
 
+        #if canImport(ExposureNotification)
         if #available(iOS 13.5, *),
             DP3TMode.current == .exposureNotificationFramework,
             case TrackingState.stopped = state.trackingState{
             callback?(.failure(.permissonError))
             return
         }
+        #endif
 
         getATracingServiceClient(forceRefresh: true) { [weak self] result in
             switch result {
@@ -295,7 +297,11 @@ class DP3TSDK {
                             }
                         }
                         switch DP3TMode.current {
-                        case .customImplementation, .customImplementationCalibration:
+                        #if CALIBRATION
+                        case .customImplementationCalibration:
+                            fallthrough
+                        #endif
+                        case .customImplementation:
                             assert(keys.count == 1, "we only submit one single key in custom implementation")
                             let firstKey = keys.first!
                             let keyDate = Date(timeIntervalSince1970: TimeInterval(firstKey.rollingStartNumber) * 10 * TimeInterval.minute)

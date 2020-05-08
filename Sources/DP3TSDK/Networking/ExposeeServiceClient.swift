@@ -73,7 +73,11 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     func getExposeeSynchronously(batchTimestamp: Date) -> Result<Data?, DP3TNetworkingError> {
         let url: URL
         switch DP3TMode.current {
-        case .customImplementation, .customImplementationCalibration:
+        #if CALIBRATION
+        case .customImplementationCalibration:
+            fallthrough
+        #endif
+        case .customImplementation:
             url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
         #if canImport(ExposureNotification)
         case .exposureNotificationFramework:
