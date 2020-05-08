@@ -180,6 +180,14 @@ class DP3TSDK {
         try? database.generateContactsFromHandshakes()
         try? state.numberOfContacts = database.contactsStorage.count()
         try? state.numberOfHandshakes = database.handshakesStorage.count()
+
+        if #available(iOS 13.5, *),
+            DP3TMode.current == .exposureNotificationFramework,
+            case TrackingState.stopped = state.trackingState{
+            callback?(.failure(.permissonError))
+            return
+        }
+
         getATracingServiceClient(forceRefresh: true) { [weak self] result in
             switch result {
             case let .failure(error):
