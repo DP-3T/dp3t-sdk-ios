@@ -39,6 +39,8 @@ class ExposureNotificationMatcher: Matcher {
         let semaphore = DispatchSemaphore(value: 0)
         var exposureSummary: ENExposureDetectionSummary?
         var exposureDetectionError: Error?
+
+        // TODO: call this method for each day
         let urls = localURLs.map { $0.value }
         manager.detectExposures(configuration: .dummyConfiguration, diagnosisKeyURLs: urls) { (summary, error) in
             exposureSummary = summary
@@ -54,9 +56,12 @@ class ExposureNotificationMatcher: Matcher {
         try localURLs.map { $0.value }.forEach(deleteDiagnosisKeyFile(at:))
         localURLs.removeAll()
 
-        //TODO: changed detection to more advanced logic
+        // TODO: changed detection to more advanced logic
+        // for now the attenuation duration < 50 has to be more than 15 minutes
         if let summary = exposureSummary,
-            summary.matchedKeyCount != 0 {
+            summary.attenuationDurations.count == 2,
+            Double(truncating: summary.attenuationDurations[0]) > 15 * TimeInterval.minute {
+
             let exposedDate = Date(timeIntervalSinceNow: TimeInterval(summary.daysSinceLastExposure) * TimeInterval.day * (-1))
             let day: ExposureDay = ExposureDay(identifier: 0, exposedDate: exposedDate, reportDate: Date())
             try database.exposureDaysStorage.add(day)
