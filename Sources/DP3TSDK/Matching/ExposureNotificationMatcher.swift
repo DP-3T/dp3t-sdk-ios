@@ -36,6 +36,8 @@ class ExposureNotificationMatcher: Matcher {
     }
 
     func finalizeMatchingSession() throws {
+        guard localURLs.isEmpty == false else { return }
+
         let semaphore = DispatchSemaphore(value: 0)
         var exposureSummary: ENExposureDetectionSummary?
         var exposureDetectionError: Error?
