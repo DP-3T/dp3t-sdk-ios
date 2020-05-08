@@ -28,7 +28,8 @@ final class ExposeeServiceClientTests: XCTestCase {
             XCTFail(error.localizedDescription)
         case let .success(knownCases):
             XCTAssert(knownCases != nil)
-            XCTAssert(knownCases!.isEmpty)
+            let cases = try! ProtoExposedList.init(serializedData: knownCases!)
+            XCTAssert(cases.exposed.isEmpty)
         }
     }
 
@@ -56,8 +57,9 @@ final class ExposeeServiceClientTests: XCTestCase {
             XCTFail(error.localizedDescription)
         case let .success(knownCases):
             XCTAssert(knownCases != nil)
-            XCTAssertEqual(knownCases!.first!.key.base64EncodedString(), "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")
-            XCTAssertEqual(Int(knownCases!.first!.onset.timeIntervalSince1970), Int(onset.timeIntervalSince1970))
+            let cases = try! ProtoExposedList.init(serializedData: knownCases!)
+            XCTAssertEqual(cases.exposed.first!.key.base64EncodedString(), "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")
+            XCTAssertEqual(cases.exposed.first!.keyDate, onset.millisecondsSince1970)
         }
     }
 
@@ -96,8 +98,9 @@ final class ExposeeServiceClientTests: XCTestCase {
             XCTFail(error.localizedDescription)
         case let .success(knownCases):
             XCTAssert(knownCases != nil)
-            XCTAssertEqual(knownCases!.first!.key.base64EncodedString(), "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")
-            XCTAssertEqual(Int(knownCases!.first!.onset.timeIntervalSince1970), Int(onset.timeIntervalSince1970))
+            let cases = try! ProtoExposedList.init(serializedData: knownCases!)
+            XCTAssertEqual(cases.exposed.first!.key.base64EncodedString(), "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")
+            XCTAssertEqual(cases.exposed.first!.keyDate, onset.millisecondsSince1970)
         }
     }
 

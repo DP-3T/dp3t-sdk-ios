@@ -293,9 +293,11 @@ class DP3TSDK {
                             let keyDate = Date(timeIntervalSince1970: TimeInterval(firstKey.rollingStartNumber) * 10 * TimeInterval.minute)
                             let model = ExposeeModel(key: firstKey.keyData, keyDate: DayDate(date: keyDate), authData: authData, fake: isFakeRequest)
                             service.addExposee(model, authentication: authentication, completion: completionHandler)
+                        #if canImport(ExposureNotification)
                         case .exposureNotificationFramework:
                             let model = ExposeeListModel(exposedKeys: keys, authData: authData, fake: isFakeRequest)
                             service.addExposeeList(model, authentication: authentication, completion: completionHandler)
+                        #endif
                         }
                     }
                 }

@@ -9,6 +9,7 @@ import Foundation
 import ExposureNotification
 #endif
 
+#if canImport(ExposureNotification)
 @available(iOS 13.5, *)
 class ExposureNotificationMatcher: Matcher {
 
@@ -84,3 +85,4 @@ extension ENExposureConfiguration {
         return configuration
     }()
 }
+#endif

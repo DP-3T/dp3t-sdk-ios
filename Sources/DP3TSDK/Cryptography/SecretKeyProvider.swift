@@ -32,6 +32,7 @@ extension DP3TCryptoModule: SecretKeyProvider {
     }
 }
 
+#if canImport(ExposureNotification)
 @available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
@@ -70,3 +71,4 @@ extension ENTemporaryExposureKey {
         Date(timeIntervalSince1970: TimeInterval(rollingStartNumber) * TimeInterval.minute * 10)
     }
 }
+#endif

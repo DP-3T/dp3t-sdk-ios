@@ -62,13 +62,19 @@ final class DP3TMatcherTests: XCTestCase {
         let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c)
 
-        let knownCase = KnownCaseModel(id: nil,
-                                       key: key,
-                                       onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
-        try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCases([knownCase])
+        let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
+        let d = ProtoExposedList.with { (list) in
+            list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
+            list.exposed = [
+                ProtoExposee.with({ (exposee) in
+                    exposee.key = key
+                    exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
+                })
+            ]
+        }
+
+        try! matcher.receivedNewKnownCaseData(d.serializedData(), batchTimestamp: batchTimeStamp)
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
@@ -80,13 +86,18 @@ final class DP3TMatcherTests: XCTestCase {
         let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c)
 
-        let knownCase = KnownCaseModel(id: nil,
-                                       key: key,
-                                       onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
-        try! database.knownCasesStorage.update(knownCases: [knownCase])
+        let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
+        let d = ProtoExposedList.with { (list) in
+            list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
+            list.exposed = [
+                ProtoExposee.with({ (exposee) in
+                    exposee.key = key
+                    exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
+                })
+            ]
+        }
 
-        try! matcher.checkNewKnownCases([knownCase])
+        try! matcher.receivedNewKnownCaseData(d.serializedData(), batchTimestamp: batchTimeStamp)
 
         XCTAssert(delegate.didFindMatchStorage)
 
@@ -107,13 +118,18 @@ final class DP3TMatcherTests: XCTestCase {
         let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c)
 
-        let knownCase = KnownCaseModel(id: nil,
-                                       key: key,
-                                       onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
-        try! database.knownCasesStorage.update(knownCases: [knownCase])
+        let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
+        let d = ProtoExposedList.with { (list) in
+            list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
+            list.exposed = [
+                ProtoExposee.with({ (exposee) in
+                    exposee.key = key
+                    exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
+                })
+            ]
+        }
 
-        try! matcher.checkNewKnownCases([knownCase])
+        try! matcher.receivedNewKnownCaseData(d.serializedData(), batchTimestamp: batchTimeStamp)
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
@@ -133,13 +149,18 @@ final class DP3TMatcherTests: XCTestCase {
         let c3 = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: parts, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c3)
 
-        let knownCase = KnownCaseModel(id: nil,
-                                       key: key,
-                                       onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
-        try! database.knownCasesStorage.update(knownCases: [knownCase])
+        let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
+        let d = ProtoExposedList.with { (list) in
+            list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
+            list.exposed = [
+                ProtoExposee.with({ (exposee) in
+                    exposee.key = key
+                    exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
+                })
+            ]
+        }
 
-        try! matcher.checkNewKnownCases([knownCase])
+        try! matcher.receivedNewKnownCaseData(d.serializedData(), batchTimestamp: batchTimeStamp)
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
@@ -161,13 +182,18 @@ final class DP3TMatcherTests: XCTestCase {
         let c3 = Contact(identifier: nil, ephID: token, date: dayStart.addingTimeInterval(.hour * 6), windowCount: parts, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c3)
 
-        let knownCase = KnownCaseModel(id: nil,
-                                       key: key,
-                                       onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
-        try! database.knownCasesStorage.update(knownCases: [knownCase])
+        let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
+        let d = ProtoExposedList.with { (list) in
+            list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
+            list.exposed = [
+                ProtoExposee.with({ (exposee) in
+                    exposee.key = key
+                    exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
+                })
+            ]
+        }
 
-        try! matcher.checkNewKnownCases([knownCase])
+        try! matcher.receivedNewKnownCaseData(d.serializedData(), batchTimestamp: batchTimeStamp)
 
         XCTAssert(delegate.didFindMatchStorage)
     }
@@ -184,14 +210,18 @@ final class DP3TMatcherTests: XCTestCase {
         let c2 = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: parts, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c2)
 
-        let knownCase = KnownCaseModel(id: nil,
-                                       key: key,
-                                       onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
-        try! database.knownCasesStorage.update(knownCases: [knownCase])
+        let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
+        let d = ProtoExposedList.with { (list) in
+            list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
+            list.exposed = [
+                ProtoExposee.with({ (exposee) in
+                    exposee.key = key
+                    exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
+                })
+            ]
+        }
 
-        try! matcher.checkNewKnownCases([knownCase])
-
+        try! matcher.receivedNewKnownCaseData(d.serializedData(), batchTimestamp: batchTimeStamp)
         XCTAssert(!delegate.didFindMatchStorage)
     }
 
@@ -208,13 +238,24 @@ final class DP3TMatcherTests: XCTestCase {
                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
-        try! matcher.checkNewKnownCases([knownCase])
+        let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
+        let d = ProtoExposedList.with { (list) in
+            list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
+            list.exposed = [
+                ProtoExposee.with({ (exposee) in
+                    exposee.key = key
+                    exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
+                })
+            ]
+        }
+
+        try! matcher.receivedNewKnownCaseData(d.serializedData(), batchTimestamp: batchTimeStamp)
 
         XCTAssert(delegate.didFindMatchStorage)
 
         delegate.didFindMatchStorage = false
 
-        try! matcher.checkNewKnownCases([knownCase])
+        try! matcher.receivedNewKnownCaseData(d.serializedData(), batchTimestamp: batchTimeStamp)
 
         XCTAssert(!delegate.didFindMatchStorage)
     }
@@ -231,13 +272,18 @@ final class DP3TMatcherTests: XCTestCase {
 
         database.contactsStorage.add(contact: c)
 
-        let knownCase = KnownCaseModel(id: nil,
-                                       key: key,
-                                       onset: Date().addingTimeInterval(-.day),
-                                       batchTimestamp: currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength))
-        try! database.knownCasesStorage.update(knownCases: [knownCase])
+        let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
+        let d = ProtoExposedList.with { (list) in
+            list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
+            list.exposed = [
+                ProtoExposee.with({ (exposee) in
+                    exposee.key = key
+                    exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
+                })
+            ]
+        }
 
-        try! matcher.checkNewKnownCases([knownCase])
+        try! matcher.receivedNewKnownCaseData(d.serializedData(), batchTimestamp: batchTimeStamp)
 
         XCTAssert(delegate.didFindMatchStorage)
 
@@ -250,13 +296,19 @@ final class DP3TMatcherTests: XCTestCase {
                          associatedKnownCase: nil)
         database.contactsStorage.add(contact: c2)
 
-        let knownCase1 = KnownCaseModel(id: nil,
-                                        key: key,
-                                        onset: Date().addingTimeInterval(-.day * 2),
-                                        batchTimestamp: currentBatchStartDate.addingTimeInterval(-.day + Default.shared.parameters.networking.batchLength))
-        try! database.knownCasesStorage.update(knownCases: [knownCase1])
+        let batchTimeStamp1 = currentBatchStartDate.addingTimeInterval(-.day + Default.shared.parameters.networking.batchLength)
+        let d1 = ProtoExposedList.with { (list) in
+            list.batchReleaseTime = Int64(batchTimeStamp1.timeIntervalSince1970 * 1000)
+            list.exposed = [
+                ProtoExposee.with({ (exposee) in
+                    exposee.key = key
+                    exposee.keyDate = Int64(Date().addingTimeInterval(-.day * 2).timeIntervalSince1970 * 1000)
+                })
+            ]
+        }
 
-        try! matcher.checkNewKnownCases([knownCase1])
+        try! matcher.receivedNewKnownCaseData(d1.serializedData(), batchTimestamp: batchTimeStamp)
+
 
         XCTAssert(delegate.didFindMatchStorage)
 

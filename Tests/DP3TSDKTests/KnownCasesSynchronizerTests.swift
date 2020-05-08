@@ -10,15 +10,17 @@ import SQLite
 import XCTest
 
 private class MockMatcher: Matcher {
+    func receivedNewKnownCaseData(_ data: Data, batchTimestamp: Date) throws {
+        let models = try! JSONDecoder().decode([KnownCaseModel].self, from: data)
+        knownCaseKeys.append(contentsOf: models.map(\.key))
+    }
 
+    func finalizeMatchingSession() throws {
 
+    }
     var delegate: MatcherDelegate?
 
     var knownCaseKeys: [Data] = []
-
-    func checkNewKnownCases(_ knownCases: [KnownCaseModel]) throws {
-        knownCaseKeys.append(contentsOf: knownCases.map(\.key))
-    }
 }
 
 private class MockService: ExposeeServiceClientProtocol {
@@ -27,7 +29,8 @@ private class MockService: ExposeeServiceClientProtocol {
 
     func getExposeeSynchronously(batchTimestamp _: Date) -> ExposeeResult {
         requests += 1
-        return .success(models)
+        let data = try! JSONEncoder().encode(models)
+        return .success(data)
     }
 
     func addExposee(_: ExposeeModel, authentication _: ExposeeAuthMethod, completion _: @escaping (ExposeeCompletion) -> Void) {}
@@ -177,7 +180,6 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             if case .success = result {
                 XCTAssertEqual(matcher.knownCaseKeys.count, 1)
                 XCTAssert(matcher.knownCaseKeys.contains(key))
-                XCTAssertEqual(try! self.database.knownCasesStorage.getId(for: key), 1)
             } else {
                 XCTFail()
             }

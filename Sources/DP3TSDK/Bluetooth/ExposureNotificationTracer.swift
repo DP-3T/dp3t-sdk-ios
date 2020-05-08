@@ -10,7 +10,7 @@ import Foundation
 import ExposureNotification
 #endif
 
-
+#if canImport(ExposureNotification)
 @available(iOS 13.5, *)
 class ExposureNotificationTracer: Tracer {
 
@@ -65,3 +65,4 @@ extension TrackingState {
         }
     }
 }
+#endif

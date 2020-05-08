@@ -9,7 +9,7 @@ import SwiftJWT
 import UIKit
 
 protocol ExposeeServiceClientProtocol {
-    typealias ExposeeResult = Result<[KnownCaseModel]?, DP3TNetworkingError>
+    typealias ExposeeResult = Result<Data?, DP3TNetworkingError>
     typealias ExposeeCompletion = Result<Void, DP3TNetworkingError>
     /// Get all exposee for a known day synchronously
     /// - Parameters:
@@ -75,8 +75,10 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         switch DP3TMode.current {
         case .customImplementation, .customImplementationCalibration:
             url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
+        #if canImport(ExposureNotification)
         case .exposureNotificationFramework:
             url = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
+        #endif
         }
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
