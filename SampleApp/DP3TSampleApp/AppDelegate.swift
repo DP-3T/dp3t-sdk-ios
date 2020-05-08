@@ -19,12 +19,8 @@ func initializeSDK() {
         appVersion = "N/A"
     }
     #if canImport(ExposureNotification)
-    let op = BlockOperation {
-        print("hello from the outside")
-    }
     try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
-                                mode: .exposureNotificationFramework,
-                                backgroundOperations: [op])
+                                mode: .exposureNotificationFramework)
     #else
     try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
     mode: .customImplementationCalibration(identifierPrefix: Default.shared.identifierPrefix ?? "", appVersion: appVersion))

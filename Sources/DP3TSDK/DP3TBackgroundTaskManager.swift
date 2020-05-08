@@ -21,6 +21,22 @@ private class SyncOperation: Operation {
     }
 }
 
+private class HandlerOperation: Operation {
+
+    weak var handler: DP3TBackgroundHandler?
+
+    init(handler: DP3TBackgroundHandler) {
+        self.handler = handler
+    }
+    override func main() {
+        handler?.performBackgroundTasks(completionHandler: { (success) in
+            if !success {
+                self.cancel()
+            }
+        })
+    }
+}
+
 /// Background task registration should only happen once per run
 /// If the SDK gets destroyed and initialized again this would cause a crash
 private var didRegisterBackgroundTask: Bool = false
@@ -34,10 +50,10 @@ class DP3TBackgroundTaskManager {
         public weak var logger: LoggingDelegate?
     #endif
 
-    let operations: [Operation]
+    weak var handler: DP3TBackgroundHandler?
 
-    init(operations: [Operation]) {
-        self.operations = operations
+    init(handler: DP3TBackgroundHandler?) {
+        self.handler = handler
     }
 
     /// Register a background task
@@ -64,9 +80,11 @@ class DP3TBackgroundTaskManager {
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
 
-        queue.addOperation(SyncOperation())
+        if let handler = handler {
+            queue.addOperation(HandlerOperation(handler: handler))
+        }
 
-        operations.forEach(queue.addOperation(_:))
+        queue.addOperation(SyncOperation())
 
         task.expirationHandler = {
             queue.cancelAllOperations()

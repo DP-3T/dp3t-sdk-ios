@@ -80,7 +80,7 @@ class DP3TSDK {
     /// - Parameters:
     ///   - appInfo: applicationInfot to use (either discovery or manually initialized)
     ///   - urlSession: the url session to use for networking (app can set it to enable certificate pinning)
-    init(appInfo: DP3TApplicationInfo, urlSession: URLSession, backgroundOperations: [Operation]) throws {
+    init(appInfo: DP3TApplicationInfo, urlSession: URLSession, backgroundHandler: DP3TBackgroundHandler?) throws {
         self.appInfo = appInfo
         self.urlSession = urlSession
         database = try DP3TDatabase()
@@ -126,7 +126,7 @@ class DP3TSDK {
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded()
 
         if #available(iOS 13.0, *) {
-            let backgroundTaskManager = DP3TBackgroundTaskManager(operations: backgroundOperations)
+            let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler)
             self.backgroundTaskManager = backgroundTaskManager
             #if CALIBRATION
                 backgroundTaskManager.logger = self

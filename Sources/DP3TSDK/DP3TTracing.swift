@@ -19,6 +19,10 @@ public protocol DP3TTracingDelegate: AnyObject {
     #endif
 }
 
+public protocol DP3TBackgroundHandler: AnyObject {
+    func performBackgroundTasks(completionHandler: (_ success: Bool) -> Void)
+}
+
 #if CALIBRATION
     public extension DP3TTracingDelegate {
         func didAddLog(_: LogEntry) {}
@@ -56,18 +60,18 @@ public enum DP3TTracing {
     ///   - appId: application identifier used for the discovery call
     ///   - enviroment: enviroment to use
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
-    ///   - backgroundOperations: a list of operations which have to be performed on the background task
+    ///   - backgroundHandler: a delegate to perform background tasks
     public static func initialize(with appInfo: DP3TApplicationInfo,
                                   urlSession: URLSession = .shared,
                                   mode: DP3TMode = .customImplementation,
-                                  backgroundOperations: [Operation] = []) throws {
+                                  backgroundHandler: DP3TBackgroundHandler? = nil) throws {
         guard instance == nil else {
             fatalError("DP3TSDK already initialized")
         }
         DP3TMode.current = mode
         instance = try DP3TSDK(appInfo: appInfo,
                                urlSession: urlSession,
-                               backgroundOperations: backgroundOperations)
+                               backgroundHandler: backgroundHandler)
     }
 
     /// The delegate
