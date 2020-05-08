@@ -21,11 +21,19 @@ import Foundation
 
             state = .init(state: manager.exposureNotificationStatus)
 
-            observation = manager.observe(\.exposureNotificationStatus, options: [.new]) { [weak self] _, change in
-                guard let self = self,
-                    let newState = change.newValue else { return }
-                self.state = .init(state: newState)
+            manager.activate { [weak self] _ in
+                guard let self = self else { return }
+
+                self.observation = manager.observe(\.exposureNotificationStatus, options: [.new]) { [weak self] _, change in
+                    guard let self = self,
+                        let newState = change.newValue else { return }
+                    self.state = .init(state: newState)
+                }
             }
+        }
+
+        deinit {
+            manager.invalidate()
         }
 
         var delegate: TracerDelegate?
