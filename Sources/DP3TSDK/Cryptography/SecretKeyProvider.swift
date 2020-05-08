@@ -36,7 +36,9 @@ extension DP3TCryptoModule: SecretKeyProvider {
 @available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
-        getTestDiagnosisKeys { (keys, error) in
+
+        getDiagnosisKeys { (keys, error) in
+        //getTestDiagnosisKeys { (keys, error) in
             if let error = error {
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
