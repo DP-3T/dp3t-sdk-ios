@@ -160,7 +160,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
                 peripheralManager?.respond(to: request, withResult: .success)
                 #if CALIBRATION
-                    logger?.log(type: .sender, "← ✅ didReceiveRead: Responded with new token: \(request.value.hexEncodedString)")
+                    logger?.log(type: .sender, "← ✅ didReceiveRead: Responded with new token: \(request.value!.hexEncodedString)")
                 #endif
             } else {
                 // crypto is nil?
