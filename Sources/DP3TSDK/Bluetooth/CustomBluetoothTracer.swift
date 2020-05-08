@@ -1,14 +1,12 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
-
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
 import Foundation
 
 class CustomBluetoothTracer: Tracer {
-
     weak var delegate: TracerDelegate?
 
     /// A service to broadcast bluetooth packets containing the DP3T token
@@ -24,10 +22,10 @@ class CustomBluetoothTracer: Tracer {
 
     #if CALIBRATION
         /// A logger to output messages
-    func setLogger(logger: LoggingDelegate){
-        broadcaster.logger = logger
-        discoverer.logger = logger
-    }
+        func setLogger(logger: LoggingDelegate) {
+            broadcaster.logger = logger
+            discoverer.logger = logger
+        }
     #endif
 
     private(set) var state: TrackingState = .stopped {
@@ -64,7 +62,6 @@ class CustomBluetoothTracer: Tracer {
         } catch {
             completionHandler(nil)
         }
-
     }
 
     func resetAllData() {
@@ -91,7 +88,6 @@ extension CustomBluetoothTracer: BluetoothDelegate {
         state = .inactive(error: error)
     }
 }
-
 
 extension CustomBluetoothTracer: BluetoothDiscoveryDelegate {
     func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double, timestamp: Date) throws {

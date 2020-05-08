@@ -10,14 +10,13 @@ import SQLite
 import XCTest
 
 private class MockMatcher: Matcher {
-    func receivedNewKnownCaseData(_ data: Data, batchTimestamp: Date) throws {
+    func receivedNewKnownCaseData(_ data: Data, batchTimestamp _: Date) throws {
         let models = try! JSONDecoder().decode([KnownCaseModel].self, from: data)
         knownCaseKeys.append(contentsOf: models.map(\.key))
     }
 
-    func finalizeMatchingSession() throws {
+    func finalizeMatchingSession() throws {}
 
-    }
     var delegate: MatcherDelegate?
 
     var knownCaseKeys: [Data] = []

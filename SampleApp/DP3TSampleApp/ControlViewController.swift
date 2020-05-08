@@ -261,7 +261,7 @@ class ControlViewController: UIViewController {
     }
 
     @objc func setExposed() {
-        //Share keys of last 14 days
+        // Share keys of last 14 days
         DP3TTracing.iWasExposed(onset: Date(timeIntervalSinceNow: -60 * 60 * 24 * 14), authentication: .none) { [weak self] result in
             switch result {
             case let .failure(error):

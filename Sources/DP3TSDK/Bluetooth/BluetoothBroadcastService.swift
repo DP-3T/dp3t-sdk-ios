@@ -103,10 +103,10 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
         }
     }
 
-    func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
+    func peripheralManager(_ peripheral: CBPeripheralManager, didAdd _: CBService, error: Error?) {
         if let error = error {
             #if CALIBRATION
-            logger?.log(type: .sender, "peripheraldidAddservice error: \(error.localizedDescription)")
+                logger?.log(type: .sender, "peripheraldidAddservice error: \(error.localizedDescription)")
             #endif
             bluetoothDelegate?.errorOccured(error: .coreBluetoothError(error: error))
         }
@@ -120,14 +120,13 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
         ])
     }
 
-
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
         #if CALIBRATION
-        logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
+            logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
         #endif
         if let error = error {
             #if CALIBRATION
-            logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
+                logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
             #endif
             bluetoothDelegate?.errorOccured(error: .coreBluetoothError(error: error))
         }

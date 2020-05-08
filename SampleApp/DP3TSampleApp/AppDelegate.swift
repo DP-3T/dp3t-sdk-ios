@@ -19,11 +19,11 @@ func initializeSDK() {
         appVersion = "N/A"
     }
     #if canImport(ExposureNotification)
-    try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
-                                mode: .exposureNotificationFramework)
+        try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
+                                    mode: .exposureNotificationFramework)
     #else
-    try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
-    mode: .customImplementationCalibration(identifierPrefix: Default.shared.identifierPrefix ?? "", appVersion: appVersion))
+        try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
+                                    mode: .customImplementationCalibration(identifierPrefix: Default.shared.identifierPrefix ?? "", appVersion: appVersion))
     #endif
     /// - passing the url:
     // try! DP3TTracing.initialize(with: .manual(.init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: nil)),

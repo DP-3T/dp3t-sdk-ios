@@ -22,14 +22,14 @@ private class SyncOperation: Operation {
 }
 
 private class HandlerOperation: Operation {
-
     weak var handler: DP3TBackgroundHandler?
 
     init(handler: DP3TBackgroundHandler) {
         self.handler = handler
     }
+
     override func main() {
-        handler?.performBackgroundTasks(completionHandler: { (success) in
+        handler?.performBackgroundTasks(completionHandler: { success in
             if !success {
                 self.cancel()
             }
@@ -104,7 +104,7 @@ class DP3TBackgroundTaskManager {
         do {
             try BGTaskScheduler.shared.submit(taskRequest)
         } catch {
-           #if CALIBRATION
+            #if CALIBRATION
                 logger?.log(type: .backgroundTask, "Unable to submit task: \(error.localizedDescription)")
             #endif
         }

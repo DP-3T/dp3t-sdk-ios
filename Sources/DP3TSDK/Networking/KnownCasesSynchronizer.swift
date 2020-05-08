@@ -95,7 +95,7 @@ class KnownCasesSynchronizer {
                     if let data = knownCasesData {
                         try matcher?.receivedNewKnownCaseData(data, batchTimestamp: currentReleaseTime)
                     }
-                } catch let error as DP3TNetworkingError  {
+                } catch let error as DP3TNetworkingError {
                     callback?(.failure(error))
                     return
                 } catch {

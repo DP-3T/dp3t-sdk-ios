@@ -9,7 +9,7 @@ import os
 import UIKit
 
 #if canImport(ExposureNotification)
-import ExposureNotification
+    import ExposureNotification
 #endif
 
 /// Main class for handling SDK logic
@@ -87,28 +87,28 @@ class DP3TSDK {
 
         switch DP3TMode.current {
         #if CALIBRATION
-        case .customImplementationCalibration:
-            fallthrough
+            case .customImplementationCalibration:
+                fallthrough
         #endif
         case .customImplementation:
             let crypto = try DP3TCryptoModule()
             #if CALIBRATION
-            crypto.debugSecretKeysStorageDelegate = database.secretKeysStorage
+                crypto.debugSecretKeysStorageDelegate = database.secretKeysStorage
             #endif
             secretKeyProvider = crypto
             tracer = try CustomBluetoothTracer(database: database, crypto: crypto)
             matcher = try CustomImplementationMatcher(database: database, crypto: crypto)
 
         #if canImport(ExposureNotification)
-        case .exposureNotificationFramework:
-            if #available(iOS 13.5, *) {
-                let manager = ENManager()
-                tracer = ExposureNotificationTracer(manager: manager)
-                matcher = ExposureNotificationMatcher(manager: manager, database: database)
-                secretKeyProvider = manager
-            } else {
-                fatalError("ExposureNotification is only available from 13.5 upwards")
-            }
+            case .exposureNotificationFramework:
+                if #available(iOS 13.5, *) {
+                    let manager = ENManager()
+                    tracer = ExposureNotificationTracer(manager: manager)
+                    matcher = ExposureNotificationMatcher(manager: manager, database: database)
+                    secretKeyProvider = manager
+                } else {
+                    fatalError("ExposureNotification is only available from 13.5 upwards")
+                }
         #endif
         }
 
@@ -135,7 +135,6 @@ class DP3TSDK {
         } else {
             backgroundTaskManager = nil
         }
-
 
         #if CALIBRATION
             if let tracer = tracer as? CustomBluetoothTracer {
@@ -177,17 +176,21 @@ class DP3TSDK {
     /// - Parameter callback: callback
     /// - Throws: if a error happed
     func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
+        #if CALIBRATION
+            log(type: .sdk, "performing Sync")
+        #endif
+
         try? database.generateContactsFromHandshakes()
         try? state.numberOfContacts = database.contactsStorage.count()
         try? state.numberOfHandshakes = database.handshakesStorage.count()
 
         #if canImport(ExposureNotification)
-        if #available(iOS 13.5, *),
-            DP3TMode.current == .exposureNotificationFramework,
-            case TrackingState.stopped = state.trackingState{
-            callback?(.failure(.permissonError))
-            return
-        }
+            if #available(iOS 13.5, *),
+                DP3TMode.current == .exposureNotificationFramework,
+                case TrackingState.stopped = state.trackingState {
+                callback?(.failure(.permissonError))
+                return
+            }
         #endif
 
         getATracingServiceClient(forceRefresh: true) { [weak self] result in
@@ -200,9 +203,17 @@ class DP3TSDK {
                     DispatchQueue.main.async {
                         switch result {
                         case .success:
+                            #if CALIBRATION
+                                self?.log(type: .sdk, "Sync succeeded")
+                            #endif
+
                             self?.state.lastSync = Date()
                             callback?(.success(()))
                         case let .failure(error):
+                            #if CALIBRATION
+                                self?.log(type: .sdk, "Sync failed error: \(error.localizedDescription)")
+                            #endif
+
                             callback?(.failure(.networkingError(error: error)))
                         }
                     }
@@ -230,8 +241,6 @@ class DP3TSDK {
                      authentication: ExposeeAuthMethod,
                      isFakeRequest: Bool = false,
                      callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
-
-
         if !isFakeRequest,
             case .infected = state.infectionStatus {
             callback(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
@@ -253,7 +262,7 @@ class DP3TSDK {
             secretKeyResult = .success([diagnosisKey])
         } else {
             group.enter()
-            secretKeyProvider.getDiagnosisKeys(onsetDate: onset) { (result) in
+            secretKeyProvider.getDiagnosisKeys(onsetDate: onset) { result in
                 secretKeyResult = result
                 group.leave()
             }
@@ -298,8 +307,8 @@ class DP3TSDK {
                         }
                         switch DP3TMode.current {
                         #if CALIBRATION
-                        case .customImplementationCalibration:
-                            fallthrough
+                            case .customImplementationCalibration:
+                                fallthrough
                         #endif
                         case .customImplementation:
                             assert(keys.count == 1, "we only submit one single key in custom implementation")
@@ -308,9 +317,9 @@ class DP3TSDK {
                             let model = ExposeeModel(key: firstKey.keyData, keyDate: DayDate(date: keyDate), authData: authData, fake: isFakeRequest)
                             service.addExposee(model, authentication: authentication, completion: completionHandler)
                         #if canImport(ExposureNotification)
-                        case .exposureNotificationFramework:
-                            let model = ExposeeListModel(exposedKeys: keys, authData: authData, fake: isFakeRequest)
-                            service.addExposeeList(model, authentication: authentication, completion: completionHandler)
+                            case .exposureNotificationFramework:
+                                let model = ExposeeListModel(exposedKeys: keys, authData: authData, fake: isFakeRequest)
+                                service.addExposeeList(model, authentication: authentication, completion: completionHandler)
                         #endif
                         }
                     }
@@ -412,8 +421,8 @@ extension DP3TSDK: TracerDelegate {
             case let .customImplementationCalibration(_, av):
                 appVersion = av
             #if canImport(ExposureNotification)
-            case .exposureNotificationFramework:
-                appVersion = "-"
+                case .exposureNotificationFramework:
+                    appVersion = "-"
             #endif
             }
 

@@ -39,7 +39,6 @@ class ParametersViewController: UIViewController {
         }
         stackView.axis = .vertical
 
-
         let params = DP3TTracing.parameters
 
         do {

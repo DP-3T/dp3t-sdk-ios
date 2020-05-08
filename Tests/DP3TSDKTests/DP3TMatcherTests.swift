@@ -62,15 +62,14 @@ final class DP3TMatcherTests: XCTestCase {
         let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure + 1, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c)
 
-
         let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
-        let d = ProtoExposedList.with { (list) in
+        let d = ProtoExposedList.with { list in
             list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
             list.exposed = [
-                ProtoExposee.with({ (exposee) in
+                ProtoExposee.with { exposee in
                     exposee.key = key
                     exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
-                })
+                },
             ]
         }
 
@@ -87,13 +86,13 @@ final class DP3TMatcherTests: XCTestCase {
         database.contactsStorage.add(contact: c)
 
         let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
-        let d = ProtoExposedList.with { (list) in
+        let d = ProtoExposedList.with { list in
             list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
             list.exposed = [
-                ProtoExposee.with({ (exposee) in
+                ProtoExposee.with { exposee in
                     exposee.key = key
                     exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
-                })
+                },
             ]
         }
 
@@ -119,13 +118,13 @@ final class DP3TMatcherTests: XCTestCase {
         database.contactsStorage.add(contact: c)
 
         let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
-        let d = ProtoExposedList.with { (list) in
+        let d = ProtoExposedList.with { list in
             list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
             list.exposed = [
-                ProtoExposee.with({ (exposee) in
+                ProtoExposee.with { exposee in
                     exposee.key = key
                     exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
-                })
+                },
             ]
         }
 
@@ -150,13 +149,13 @@ final class DP3TMatcherTests: XCTestCase {
         database.contactsStorage.add(contact: c3)
 
         let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
-        let d = ProtoExposedList.with { (list) in
+        let d = ProtoExposedList.with { list in
             list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
             list.exposed = [
-                ProtoExposee.with({ (exposee) in
+                ProtoExposee.with { exposee in
                     exposee.key = key
                     exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
-                })
+                },
             ]
         }
 
@@ -183,13 +182,13 @@ final class DP3TMatcherTests: XCTestCase {
         database.contactsStorage.add(contact: c3)
 
         let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
-        let d = ProtoExposedList.with { (list) in
+        let d = ProtoExposedList.with { list in
             list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
             list.exposed = [
-                ProtoExposee.with({ (exposee) in
+                ProtoExposee.with { exposee in
                     exposee.key = key
                     exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
-                })
+                },
             ]
         }
 
@@ -211,13 +210,13 @@ final class DP3TMatcherTests: XCTestCase {
         database.contactsStorage.add(contact: c2)
 
         let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
-        let d = ProtoExposedList.with { (list) in
+        let d = ProtoExposedList.with { list in
             list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
             list.exposed = [
-                ProtoExposee.with({ (exposee) in
+                ProtoExposee.with { exposee in
                     exposee.key = key
                     exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
-                })
+                },
             ]
         }
 
@@ -239,13 +238,13 @@ final class DP3TMatcherTests: XCTestCase {
         try! database.knownCasesStorage.update(knownCases: [knownCase])
 
         let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
-        let d = ProtoExposedList.with { (list) in
+        let d = ProtoExposedList.with { list in
             list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
             list.exposed = [
-                ProtoExposee.with({ (exposee) in
+                ProtoExposee.with { exposee in
                     exposee.key = key
                     exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
-                })
+                },
             ]
         }
 
@@ -273,13 +272,13 @@ final class DP3TMatcherTests: XCTestCase {
         database.contactsStorage.add(contact: c)
 
         let batchTimeStamp = currentBatchStartDate.addingTimeInterval(Default.shared.parameters.networking.batchLength)
-        let d = ProtoExposedList.with { (list) in
+        let d = ProtoExposedList.with { list in
             list.batchReleaseTime = Int64(batchTimeStamp.timeIntervalSince1970 * 1000)
             list.exposed = [
-                ProtoExposee.with({ (exposee) in
+                ProtoExposee.with { exposee in
                     exposee.key = key
                     exposee.keyDate = Int64(Date().addingTimeInterval(-.day).timeIntervalSince1970 * 1000)
-                })
+                },
             ]
         }
 
@@ -297,23 +296,21 @@ final class DP3TMatcherTests: XCTestCase {
         database.contactsStorage.add(contact: c2)
 
         let batchTimeStamp1 = currentBatchStartDate.addingTimeInterval(-.day + Default.shared.parameters.networking.batchLength)
-        let d1 = ProtoExposedList.with { (list) in
+        let d1 = ProtoExposedList.with { list in
             list.batchReleaseTime = Int64(batchTimeStamp1.timeIntervalSince1970 * 1000)
             list.exposed = [
-                ProtoExposee.with({ (exposee) in
+                ProtoExposee.with { exposee in
                     exposee.key = key
                     exposee.keyDate = Int64(Date().addingTimeInterval(-.day * 2).timeIntervalSince1970 * 1000)
-                })
+                },
             ]
         }
 
         try! matcher.receivedNewKnownCaseData(d1.serializedData(), batchTimestamp: batchTimeStamp)
-
 
         XCTAssert(delegate.didFindMatchStorage)
 
         let days = try! database.exposureDaysStorage.getExposureDays()
         XCTAssertEqual(days.count, 2)
     }
-
 }

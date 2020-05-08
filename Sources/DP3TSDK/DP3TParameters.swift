@@ -1,15 +1,13 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
-import Foundation
 import CoreBluetooth
-
+import Foundation
 
 public struct DP3TParameters: Codable {
-
     static let parameterVersion: Int = 4
 
     let version: Int
@@ -66,7 +64,6 @@ public struct DP3TParameters: Codable {
     }
 
     public struct Crypto: Codable {
-
         public var keyLength: Int = 16
 
         public var numberOfDaysToKeepData: Int = 21
@@ -82,7 +79,6 @@ public struct DP3TParameters: Codable {
         public var contactsThreshold: Int = 1
 
         public var numberOfDaysToKeepMatchedContacts = 10
-
     }
 
     public struct Networking: Codable {

@@ -74,14 +74,14 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         let url: URL
         switch DP3TMode.current {
         #if CALIBRATION
-        case .customImplementationCalibration:
-            fallthrough
+            case .customImplementationCalibration:
+                fallthrough
         #endif
         case .customImplementation:
             url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
         #if canImport(ExposureNotification)
-        case .exposureNotificationFramework:
-            url = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
+            case .exposureNotificationFramework:
+                url = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
         #endif
         }
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
@@ -96,10 +96,10 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             return .failure(.notHTTPResponse)
         }
 
-        /*if let date = httpResponse.date,
-            abs(Date().timeIntervalSince(date)) > Default.shared.parameters.networking.timeShiftThreshold {
-            return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
-        }*/
+        /* if let date = httpResponse.date,
+             abs(Date().timeIntervalSince(date)) > Default.shared.parameters.networking.timeShiftThreshold {
+             return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
+         } */
 
         let httpStatus = httpResponse.statusCode
         switch httpStatus {

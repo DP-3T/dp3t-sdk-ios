@@ -28,7 +28,7 @@ final class ExposeeServiceClientTests: XCTestCase {
             XCTFail(error.localizedDescription)
         case let .success(knownCases):
             XCTAssert(knownCases != nil)
-            let cases = try! ProtoExposedList.init(serializedData: knownCases!)
+            let cases = try! ProtoExposedList(serializedData: knownCases!)
             XCTAssert(cases.exposed.isEmpty)
         }
     }
@@ -57,7 +57,7 @@ final class ExposeeServiceClientTests: XCTestCase {
             XCTFail(error.localizedDescription)
         case let .success(knownCases):
             XCTAssert(knownCases != nil)
-            let cases = try! ProtoExposedList.init(serializedData: knownCases!)
+            let cases = try! ProtoExposedList(serializedData: knownCases!)
             XCTAssertEqual(cases.exposed.first!.key.base64EncodedString(), "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")
             XCTAssertEqual(cases.exposed.first!.keyDate, onset.millisecondsSince1970)
         }
@@ -98,35 +98,35 @@ final class ExposeeServiceClientTests: XCTestCase {
             XCTFail(error.localizedDescription)
         case let .success(knownCases):
             XCTAssert(knownCases != nil)
-            let cases = try! ProtoExposedList.init(serializedData: knownCases!)
+            let cases = try! ProtoExposedList(serializedData: knownCases!)
             XCTAssertEqual(cases.exposed.first!.key.base64EncodedString(), "k6zymVXKbPHBkae6ng2k3H25WrpqxUEluI1w86t+eOI=")
             XCTAssertEqual(cases.exposed.first!.keyDate, onset.millisecondsSince1970)
         }
     }
 
-    /*func testTimeInconsistency() {
-        let timeStamp = Date().addingTimeInterval(Default.shared.parameters.networking.timeShiftThreshold * (-1))
-        let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: timeStamp)]
-        let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
-        let session = MockSession(data: Data(), urlResponse: response, error: nil)
-        let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
-        let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
+    /* func testTimeInconsistency() {
+         let timeStamp = Date().addingTimeInterval(Default.shared.parameters.networking.timeShiftThreshold * (-1))
+         let headers = ["Etag": "HASH", "date": HTTPURLResponse.dateFormatter.string(from: timeStamp)]
+         let response = HTTPURLResponse(url: URL(string: "http://xy.ch")!, statusCode: 200, httpVersion: nil, headerFields: headers)
+         let session = MockSession(data: Data(), urlResponse: response, error: nil)
+         let applicationDescriptor = ApplicationDescriptor(appId: "ch.xy", description: "XY", jwtPublicKey: nil, bucketBaseUrl: URL(string: "http://xy.ch")!, reportBaseUrl: URL(string: "http://xy.ch")!, contact: "xy")
+         let synchronizer = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: session)
 
-        let batchTimestamp = Date()
-        let result = synchronizer.getExposeeSynchronously(batchTimestamp: batchTimestamp)
-        switch result {
-        case let .failure(error):
-            switch error {
-            case let .timeInconsistency(shift: shift):
-                let shiftNow = Date().timeIntervalSince(timeStamp)
-                XCTAssertEqual(shiftNow, shift, accuracy: .second)
-            default:
-                XCTFail("Should not succeed due to timeInconsistency")
-            }
-        case .success:
-            XCTFail("Should not succeed due to timeInconsistency")
-        }
-    }*/
+         let batchTimestamp = Date()
+         let result = synchronizer.getExposeeSynchronously(batchTimestamp: batchTimestamp)
+         switch result {
+         case let .failure(error):
+             switch error {
+             case let .timeInconsistency(shift: shift):
+                 let shiftNow = Date().timeIntervalSince(timeStamp)
+                 XCTAssertEqual(shiftNow, shift, accuracy: .second)
+             default:
+                 XCTFail("Should not succeed due to timeInconsistency")
+             }
+         case .success:
+             XCTFail("Should not succeed due to timeInconsistency")
+         }
+     } */
 
     func testSettingAcceptHeaderProtobuf() {
         let batchTimestamp = Date()

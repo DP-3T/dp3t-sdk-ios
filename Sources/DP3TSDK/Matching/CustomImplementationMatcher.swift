@@ -36,17 +36,17 @@ class CustomImplementationMatcher: Matcher {
             let transformed: [KnownCaseModel] = protoList.exposed.map {
                 KnownCaseModel(proto: $0, batchTimestamp: batchTimestamp)
             }
-            //save to database
+            // save to database
             try? database.knownCasesStorage.update(knownCases: transformed)
 
-            //perform matching
+            // perform matching
             try transformed.forEach(checkNewKnownCase(_:))
         } catch {
             throw DP3TTracingError.networkingError(error: .couldNotParseData(error: error, origin: 1))
         }
     }
 
-    func finalizeMatchingSession() { }
+    func finalizeMatchingSession() {}
 
     /// check for new known case
     /// - Parameter knownCase: known Case

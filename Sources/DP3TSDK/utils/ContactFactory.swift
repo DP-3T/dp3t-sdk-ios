@@ -7,7 +7,6 @@
 import Foundation
 
 enum ContactFactory {
-
     /// Helper function to create contacts from handshakes
     /// - Returns: list of contacts
     static func contacts(from handshakes: [HandshakeModel]) -> [Contact] {
