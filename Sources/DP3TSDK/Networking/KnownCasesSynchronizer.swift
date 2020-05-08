@@ -90,14 +90,27 @@ class KnownCasesSynchronizer {
             case let .failure(error):
                 callback?(.failure(error))
                 return
-            case let .success(knownCases):
-                if let knownCases = knownCases {
-                    try? database.update(knownCases: knownCases)
-
-                    try? matcher?.checkNewKnownCases(knownCases)
+            case let .success(knownCasesData):
+                do {
+                    if let data = knownCasesData {
+                        try matcher?.receivedNewKnownCaseData(data, batchTimestamp: currentReleaseTime)
+                    }
+                } catch let error as DP3TNetworkingError  {
+                    callback?(.failure(error))
+                    return
+                } catch {
+                    callback?(.failure(.couldNotParseData(error: error, origin: 0)))
                 }
                 defaults.lastLoadedBatchReleaseTime = currentReleaseTime
             }
+        }
+
+        do {
+            try matcher?.finalizeMatchingSession()
+        } catch {
+            // set last batch to initial value if a error happend
+            defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: lastBatch)
+            callback?(.failure(.couldNotParseData(error: error, origin: 0)))
         }
 
         callback?(.success(()))

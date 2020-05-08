@@ -256,19 +256,24 @@ class ControlViewController: UIViewController {
             default:
                 break
             }
+            self?.updateState()
         }
     }
 
     @objc func setExposed() {
-        DP3TTracing.iWasExposed(onset: Date(), authentication: .none) { _ in
-            DP3TTracing.status { result in
-                switch result {
-                case let .success(state):
-                    self.updateUI(state)
-                case .failure:
-                    break
-                }
+        DP3TTracing.iWasExposed(onset: Date(), authentication: .none) { [weak self] result in
+            switch result {
+            case let .failure(error):
+                let ac = UIAlertController(title: "Error",
+                                           message: error.description,
+                                           preferredStyle: .alert)
+                ac.addAction(.init(title: "Retry", style: .default) { _ in self?.setExposed() })
+                ac.addAction(.init(title: "Cancel", style: .destructive))
+                self?.present(ac, animated: true)
+            default:
+                break
             }
+            self?.updateState()
         }
     }
 
@@ -337,6 +342,17 @@ class ControlViewController: UIViewController {
         } else {
             DP3TTracing.stopTracing()
             Default.shared.tracingMode = .none
+        }
+    }
+
+    func updateState() {
+        DP3TTracing.status { result in
+            switch result {
+            case let .success(state):
+                self.updateUI(state)
+            case .failure:
+                break
+            }
         }
     }
 

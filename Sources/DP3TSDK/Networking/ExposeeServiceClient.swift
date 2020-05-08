@@ -16,7 +16,7 @@ protocol ExposeeServiceClientProtocol {
     ///   - batchTimestamp: The batch timestamp
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date) -> ExposeeResult
+    func getExposeeSynchronously(batchTimestamp: Date) -> Result<Data?, DP3TNetworkingError>
 
     /// Adds an exposee
     /// - Parameters:
@@ -70,8 +70,14 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - batchTimestamp: The batch timestamp
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date) -> Result<[KnownCaseModel]?, DP3TNetworkingError> {
-        let url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
+    func getExposeeSynchronously(batchTimestamp: Date) -> Result<Data?, DP3TNetworkingError> {
+        let url: URL
+        switch DP3TMode.current {
+        case .customImplementation, .customImplementationCalibration:
+            url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
+        case .exposureNotificationFramework:
+            url = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
+        }
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
 
@@ -95,7 +101,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             break
         case 404:
             // 404 not found response means there is no data for this day
-            return .success([])
+            return .success(nil)
         default:
             return .failure(.HTTPFailureResponse(status: httpStatus))
         }
@@ -123,20 +129,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             }
         }
 
-        do {
-            let protoList = try ProtoExposedList(serializedData: responseData)
-
-            guard protoList.batchReleaseTime == batchTimestamp.millisecondsSince1970 else {
-                return .failure(.batchReleaseTimeMissmatch)
-            }
-
-            let transformed: [KnownCaseModel] = protoList.exposed.map {
-                KnownCaseModel(proto: $0, batchTimestamp: batchTimestamp)
-            }
-            return .success(transformed)
-        } catch {
-            return .failure(.couldNotParseData(error: error, origin: 1))
-        }
+        return .success(responseData)
     }
 
     /// Adds an exposee
@@ -191,7 +184,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - authentication: The authentication to use for the request
     func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
         // addExposee endpoint
-        let url = managingExposeeEndpoint.addExposee()
+        let url = managingExposeeEndpoint.addExposeeGaen()
 
         guard let payload = try? JSONEncoder().encode(exposees) else {
             completion(.failure(.couldNotEncodeBody))
