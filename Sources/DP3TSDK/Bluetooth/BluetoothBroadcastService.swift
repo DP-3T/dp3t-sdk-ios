@@ -147,24 +147,28 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             logger?.log(type: .sender, "didReceiveRead")
         #endif
         do {
-            guard let data = try crypto?.getCurrentEphID() else {
-                throw DP3TTracingError.cryptographyError(error: "Tracing error: crypto not initialized?")
+            if let data = try crypto?.getCurrentEphID() {
+                request.value = data
+
+                #if CALIBRATION
+                    if case let .calibration(identifierPrefix, _) = DP3TMode.current, identifierPrefix != "" {
+                        let paddedIdentifier = identifierPrefix.padding(toLength: 4, withPad: " ", startingAt: 0)
+                        let identifierData = paddedIdentifier.data(using: .utf8)!
+                        request.value = identifierData + data.suffix(data.count - identifierData.count)
+                    }
+                #endif
+
+                peripheralManager?.respond(to: request, withResult: .success)
+                #if CALIBRATION
+                    logger?.log(type: .sender, "← ✅ didReceiveRead: Responded with new token: \(request.value.hexEncodedString)")
+                #endif
+            } else {
+                // crypto is nil?
+                peripheralManager?.respond(to: request, withResult: .unlikelyError)
+                #if CALIBRATION
+                    logger?.log(type: .sender, "← ❌ didReceiveRead: Token generation not instantiated?")
+                #endif
             }
-
-            #if CALIBRATION
-                if case let .calibration(identifierPrefix, _) = DP3TMode.current, identifierPrefix != "" {
-                    let paddedIdentifier = identifierPrefix.padding(toLength: 4, withPad: " ", startingAt: 0)
-                    let identifierData = paddedIdentifier.data(using: .utf8)!
-                    data = identifierData + data.suffix(data.count - identifierData.count)
-                }
-            #endif
-
-            request.value = data
-
-            peripheralManager?.respond(to: request, withResult: .success)
-            #if CALIBRATION
-                logger?.log(type: .sender, "← ✅ didReceiveRead: Responded with new token: \(data.hexEncodedString)")
-            #endif
         } catch {
             peripheralManager?.respond(to: request, withResult: .unlikelyError)
             #if CALIBRATION
