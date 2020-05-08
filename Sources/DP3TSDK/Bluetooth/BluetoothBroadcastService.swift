@@ -67,18 +67,27 @@ class BluetoothBroadcastService: NSObject {
         guard peripheralManager?.state == .some(.poweredOn) else {
             return
         }
-        service = CBMutableService(type: Default.shared.parameters.bluetooth.serviceCBUUID,
-                                   primary: true)
-        let characteristic = CBMutableCharacteristic(type: Default.shared.parameters.bluetooth.characteristicsCBUUID,
-                                                     properties: [.read, .notify],
-                                                     value: nil,
-                                                     permissions: .readable)
-        service?.characteristics = [characteristic]
-        peripheralManager?.add(service!)
+        service = CBMutableService(type: Default.shared.parameters.bluetooth.serviceCBUUID, primary: true)
+        
+        /// make sure creation of the service actually worked and log during calibration if not, otherwise force-unwrapping service will crash the app
+        if let service = service {
+            let characteristic = CBMutableCharacteristic(type: Default.shared.parameters.bluetooth.characteristicsCBUUID,
+                                                         properties: [.read, .notify],
+                                                         value: nil,
+                                                         permissions: .readable)
+            service.characteristics = [characteristic]
+            peripheralManager?.add(service)
 
-        #if CALIBRATION
-            logger?.log(type: .sender, "added Service with \(Default.shared.parameters.bluetooth.serviceCBUUID.uuidString)")
-        #endif
+            #if CALIBRATION
+                logger?.log(type: .sender, "added Service with \(Default.shared.parameters.bluetooth.serviceCBUUID.uuidString)")
+            #endif
+        } else {
+            /// tell our delegate something went wrong
+            bluetoothDelegate?.errorOccured(error: .bluetoothServiceFailed)
+            #if CALIBRATION
+                logger?.log(type: .sender, "❌ adding Service with \(Default.shared.parameters.bluetooth.serviceCBUUID.uuidString) FAILED")
+            #endif
+        }
     }
 }
 
@@ -106,7 +115,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
         if let error = error {
             #if CALIBRATION
-            logger?.log(type: .sender, "peripheraldidAddservice error: \(error.localizedDescription)")
+                logger?.log(type: .sender, "peripheralManagerdidAddservice error: \(error.localizedDescription)")
             #endif
             bluetoothDelegate?.errorOccured(error: .coreBluetoothError(error: error))
         }
@@ -123,11 +132,11 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
         #if CALIBRATION
-        logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
+            logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
         #endif
         if let error = error {
             #if CALIBRATION
-            logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
+                logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
             #endif
             bluetoothDelegate?.errorOccured(error: .coreBluetoothError(error: error))
         }
@@ -138,7 +147,9 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             logger?.log(type: .sender, "didReceiveRead")
         #endif
         do {
-            var data = try crypto!.getCurrentEphID()
+            guard let data = try crypto?.getCurrentEphID() else {
+                throw DP3TTracingError.cryptographyError(error: "Tracing error: crypto not initialized?")
+            }
 
             #if CALIBRATION
                 if case let .calibration(identifierPrefix, _) = DP3TMode.current, identifierPrefix != "" {
