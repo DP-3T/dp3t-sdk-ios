@@ -104,7 +104,7 @@ final class DP3TMatcherTests: XCTestCase {
         let key = Data(base64Encoded: "n5N07F0UnZ3DLWCpZ6rmQbWVYS1TDF/ttHLT8SdaHRs=")!
         let token = Data(base64Encoded: "ZN5cLwKOJVAWC7caIHskog==")!
 
-        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure, associatedKnownCase: nil)
+        let c = Contact(identifier: nil, ephID: token, date: currentBatchStartDate, windowCount: Default.shared.parameters.contactMatching.numberOfWindowsForExposure - 1, associatedKnownCase: nil)
         database.contactsStorage.add(contact: c)
 
         let knownCase = KnownCaseModel(id: nil,
