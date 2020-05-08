@@ -111,6 +111,7 @@ class KnownCasesSynchronizer {
             // set last batch to initial value if a error happend
             defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: lastBatch)
             callback?(.failure(.couldNotParseData(error: error, origin: 0)))
+            return
         }
 
         callback?(.success(()))

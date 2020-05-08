@@ -50,7 +50,7 @@ class ExposureNotificationMatcher: Matcher {
         semaphore.wait()
 
         if let error = exposureDetectionError {
-            throw error
+            throw DP3TTracingError.exposureNotificationError(error: error)
         }
 
         try localURLs.map { $0.value }.forEach(deleteDiagnosisKeyFile(at:))
