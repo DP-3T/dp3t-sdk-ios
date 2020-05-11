@@ -49,9 +49,11 @@ class CustomBluetoothTracer: Tracer {
         if enabled {
             broadcaster.startService()
             discoverer.startScanning()
+            state = .active
         } else {
             broadcaster.stopService()
             discoverer.stopScanning()
+            state = .stopped
         }
     }
 
