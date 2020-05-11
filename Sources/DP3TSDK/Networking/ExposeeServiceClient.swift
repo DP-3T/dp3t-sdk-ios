@@ -85,7 +85,11 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         #endif
         }
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
+        #if canImport(ExposureNotification)
+        request.setValue("application/zip", forHTTPHeaderField: "Accept")
+        #else
         request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
+        #endif
 
         let (data, response, error) = urlSession.synchronousDataTask(with: request)
 

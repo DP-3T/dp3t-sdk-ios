@@ -162,14 +162,12 @@ class DP3TSDK {
         if case .infected = state.infectionStatus {
             throw DP3TTracingError.userAlreadyMarkedAsInfected
         }
-        state.trackingState = .active
         tracer.setEnabled(true)
     }
 
     /// stop tracing
     func stopTracing() {
         tracer.setEnabled(false)
-        state.trackingState = .stopped
     }
 
     /// Perform a new sync
