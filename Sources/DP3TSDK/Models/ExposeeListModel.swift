@@ -16,7 +16,7 @@ struct CodableDiagnosisKey: Codable, Equatable {
 /// Model of the exposed person
 struct ExposeeListModel: Encodable {
     /// Secret keys
-    let exposedKeys: [CodableDiagnosisKey]
+    let gaenKeys: [CodableDiagnosisKey]
 
     /// Authentication data provided by health institutes to verify test results
     let authData: String?
@@ -26,7 +26,7 @@ struct ExposeeListModel: Encodable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         // Encode key
-        try container.encode(exposedKeys, forKey: .exposedKeys)
+        try container.encode(gaenKeys, forKey: .gaenKeys)
         // Encode auth if present only
         try container.encodeIfPresent(authData, forKey: .authData)
 
@@ -34,6 +34,6 @@ struct ExposeeListModel: Encodable {
     }
 
     enum CodingKeys: CodingKey {
-        case exposedKeys, authData, fake
+        case gaenKeys, authData, fake
     }
 }

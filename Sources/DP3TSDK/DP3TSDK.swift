@@ -318,7 +318,7 @@ class DP3TSDK {
                             service.addExposee(model, authentication: authentication, completion: completionHandler)
                         #if canImport(ExposureNotification)
                             case .exposureNotificationFramework:
-                                let model = ExposeeListModel(exposedKeys: keys, authData: authData, fake: isFakeRequest)
+                                let model = ExposeeListModel(gaenKeys: keys, authData: authData, fake: isFakeRequest)
                                 service.addExposeeList(model, authentication: authentication, completion: completionHandler)
                         #endif
                         }
