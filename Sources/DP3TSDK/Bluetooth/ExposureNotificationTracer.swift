@@ -14,28 +14,38 @@ import Foundation
     class ExposureNotificationTracer: Tracer {
         private let manager: ENManager
 
-        private var observation: NSKeyValueObservation?
+        private var stateObservation: NSKeyValueObservation?
+        private var enabledObservation: NSKeyValueObservation?
 
         init(manager: ENManager) {
             self.manager = manager
 
-            state = .init(state: manager.exposureNotificationStatus)
+            state = .init(state: manager.exposureNotificationStatus, enabled: manager.exposureNotificationEnabled)
 
             manager.activate { [weak self] _ in
                 guard let self = self else { return }
-
-                self.state = .init(state: manager.exposureNotificationStatus)
-
-                self.observation = manager.observe(\.exposureNotificationStatus, options: [.new]) { [weak self] _, change in
-                    guard let self = self,
-                        let newState = change.newValue else { return }
-                    self.state = .init(state: newState)
-                }
+                self.initializeObservers()
             }
         }
 
         deinit {
             manager.invalidate()
+        }
+
+        func initializeObservers() {
+            self.state = .init(state: manager.exposureNotificationStatus, enabled: manager.exposureNotificationEnabled)
+
+            self.stateObservation = manager.observe(\.exposureNotificationStatus, options: [.new]) { [weak self] _, change in
+                guard let self = self,
+                    let newState = change.newValue else { return }
+                self.state = .init(state: newState, enabled: self.manager.exposureNotificationEnabled)
+            }
+
+            self.enabledObservation = manager.observe(\.exposureNotificationEnabled, options: [.new]) { [weak self] _, change in
+                guard let self = self,
+                    let newValue = change.newValue else { return }
+                self.state = .init(state: self.manager.exposureNotificationStatus, enabled: newValue)
+            }
         }
 
         var delegate: TracerDelegate?
@@ -60,10 +70,14 @@ import Foundation
 
     @available(iOS 13.5, *)
     extension TrackingState {
-        init(state: ENStatus) {
+        init(state: ENStatus, enabled: Bool ) {
             switch state {
             case .active:
-                self = .active
+                if enabled {
+                    self = .active
+                } else {
+                    self = .stopped
+                }
             case .bluetoothOff:
                 self = .inactive(error: .bluetoothTurnedOff)
             case .disabled, .restricted, .unknown:
