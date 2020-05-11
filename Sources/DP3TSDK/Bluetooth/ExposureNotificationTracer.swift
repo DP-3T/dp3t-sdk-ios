@@ -24,6 +24,8 @@ import Foundation
             manager.activate { [weak self] _ in
                 guard let self = self else { return }
 
+                self.state = .init(state: manager.exposureNotificationStatus)
+
                 self.observation = manager.observe(\.exposureNotificationStatus, options: [.new]) { [weak self] _, change in
                     guard let self = self,
                         let newState = change.newValue else { return }

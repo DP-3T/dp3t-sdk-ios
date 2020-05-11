@@ -26,9 +26,8 @@ import Foundation
         }
 
         func receivedNewKnownCaseData(_ data: Data, batchTimestamp: Date) throws {
-            let filename = String(Int(batchTimestamp.timeIntervalSince1970)) + ".key"
+            let filename = String(Int(batchTimestamp.timeIntervalSince1970))
             let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-                .appendingPathComponent("diagnosisKeys")
                 .appendingPathComponent(filename)
             try data.write(to: localURL)
             localURLs[batchTimestamp] = localURL
