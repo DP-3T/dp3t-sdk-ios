@@ -31,7 +31,7 @@ struct ExposeeEndpoint {
     func getExposeeGaen(batchTimestamp: Date) -> URL {
         let milliseconds = batchTimestamp.millisecondsSince1970
         return baseURLVersionned.appendingPathComponent("gaen")
-            .appendingPathComponent("exposed")
+            .appendingPathComponent("exposedios")
             .appendingPathComponent(String(milliseconds))
     }
 }

@@ -228,7 +228,7 @@ class DP3TSDK {
                                 }
                             }
                         }
-                        let model = ExposeeListModel(gaenKeys: keys, authData: authData, fake: isFakeRequest)
+                        let model = ExposeeListModel(gaenKeys: keys, authData: authData, fake: isFakeRequest, delayedKeyDate: DayDate())
                         service.addExposeeList(model, authentication: authentication, completion: completionHandler)
                     }
                 }

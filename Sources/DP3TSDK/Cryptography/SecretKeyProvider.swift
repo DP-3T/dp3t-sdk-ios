@@ -18,7 +18,8 @@ protocol SecretKeyProvider {
 @available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
-        // getTestDiagnosisKeys { [weak self]  (keys, error) in
+
+        // getTestDiagnosisKeys {[weak self]  (keys, error) in
         getDiagnosisKeys { [weak self] keys, error in
             guard let self = self else { return }
             if let error = error {

@@ -24,6 +24,8 @@ struct ExposeeListModel: Encodable {
 
     let fake: Bool
 
+    let delayedKeyDate: DayDate
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         // Encode key
@@ -32,9 +34,11 @@ struct ExposeeListModel: Encodable {
         try container.encodeIfPresent(authData, forKey: .authData)
 
         try container.encode(fake ? 1 : 0, forKey: .fake)
+
+        try container.encode(delayedKeyDate.period, forKey: .delayedKeyDate)
     }
 
     enum CodingKeys: CodingKey {
-        case gaenKeys, authData, fake
+        case gaenKeys, authData, fake, delayedKeyDate
     }
 }
