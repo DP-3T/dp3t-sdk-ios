@@ -43,6 +43,7 @@ class ExposureNotificationMatcher: Matcher {
 
         // TODO: call this method for each day
         let urls = localURLs.map { $0.value }
+        log.info("calling detectExposures")
         manager.detectExposures(configuration: .dummyConfiguration, diagnosisKeyURLs: urls) { summary, error in
             exposureSummary = summary
             exposureDetectionError = error
@@ -68,10 +69,13 @@ class ExposureNotificationMatcher: Matcher {
         if let summary = exposureSummary,
             summary.attenuationDurations.count == 2,
             Double(truncating: summary.attenuationDurations[0]) > 15 * TimeInterval.minute {
+            log.info("exposureSummary meets requiremnts")
             let exposedDate = Date(timeIntervalSinceNow: TimeInterval(summary.daysSinceLastExposure) * TimeInterval.day * (-1))
             let day: ExposureDay = ExposureDay(identifier: 0, exposedDate: exposedDate, reportDate: Date())
             try database.exposureDaysStorage.add(day)
             delegate?.didFindMatch()
+        } else {
+            log.info("exposureSummary does not meet requirements")
         }
     }
 

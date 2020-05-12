@@ -65,12 +65,15 @@ class Logger {
         // The Swift overlay of os_log prevents from accepting an unbounded number of args
         // http://www.openradar.me/33203955
 
+        #if CALIBRATION
         if let delegate = Logger.delegate {
             let string = message.withUTF8Buffer {
                 String(decoding: $0, as: UTF8.self)
             }
             delegate.log("[\(type.string)] [\(self.category)] \(String(format: string, arguments: a))")
         }
+        #endif
+        
         assert(a.count <= 5)
         switch a.count {
         case 5: os_log(message, log: osLog, type: type, a[0], a[1], a[2], a[3], a[4])
