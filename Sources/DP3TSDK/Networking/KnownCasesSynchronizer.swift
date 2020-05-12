@@ -18,7 +18,7 @@ class KnownCasesSynchronizer {
     /// A DP3T matcher
     private weak var matcher: Matcher?
 
-    private let log = OSLog(DP3TDatabase.self, category: "knownCasesSynchronizer")
+    private let log = Logger(DP3TDatabase.self, category: "knownCasesSynchronizer")
 
     /// Create a known case synchronizer
     /// - Parameters:

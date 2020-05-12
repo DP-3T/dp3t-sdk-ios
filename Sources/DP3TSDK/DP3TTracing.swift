@@ -147,4 +147,14 @@ public enum DP3TTracing {
         try instance.reset()
         instance = nil
     }
+
+    #if CALIBRATION
+    @available(iOS 13.5, *)
+    public static func getLogs() throws -> [LogEntry] {
+        guard let instance = instance else {
+            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
+        }
+        return try instance.getLogs()
+    }
+    #endif
 }

@@ -41,7 +41,7 @@ class DP3TSDK {
     /// delegate
     public weak var delegate: DP3TTracingDelegate?
 
-    private let log = OSLog(DP3TDatabase.self, category: "DP3TSDK")
+    private let log = Logger(DP3TDatabase.self, category: "DP3TSDK")
 
     /// keeps track of  SDK state
     private var state: TracingState {
@@ -88,6 +88,10 @@ class DP3TSDK {
         backgroundTaskManager.register()
 
         tracer.delegate = self
+
+        #if CALIBRATION
+        Logger.delegate = database.loggingStorage
+        #endif
 
         log.trace()
 
@@ -287,6 +291,13 @@ class DP3TSDK {
     @objc func backgroundRefreshStatusDidChange() {
         state.backgroundRefreshState = UIApplication.shared.backgroundRefreshStatus
     }
+
+    #if CALIBRATION
+    func getLogs() throws -> [LogEntry] {
+        return try database.loggingStorage.getLogs()
+    }
+    #endif
+
 }
 
 // MARK: BluetoothPermissionDelegate implementation

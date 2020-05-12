@@ -49,7 +49,7 @@ class DP3TBackgroundTaskManager {
 
     weak var handler: DP3TBackgroundHandler?
 
-    private let log = OSLog(DP3TDatabase.self, category: "backgroundTaskManager")
+    private let log = Logger(DP3TDatabase.self, category: "backgroundTaskManager")
 
 
     init(handler: DP3TBackgroundHandler?) {

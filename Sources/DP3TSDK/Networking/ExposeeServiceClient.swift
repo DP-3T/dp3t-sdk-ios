@@ -41,7 +41,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     private let jwtVerifier: DP3TJWTVerifier?
 
-    private let log = OSLog(DP3TDatabase.self, category: "exposeeServiceClient")
+    private let log = Logger(DP3TDatabase.self, category: "exposeeServiceClient")
 
     /// The user agent to send with the requests
     private var userAgent: String {
@@ -155,7 +155,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
         request.httpBody = payload
 
-        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))
                 return

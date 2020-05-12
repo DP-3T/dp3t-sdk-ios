@@ -10,9 +10,10 @@ import UIKit
 class RootViewController: UITabBarController {
     var controlsViewController = ControlViewController()
     var parameterViewController = ParametersViewController()
+    var logsViewController = LogsViewController()
 
     lazy var tabs: [UIViewController] = [controlsViewController,
-                                         parameterViewController]
+                                         parameterViewController, logsViewController]
 
     override func viewDidLoad() {
         super.viewDidLoad()

@@ -15,7 +15,7 @@ class DP3TDatabase {
     /// flag used to set Database as destroyed
     private(set) var isDestroyed = false
 
-    private let log = OSLog(DP3TDatabase.self, category: "database")
+    private let log = Logger(DP3TDatabase.self, category: "database")
 
     /// application Storage
     private let _applicationStorage: ApplicationStorage
@@ -31,6 +31,21 @@ class DP3TDatabase {
         return _exposureDaysStorage
     }
 
+    #if CALIBRATION
+           /// logging Storage
+           private let _logggingStorage: LoggingStorage
+           var loggingStorage: LoggingStorage {
+               guard !isDestroyed else { fatalError("Database is destroyed") }
+               return _logggingStorage
+           }
+
+           private let _deviceInfo: DeviceInfoStorage
+           var deviceInfo: DeviceInfoStorage {
+               guard !isDestroyed else { fatalError("Database is destroyed") }
+               return _deviceInfo
+           }
+       #endif
+
     /// Initializer
     init(connection_: Connection? = nil) throws {
         if let connection = connection_ {
@@ -42,6 +57,12 @@ class DP3TDatabase {
         }
         _exposureDaysStorage = try ExposureDaysStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
+
+        #if CALIBRATION
+            _logggingStorage = try LoggingStorage(database: connection)
+            _deviceInfo = try DeviceInfoStorage(database: connection)
+            try _deviceInfo.set()
+        #endif
 
         DispatchQueue.global(qos: .background).async {
             try? self.deleteOldDate()
@@ -60,6 +81,9 @@ class DP3TDatabase {
         guard !isDestroyed else { fatalError("Database is destroyed") }
         try connection.transaction {
             try exposureDaysStorage.emptyStorage()
+            #if CALIBRATION
+                try loggingStorage.emptyStorage()
+            #endif
         }
     }
 

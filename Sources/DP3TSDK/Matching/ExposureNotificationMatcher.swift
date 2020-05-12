@@ -15,7 +15,7 @@ class ExposureNotificationMatcher: Matcher {
 
     private let database: DP3TDatabase
 
-    private let log = OSLog(DP3TDatabase.self, category: "matcher")
+    private let log = Logger(DP3TDatabase.self, category: "matcher")
 
     private var localURLs: [Date: URL] = [:]
 

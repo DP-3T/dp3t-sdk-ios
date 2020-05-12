@@ -26,7 +26,8 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "DP3TSDK",
-            dependencies: ["SQLite", "SwiftProtobuf", "SwiftJWT"]
+            dependencies: ["SQLite", "SwiftProtobuf", "SwiftJWT"],
+            swiftSettings: [.define("CALIBRATION")]
         ),
         .testTarget(
             name: "DP3TSDKTests",

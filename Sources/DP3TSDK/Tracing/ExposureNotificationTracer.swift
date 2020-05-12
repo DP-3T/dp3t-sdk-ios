@@ -16,12 +16,12 @@ class ExposureNotificationTracer: Tracer {
 
     var delegate: TracerDelegate?
 
-    private let log = OSLog(DP3TDatabase.self, category: "exposureNotificationTracer")
+    private let log = Logger(DP3TDatabase.self, category: "exposureNotificationTracer")
 
     private(set) var state: TrackingState {
         didSet {
             guard oldValue != state else { return }
-            log.info("state did change from %s to %s", oldValue.debugDescription, state.debugDescription)
+            log.info("state did change from %@ to %@", oldValue.debugDescription, state.debugDescription)
             delegate?.stateDidChange()
         }
     }

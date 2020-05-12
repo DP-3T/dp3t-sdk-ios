@@ -15,7 +15,7 @@ class ApplicationSynchronizer {
     /// url session to use
     let urlSession: URLSession
 
-    private let log = OSLog(DP3TDatabase.self, category: "applicationSynchronizer")
+    private let log = Logger(DP3TDatabase.self, category: "applicationSynchronizer")
 
     /// Create a synchronizer
     /// - Parameters:
