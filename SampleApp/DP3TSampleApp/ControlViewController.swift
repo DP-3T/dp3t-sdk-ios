@@ -385,7 +385,7 @@ class ControlViewController: UIViewController {
             startAdvertisingButton.isEnabled = true
         }
         if let lastSync = state.lastSync {
-            elements.append("last Sync: \(lastSync.timeIntervalSince1970)")
+            elements.append("last Sync: \(lastSync.debugDescription)")
         }
 
         switch state.infectionStatus {

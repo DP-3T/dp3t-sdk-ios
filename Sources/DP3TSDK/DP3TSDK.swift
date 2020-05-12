@@ -41,6 +41,7 @@ class DP3TSDK {
     /// delegate
     public weak var delegate: DP3TTracingDelegate?
 
+    private let log = OSLog(DP3TDatabase.self, category: "DP3TSDK")
 
     /// keeps track of  SDK state
     private var state: TracingState {
@@ -88,6 +89,8 @@ class DP3TSDK {
 
         tracer.delegate = self
 
+        log.trace()
+
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(backgroundRefreshStatusDidChange),
                                                name: UIApplication.backgroundRefreshStatusDidChangeNotification,
@@ -102,6 +105,7 @@ class DP3TSDK {
 
     /// start tracing
     func startTracing() throws {
+        log.trace()
         if case .infected = state.infectionStatus {
             throw DP3TTracingError.userAlreadyMarkedAsInfected
         }
@@ -110,6 +114,7 @@ class DP3TSDK {
 
     /// stop tracing
     func stopTracing() {
+        log.trace()
         tracer.setEnabled(false)
     }
 
@@ -117,6 +122,7 @@ class DP3TSDK {
     /// - Parameter callback: callback
     /// - Throws: if a error happed
     func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
+        log.trace()
         if  case TrackingState.stopped = state.trackingState {
             callback?(.failure(.permissonError))
             return
@@ -146,6 +152,7 @@ class DP3TSDK {
     /// get the current status of the SDK
     /// - Parameter callback: callback
     func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
+        log.trace()
         callback(.success(state))
     }
 
@@ -160,6 +167,7 @@ class DP3TSDK {
                      authentication: ExposeeAuthMethod,
                      isFakeRequest: Bool = false,
                      callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+        log.trace()
         if !isFakeRequest,
             case .infected = state.infectionStatus {
             callback(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
@@ -269,6 +277,7 @@ class DP3TSDK {
 
     /// reset the SDK
     func reset() throws {
+        log.trace()
         stopTracing()
         Default.shared.lastLoadedBatchReleaseTime = nil
         Default.shared.lastSync = nil

@@ -78,8 +78,6 @@ class KnownCasesSynchronizer {
             lastBatch = KnownCasesSynchronizer.initializeSynchronizerIfNeeded().timeIntervalSince1970
         }
 
-        lastBatch -= 2 * TimeInterval.day
-
         let batchesToLoad = Int((nowTimestamp - lastBatch) / Default.shared.parameters.networking.batchLength)
 
         let nextBatch = lastBatch + Default.shared.parameters.networking.batchLength
@@ -97,9 +95,11 @@ class KnownCasesSynchronizer {
                         try matcher?.receivedNewKnownCaseData(data, batchTimestamp: currentReleaseTime)
                     }
                 } catch let error as DP3TNetworkingError {
+                    log.debug("matcher receive error: %s", error.localizedDescription)
                     callback?(.failure(error))
                     return
                 } catch {
+                    log.debug("matcher receive error: %s", error.localizedDescription)
                     callback?(.failure(.couldNotParseData(error: error, origin: 0)))
                 }
                 defaults.lastLoadedBatchReleaseTime = currentReleaseTime
@@ -109,6 +109,7 @@ class KnownCasesSynchronizer {
         do {
             try matcher?.finalizeMatchingSession()
         } catch {
+            log.debug("matcher finalize error: %s", error.localizedDescription)
             // set last batch to initial value if a error happend
             defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: lastBatch)
             callback?(.failure(.couldNotParseData(error: error, origin: 0)))

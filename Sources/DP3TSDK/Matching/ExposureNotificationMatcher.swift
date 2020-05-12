@@ -51,11 +51,17 @@ class ExposureNotificationMatcher: Matcher {
         semaphore.wait()
 
         if let error = exposureDetectionError {
+            log.debug("exposureNotificationError %s", error.localizedDescription)
             throw DP3TTracingError.exposureNotificationError(error: error)
         }
 
         try localURLs.map { $0.value }.forEach(deleteDiagnosisKeyFile(at:))
         localURLs.removeAll()
+
+        if let summary = exposureSummary {
+            log.debug("reiceived exposureSummary: %s", summary.debugDescription)
+        }
+
 
         // TODO: changed detection to more advanced logic
         // for now the attenuation duration < 50 has to be more than 15 minutes
