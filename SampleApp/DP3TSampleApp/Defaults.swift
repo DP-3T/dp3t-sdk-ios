@@ -4,7 +4,7 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import DP3TSDK_CALIBRATION
+import DP3TSDK
 import Foundation
 
 /// UserDefaults Storage Singleton

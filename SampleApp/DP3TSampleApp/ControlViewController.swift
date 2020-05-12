@@ -4,7 +4,7 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import DP3TSDK_CALIBRATION
+import DP3TSDK
 import SnapKit
 import UIKit
 
@@ -385,7 +385,7 @@ class ControlViewController: UIViewController {
             startAdvertisingButton.isEnabled = true
         }
         if let lastSync = state.lastSync {
-            elements.append("last Sync: \(lastSync.stringVal)")
+            elements.append("last Sync: \(lastSync.timeIntervalSince1970)")
         }
 
         switch state.infectionStatus {
@@ -396,8 +396,6 @@ class ControlViewController: UIViewController {
         case .healthy:
             elements.append("InfectionStatus: HEALTHY")
         }
-        elements.append("Handshakes: \(state.numberOfHandshakes)")
-        elements.append("Contacts: \(state.numberOfContacts)")
 
         statusLabel.text = elements.joined(separator: "\n")
     }
@@ -452,8 +450,6 @@ extension DP3TTracingError {
             return "bluetoothTurnedOff"
         case let .caseSynchronizationError(errors: errors):
             return "caseSynchronizationError \(errors.map { $0.localizedDescription })"
-        case let .cryptographyError(error: error):
-            return "cryptographyError \(error)"
         case let .databaseError(error: error):
             return "databaseError \(error?.localizedDescription ?? "nil")"
         case let .networkingError(error: error):
@@ -462,8 +458,6 @@ extension DP3TTracingError {
             return "networkingError"
         case .userAlreadyMarkedAsInfected:
             return "userAlreadyMarkedAsInfected"
-        case let .coreBluetoothError(error: error):
-            return "coreBluetoothError \(error.localizedDescription)"
         case let .exposureNotificationError(error: error):
             return "exposureNotificationError \(error.localizedDescription)"
         }

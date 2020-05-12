@@ -12,23 +12,11 @@ public protocol DP3TTracingDelegate: AnyObject {
     /// The state has changed
     /// - Parameter state: The new state
     func DP3TTracingStateChanged(_ state: TracingState)
-
-    #if CALIBRATION
-        func didAddLog(_ entry: LogEntry)
-        func didAddHandshake(_ handshake: HandshakeModel)
-    #endif
 }
 
 public protocol DP3TBackgroundHandler: AnyObject {
     func performBackgroundTasks(completionHandler: (_ success: Bool) -> Void)
 }
-
-#if CALIBRATION
-    public extension DP3TTracingDelegate {
-        func didAddLog(_: LogEntry) {}
-        func didAddHandshake(_: HandshakeModel) {}
-    }
-#endif
 
 /// The mode in which the SDK is initialized
 public enum DP3TApplicationInfo {
@@ -38,6 +26,7 @@ public enum DP3TApplicationInfo {
     case manual(_ appInfo: ApplicationDescriptor)
 }
 
+@available(iOS 13.5, *)
 private var instance: DP3TSDK!
 
 /// DP3TTracing
@@ -61,20 +50,20 @@ public enum DP3TTracing {
     ///   - enviroment: enviroment to use
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
     ///   - backgroundHandler: a delegate to perform background tasks
+    @available(iOS 13.5, *)
     public static func initialize(with appInfo: DP3TApplicationInfo,
                                   urlSession: URLSession = .shared,
-                                  mode: DP3TMode = .customImplementation,
                                   backgroundHandler: DP3TBackgroundHandler? = nil) throws {
         guard instance == nil else {
             fatalError("DP3TSDK already initialized")
         }
-        DP3TMode.current = mode
         instance = try DP3TSDK(appInfo: appInfo,
                                urlSession: urlSession,
                                backgroundHandler: backgroundHandler)
     }
 
     /// The delegate
+    @available(iOS 13.5, *)
     public static var delegate: DP3TTracingDelegate? {
         set {
             guard instance != nil else {
@@ -88,6 +77,7 @@ public enum DP3TTracing {
     }
 
     /// Starts Bluetooth tracing
+    @available(iOS 13.5, *)
     public static func startTracing() throws {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -96,6 +86,7 @@ public enum DP3TTracing {
     }
 
     /// Stops Bluetooth tracing
+    @available(iOS 13.5, *)
     public static func stopTracing() {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -105,6 +96,7 @@ public enum DP3TTracing {
 
     /// Triggers sync with the backend to refresh the exposed list
     /// - Parameter callback: callback
+    @available(iOS 13.5, *)
     public static func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -118,6 +110,7 @@ public enum DP3TTracing {
 
     /// get the current status of the SDK
     /// - Parameter callback: callback
+    @available(iOS 13.5, *)
     public static func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -131,6 +124,7 @@ public enum DP3TTracing {
     ///   - authString: Authentication string for the exposure change
     ///   - isFakeRequest: indicates if the request should be a fake one. This method should be called regulary so people sniffing the networking traffic can no figure out if somebody is marking themself actually as exposed
     ///   - callback: callback
+    @available(iOS 13.5, *)
     public static func iWasExposed(onset: Date,
                                    authentication: ExposeeAuthMethod,
                                    isFakeRequest: Bool = false,
@@ -145,6 +139,7 @@ public enum DP3TTracing {
     }
 
     /// reset the SDK
+    @available(iOS 13.5, *)
     public static func reset() throws {
         guard instance != nil else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -152,29 +147,4 @@ public enum DP3TTracing {
         try instance.reset()
         instance = nil
     }
-
-    #if CALIBRATION
-        public static func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
-            try instance.getHandshakes(request: request)
-        }
-
-        public static func getLogs(request: LogRequest) throws -> LogResponse {
-            guard let instance = instance else {
-                fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-            }
-            return try instance.getLogs(request: request)
-        }
-
-        public static func numberOfHandshakes() throws -> Int {
-            try instance.numberOfHandshakes()
-        }
-
-        public static var isInitialized: Bool {
-            return instance != nil
-        }
-
-        public static func getSecretKeyRepresentationForToday() throws -> String {
-            try instance.getSecretKeyRepresentationForToday()
-        }
-    #endif
 }

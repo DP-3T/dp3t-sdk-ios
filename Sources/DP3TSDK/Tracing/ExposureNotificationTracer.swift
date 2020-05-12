@@ -5,11 +5,8 @@
  */
 
 import Foundation
-#if canImport(ExposureNotification)
 import ExposureNotification
-#endif
 
-#if canImport(ExposureNotification)
 @available(iOS 13.5, *)
 class ExposureNotificationTracer: Tracer {
     private let manager: ENManager
@@ -19,8 +16,12 @@ class ExposureNotificationTracer: Tracer {
 
     var delegate: TracerDelegate?
 
+    private let log = OSLog(DP3TDatabase.self, category: "exposureNotificationTracer")
+
     private(set) var state: TrackingState {
         didSet {
+            guard oldValue != state else { return }
+            log.debug("state did change from %s to %s", oldValue.debugDescription, state.debugDescription)
             delegate?.stateDidChange()
         }
     }
@@ -100,4 +101,16 @@ extension TrackingState {
         }
     }
 }
-#endif
+
+extension TrackingState: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .active:
+            return "active"
+        case .stopped:
+            return "stopped"
+        case let .inactive(error: error):
+            return "inactive \(error.localizedDescription)"
+        }
+    }
+}

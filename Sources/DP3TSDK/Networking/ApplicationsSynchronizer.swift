@@ -15,6 +15,8 @@ class ApplicationSynchronizer {
     /// url session to use
     let urlSession: URLSession
 
+    private let log = OSLog(DP3TDatabase.self, category: "applicationSynchronizer")
+
     /// Create a synchronizer
     /// - Parameters:
     ///   - enviroment: The environment of the synchronizer
@@ -29,6 +31,7 @@ class ApplicationSynchronizer {
     /// Synchronize the local and remote data.
     /// - Parameter callback: A callback with the sync result
     func sync(callback: @escaping (Result<Void, DP3TTracingError>) -> Void) throws {
+        log.trace()
         guard case let DP3TApplicationInfo.discovery(_, enviroment) = appInfo else {
             fatalError("ApplicationSynchronizer should not be used in manual mode")
         }

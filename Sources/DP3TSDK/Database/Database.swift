@@ -15,9 +15,7 @@ class DP3TDatabase {
     /// flag used to set Database as destroyed
     private(set) var isDestroyed = false
 
-    #if CALIBRATION
-        public weak var logger: LoggingDelegate?
-    #endif
+    private let log = OSLog(DP3TDatabase.self, category: "database")
 
     /// application Storage
     private let _applicationStorage: ApplicationStorage
@@ -26,56 +24,12 @@ class DP3TDatabase {
         return _applicationStorage
     }
 
-    /// handshaked Storage
-    private let _handshakesStorage: HandshakesStorage
-    var handshakesStorage: HandshakesStorage {
-        guard !isDestroyed else { fatalError("Database is destroyed") }
-        return _handshakesStorage
-    }
-
-    /// contacts Storage
-    private let _contactsStorage: ContactsStorage
-    var contactsStorage: ContactsStorage {
-        guard !isDestroyed else { fatalError("Database is destroyed") }
-        return _contactsStorage
-    }
-
     /// exposure days Storage
     private let _exposureDaysStorage: ExposureDaysStorage
     var exposureDaysStorage: ExposureDaysStorage {
         guard !isDestroyed else { fatalError("Database is destroyed") }
         return _exposureDaysStorage
     }
-
-    /// knowncase Storage
-    private let _knownCasesStorage: KnownCasesStorage
-    var knownCasesStorage: KnownCasesStorage {
-        guard !isDestroyed else { fatalError("Database is destroyed") }
-        return _knownCasesStorage
-    }
-
-    #if CALIBRATION
-        /// logging Storage
-        private let _logggingStorage: LoggingStorage
-        var loggingStorage: LoggingStorage {
-            guard !isDestroyed else { fatalError("Database is destroyed") }
-            return _logggingStorage
-        }
-
-        /// secret keys storage
-        private let _secretKeysStorage: SecretKeysStorage
-        var secretKeysStorage: SecretKeysStorage {
-            guard !isDestroyed else { fatalError("Database is destroyed") }
-            return _secretKeysStorage
-        }
-
-        /// secret keys storage
-        private let _deviceInfo: DeviceInfoStorage
-        var deviceInfo: DeviceInfoStorage {
-            guard !isDestroyed else { fatalError("Database is destroyed") }
-            return _deviceInfo
-        }
-    #endif
 
     /// Initializer
     init(connection_: Connection? = nil) throws {
@@ -86,17 +40,8 @@ class DP3TDatabase {
             connection = try Connection(filePath.absoluteString, readonly: false)
             try? filePath.addExcludedFromBackupAttribute()
         }
-        _knownCasesStorage = try KnownCasesStorage(database: connection)
-        _handshakesStorage = try HandshakesStorage(database: connection)
-        _contactsStorage = try ContactsStorage(database: connection, knownCasesStorage: _knownCasesStorage)
         _exposureDaysStorage = try ExposureDaysStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
-        #if CALIBRATION
-            _logggingStorage = try LoggingStorage(database: connection)
-            _secretKeysStorage = try SecretKeysStorage(database: connection)
-            _deviceInfo = try DeviceInfoStorage(database: connection)
-            try _deviceInfo.set()
-        #endif
 
         DispatchQueue.global(qos: .background).async {
             try? self.deleteOldDate()
@@ -105,38 +50,15 @@ class DP3TDatabase {
 
     // deletes data older than CryptoConstants.numberOfDaysToKeepData
     func deleteOldDate() throws {
-        try contactsStorage.deleteOldContacts()
-        try handshakesStorage.deleteOldHandshakes()
-        try knownCasesStorage.deleteOldKnownCases()
+        log.trace()
         try exposureDaysStorage.deleteExpiredExpsureDays()
-    }
-
-    /// Generates contacts from handshakes and deletes handshakes
-    /// Should be called ragulary to ensure completenes of contacts
-    /// - Throws: if error happens
-    func generateContactsFromHandshakes() throws {
-        try deleteOldDate()
-        let epochStart = DP3TCryptoModule.getEpochStart()
-        let handshakes = try handshakesStorage.getAll(olderThan: epochStart)
-        let contacts = ContactFactory.contacts(from: handshakes)
-        contacts.forEach(contactsStorage.add(contact:))
-        #if !CALIBRATION
-            try handshakesStorage.delete(handshakes)
-        #endif
-        try contactsStorage.deleteOldContacts()
     }
 
     /// Discard all data
     func emptyStorage() throws {
+        log.trace()
         guard !isDestroyed else { fatalError("Database is destroyed") }
         try connection.transaction {
-            try handshakesStorage.emptyStorage()
-            try knownCasesStorage.emptyStorage()
-            #if CALIBRATION
-                try loggingStorage.emptyStorage()
-                try secretKeysStorage.emptyStorage()
-            #endif
-            try contactsStorage.emptyStorage()
             try exposureDaysStorage.emptyStorage()
         }
     }

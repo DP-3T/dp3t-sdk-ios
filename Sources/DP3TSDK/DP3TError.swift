@@ -14,14 +14,8 @@ public enum DP3TTracingError: Error {
     /// Error happend during known case synchronization
     case caseSynchronizationError(errors: [Error])
 
-    /// Cryptography Error
-    case cryptographyError(error: String)
-
     /// Database Error
     case databaseError(error: Error?)
-
-    /// Core bluetooth error
-    case coreBluetoothError(error: Error)
 
     /// Expsure notification framework error
     @available(iOS 13.5, *)

@@ -4,13 +4,12 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import DP3TSDK_CALIBRATION
+import DP3TSDK
 import UIKit
 
 class ParametersViewController: UIViewController {
     let stackView = UIStackView()
 
-    let reconnectionDelayInput = UITextField()
     let batchLengthInput = UITextField()
 
     init() {
@@ -40,36 +39,6 @@ class ParametersViewController: UIViewController {
         stackView.axis = .vertical
 
         let params = DP3TTracing.parameters
-
-        do {
-            let label = UILabel()
-            label.text = "Set Reconnection Delay (seconds)"
-            stackView.addArrangedSubview(label)
-
-            reconnectionDelayInput.text = "\(params.bluetooth.peripheralReconnectDelay)"
-            reconnectionDelayInput.delegate = self
-            reconnectionDelayInput.font = UIFont.systemFont(ofSize: 15)
-            reconnectionDelayInput.borderStyle = UITextField.BorderStyle.roundedRect
-            reconnectionDelayInput.autocorrectionType = UITextAutocorrectionType.no
-            reconnectionDelayInput.keyboardType = UIKeyboardType.numberPad
-            reconnectionDelayInput.returnKeyType = UIReturnKeyType.done
-            reconnectionDelayInput.clearButtonMode = UITextField.ViewMode.whileEditing
-            reconnectionDelayInput.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
-            reconnectionDelayInput.delegate = self
-            stackView.addArrangedSubview(reconnectionDelayInput)
-
-            let button = UIButton()
-            if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
-            button.setTitle("Update", for: .normal)
-            button.addTarget(self, action: #selector(updateReconnectionDelay), for: .touchUpInside)
-            stackView.addArrangedSubview(button)
-        }
 
         do {
             let label = UILabel()
@@ -103,15 +72,7 @@ class ParametersViewController: UIViewController {
 
         stackView.addArrangedView(UIView())
     }
-
-    @objc func updateReconnectionDelay() {
-        let delay = reconnectionDelayInput.text ?? "0"
-        let intDelay = Int(delay) ?? 0
-        reconnectionDelayInput.text = "\(intDelay)"
-        DP3TTracing.parameters.bluetooth.peripheralReconnectDelay = intDelay
-        reconnectionDelayInput.resignFirstResponder()
-    }
-
+    
     @objc func batchLengthUpdate() {
         let length = batchLengthInput.text ?? "7200"
         let double = Double(length) ?? 7200.0

@@ -12,25 +12,22 @@ import Foundation
 class KnownCasesSynchronizer {
     /// The app id to use
     private let appInfo: DP3TApplicationInfo
-    /// A database to store the known cases
-    private let database: KnownCasesStorage
 
     private var defaults: DefaultStorage
 
     /// A DP3T matcher
     private weak var matcher: Matcher?
 
+    private let log = OSLog(DP3TDatabase.self, category: "knownCasesSynchronizer")
+
     /// Create a known case synchronizer
     /// - Parameters:
     ///   - appId: The app id to use
-    ///   - database: The database for storage
     ///   - matcher: The matcher for DP3T resolution and checks
     init(appInfo: DP3TApplicationInfo,
-         database: DP3TDatabase,
          matcher: Matcher,
          defaults: DefaultStorage = Default.shared) {
         self.appInfo = appInfo
-        self.database = database.knownCasesStorage
         self.matcher = matcher
         self.defaults = defaults
     }
@@ -45,6 +42,7 @@ class KnownCasesSynchronizer {
     /// - Returns: the operation which can be used to cancel the sync
     @discardableResult
     func sync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?) -> Operation {
+        log.trace()
         let queue = OperationQueue()
 
         let operation = BlockOperation {
@@ -68,6 +66,7 @@ class KnownCasesSynchronizer {
     }
 
     private func internalSync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?) {
+        log.trace()
         let nowTimestamp = now.timeIntervalSince1970
 
         var lastBatch: TimeInterval!
@@ -78,6 +77,8 @@ class KnownCasesSynchronizer {
             assert(false, "This should never happen if initializeSynchronizerIfNeeded gets called on SDK init")
             lastBatch = KnownCasesSynchronizer.initializeSynchronizerIfNeeded().timeIntervalSince1970
         }
+
+        lastBatch -= 2 * TimeInterval.day
 
         let batchesToLoad = Int((nowTimestamp - lastBatch) / Default.shared.parameters.networking.batchLength)
 

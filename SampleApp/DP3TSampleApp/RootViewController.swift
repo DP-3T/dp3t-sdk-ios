@@ -4,19 +4,15 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import DP3TSDK_CALIBRATION
+import DP3TSDK
 import UIKit
 
 class RootViewController: UITabBarController {
-    var logsViewController = LogsViewController()
     var controlsViewController = ControlViewController()
     var parameterViewController = ParametersViewController()
-    var handshakeViewController = HandshakeViewController()
 
     lazy var tabs: [UIViewController] = [controlsViewController,
-                                         logsViewController,
-                                         parameterViewController,
-                                         handshakeViewController]
+                                         parameterViewController]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,17 +27,5 @@ extension RootViewController: DP3TTracingDelegate {
         tabs
             .compactMap { $0 as? DP3TTracingDelegate }
             .forEach { $0.DP3TTracingStateChanged(state) }
-    }
-
-    func didAddLog(_ entry: LogEntry) {
-        tabs
-            .compactMap { $0 as? DP3TTracingDelegate }
-            .forEach { $0.didAddLog(entry) }
-    }
-
-    func didAddHandshake(_ handshake: HandshakeModel) {
-        tabs
-            .compactMap { $0 as? DP3TTracingDelegate }
-            .forEach { $0.didAddHandshake(handshake) }
     }
 }

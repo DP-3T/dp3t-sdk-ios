@@ -8,6 +8,7 @@ import BackgroundTasks
 import Foundation
 import UIKit.UIApplication
 
+@available(iOS 13.5, *)
 private class SyncOperation: Operation {
     override func main() {
         DP3TTracing.sync { result in
@@ -21,6 +22,7 @@ private class SyncOperation: Operation {
     }
 }
 
+@available(iOS 13.5, *)
 private class HandlerOperation: Operation {
     weak var handler: DP3TBackgroundHandler?
 
@@ -41,16 +43,14 @@ private class HandlerOperation: Operation {
 /// If the SDK gets destroyed and initialized again this would cause a crash
 private var didRegisterBackgroundTask: Bool = false
 
-@available(iOS 13.0, *)
+@available(iOS 13.5, *)
 class DP3TBackgroundTaskManager {
     static let taskIdentifier: String = "org.dpppt.exposure-notification"
 
-    /// A logger for debugging
-    #if CALIBRATION
-        public weak var logger: LoggingDelegate?
-    #endif
-
     weak var handler: DP3TBackgroundHandler?
+
+    private let log = OSLog(DP3TDatabase.self, category: "backgroundTaskManager")
+
 
     init(handler: DP3TBackgroundHandler?) {
         self.handler = handler
@@ -58,13 +58,11 @@ class DP3TBackgroundTaskManager {
 
     /// Register a background task
     func register() {
+        log.trace()
         guard !didRegisterBackgroundTask else { return }
         didRegisterBackgroundTask = true
 
-        #if CALIBRATION
-            logger?.log(type: .backgroundTask, "DP3TBackgroundTaskManager.register")
-        #endif
-
+        //TODO: log
         BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .main) { task in
             self.handleBackgroundTask(task)
         }
@@ -73,9 +71,7 @@ class DP3TBackgroundTaskManager {
     }
 
     private func handleBackgroundTask(_ task: BGTask) {
-        #if CALIBRATION
-            logger?.log(type: .backgroundTask, "DP3TBackgroundTaskManager.handleBackgroundTask")
-        #endif
+        log.trace()
 
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
@@ -99,14 +95,13 @@ class DP3TBackgroundTaskManager {
     }
 
     private func scheduleBackgroundTask() {
+        log.trace()
         let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
         do {
             try BGTaskScheduler.shared.submit(taskRequest)
         } catch {
-            #if CALIBRATION
-                logger?.log(type: .backgroundTask, "Unable to submit task: \(error.localizedDescription)")
-            #endif
+            //TODO: log
         }
     }
 }

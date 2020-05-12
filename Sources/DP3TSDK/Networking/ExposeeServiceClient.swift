@@ -20,10 +20,10 @@ protocol ExposeeServiceClientProtocol {
 
     /// Adds an exposee
     /// - Parameters:
-    ///   - exposee: The exposee to add
+    ///   - exposees: The exposee list to add
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
-    func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (ExposeeCompletion) -> Void)
+    func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void)
 }
 
 /// The client for managing and fetching exposee
@@ -40,6 +40,8 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     private let urlCache: URLCache
 
     private let jwtVerifier: DP3TJWTVerifier?
+
+    private let log = OSLog(DP3TDatabase.self, category: "exposeeServiceClient")
 
     /// The user agent to send with the requests
     private var userAgent: String {
@@ -71,25 +73,11 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
     func getExposeeSynchronously(batchTimestamp: Date) -> Result<Data?, DP3TNetworkingError> {
-        let url: URL
-        switch DP3TMode.current {
-        #if CALIBRATION
-            case .customImplementationCalibration:
-                fallthrough
-        #endif
-        case .customImplementation:
-            url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
-        #if canImport(ExposureNotification)
-            case .exposureNotificationFramework:
-                url = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
-        #endif
-        }
+        log.trace()
+        let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
+
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
-        #if canImport(ExposureNotification)
         request.setValue("application/zip", forHTTPHeaderField: "Accept")
-        #else
-        request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
-        #endif
 
         let (data, response, error) = urlSession.synchronousDataTask(with: request)
 
@@ -142,57 +130,13 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         return .success(responseData)
     }
 
-    /// Adds an exposee
-    /// - Parameters:
-    ///   - exposee: The exposee to add
-    ///   - completion: The completion block
-    ///   - authentication: The authentication to use for the request
-    func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
-        // addExposee endpoint
-        let url = managingExposeeEndpoint.addExposee()
-
-        guard let payload = try? JSONEncoder().encode(exposee) else {
-            completion(.failure(.couldNotEncodeBody))
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue(String(payload.count), forHTTPHeaderField: "Content-Length")
-        request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
-        if case let ExposeeAuthMethod.HTTPAuthorizationBearer(token: token) = authentication {
-            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-        request.httpBody = payload
-
-        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
-            guard error == nil else {
-                completion(.failure(.networkSessionError(error: error!)))
-                return
-            }
-            guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(.notHTTPResponse))
-                return
-            }
-
-            let statusCode = httpResponse.statusCode
-            guard statusCode == 200 else {
-                completion(.failure(.HTTPFailureResponse(status: statusCode)))
-                return
-            }
-
-            completion(.success(()))
-        })
-        task.resume()
-    }
-
     /// Adds an exposee list
     /// - Parameters:
     ///   - exposees: The exposees to add
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
     func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
+        log.trace()
         // addExposee endpoint
         let url = managingExposeeEndpoint.addExposeeGaen()
 
