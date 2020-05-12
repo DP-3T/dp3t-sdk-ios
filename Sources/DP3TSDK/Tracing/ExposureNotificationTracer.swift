@@ -21,7 +21,7 @@ class ExposureNotificationTracer: Tracer {
     private(set) var state: TrackingState {
         didSet {
             guard oldValue != state else { return }
-            log.debug("state did change from %s to %s", oldValue.debugDescription, state.debugDescription)
+            log.info("state did change from %s to %s", oldValue.debugDescription, state.debugDescription)
             delegate?.stateDidChange()
         }
     }

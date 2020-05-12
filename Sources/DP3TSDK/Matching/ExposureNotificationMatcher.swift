@@ -51,7 +51,7 @@ class ExposureNotificationMatcher: Matcher {
         semaphore.wait()
 
         if let error = exposureDetectionError {
-            log.debug("exposureNotificationError %s", error.localizedDescription)
+            log.error("exposureNotificationError %s", error.localizedDescription)
             throw DP3TTracingError.exposureNotificationError(error: error)
         }
 
@@ -59,7 +59,7 @@ class ExposureNotificationMatcher: Matcher {
         localURLs.removeAll()
 
         if let summary = exposureSummary {
-            log.debug("reiceived exposureSummary: %s", summary.debugDescription)
+            log.info("reiceived exposureSummary: %s", summary.debugDescription)
         }
 
 
