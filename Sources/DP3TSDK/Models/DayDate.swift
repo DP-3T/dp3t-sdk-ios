@@ -39,6 +39,6 @@ struct DayDate: Codable, CustomStringConvertible, Equatable, Hashable, Comparabl
     }
 
     var period: UInt32 {
-        return UInt32(timestamp.truncatingRemainder(dividingBy: 10 * .minute))
+        return UInt32(timestamp / (10 * .minute))
     }
 }

@@ -18,10 +18,10 @@ internal class Crypto {
     /// generates 32 bytes of random data
     /// - Throws: throws if a error happens
     /// - Returns: random data
-    internal static func generateRandomKey() throws -> Data {
-        var keyData = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
+    internal static func generateRandomKey(lenght: Int = Int(CC_SHA256_DIGEST_LENGTH)) throws -> Data {
+        var keyData = Data(count: lenght)
         let result = keyData.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, Int(CC_SHA256_DIGEST_LENGTH), $0.baseAddress!)
+            SecRandomCopyBytes(kSecRandomDefault, lenght, $0.baseAddress!)
         }
         guard result == errSecSuccess else {
             throw KeychainError.cannotAccess(result)

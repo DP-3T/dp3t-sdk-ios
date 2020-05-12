@@ -30,6 +30,8 @@ public struct DP3TParameters: Codable {
         public var timeZone: TimeZone = TimeZone(identifier: "UTC")!
 
         public var numberOfDaysToKeepMatchedContacts = 10
+
+        public var numberOfKeysToSubmit: Int = 14
     }
 
     public struct Networking: Codable {

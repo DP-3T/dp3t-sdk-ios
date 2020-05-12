@@ -11,6 +11,7 @@ struct CodableDiagnosisKey: Codable, Equatable {
     let rollingPeriod: UInt32
     let rollingStartNumber: UInt32
     let transmissionRiskLevel: UInt8
+    let fake: UInt8
 }
 
 /// Model of the exposed person

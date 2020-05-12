@@ -178,15 +178,11 @@ class DP3TSDK {
         var secretKeyResult: Result<[CodableDiagnosisKey], DP3TTracingError> = .success([])
 
         if isFakeRequest {
-            // Send random data if request is fake
-            let day = DayDate(date: onset)
-            let key = (try? Crypto.generateRandomKey()) ?? Data()
-            let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
-            let diagnosisKey = CodableDiagnosisKey(keyData: key,
-                                                   rollingPeriod: rollingPeriod,
-                                                   rollingStartNumber: day.period,
-                                                   transmissionRiskLevel: 0)
-            secretKeyResult = .success([diagnosisKey])
+            group.enter()
+            secretKeyProvider.getFakeDiagnosisKeys { result in
+                secretKeyResult = result
+                group.leave()
+            }
         } else {
             group.enter()
             secretKeyProvider.getDiagnosisKeys(onsetDate: onset) { result in

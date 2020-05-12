@@ -8,6 +8,7 @@ import Foundation
 import ExposureNotification
 
 protocol SecretKeyProvider {
+    func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
     func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
     func reinitialize() throws
     func reset()
@@ -17,17 +18,39 @@ protocol SecretKeyProvider {
 @available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
-        getDiagnosisKeys { keys, error in
-            // getTestDiagnosisKeys { (keys, error) in
+        // getTestDiagnosisKeys { [weak self]  (keys, error) in
+        getDiagnosisKeys { [weak self] keys, error in
+            guard let self = self else { return }
             if let error = error {
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
-                let filteredKeys = keys.filter { $0.date > onsetDate }.map(CodableDiagnosisKey.init(key:))
+                var filteredKeys = keys.filter { $0.date > onsetDate }.map(CodableDiagnosisKey.init(key:))
+                filteredKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - filteredKeys.count))
                 completionHandler(.success(filteredKeys))
             } else {
                 fatalError("getDiagnosisKeys returned neither an error nor a keys")
             }
         }
+    }
+
+    func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
+        completionHandler(.success(getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit)))
+    }
+
+    private func getFakeKeys(count: Int) -> [CodableDiagnosisKey] {
+        var keys: [CodableDiagnosisKey] = []
+        let parameters = Default.shared.parameters
+        for i in 0..<count {
+            let day = DayDate(date: Date().addingTimeInterval(.day * Double(i) * (-1)))
+            let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
+            let key = (try? Crypto.generateRandomKey(lenght: parameters.crypto.keyLength)) ?? Data(count: parameters.crypto.keyLength)
+            keys.append(.init(keyData: key,
+                              rollingPeriod: rollingPeriod,
+                              rollingStartNumber: day.period,
+                              transmissionRiskLevel: .zero,
+                              fake: 1))
+        }
+        return keys
     }
 
     func reinitialize() {}
@@ -44,6 +67,7 @@ extension CodableDiagnosisKey {
         rollingPeriod = key.rollingPeriod
         rollingStartNumber = key.rollingStartNumber
         transmissionRiskLevel = key.transmissionRiskLevel
+        fake = 0
     }
 }
 
