@@ -77,7 +77,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
-        request.setValue("application/zip", forHTTPHeaderField: "Accept")
+        request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
 
         let (data, response, error) = urlSession.synchronousDataTask(with: request)
 
