@@ -78,6 +78,8 @@ class KnownCasesSynchronizer {
             lastBatch = KnownCasesSynchronizer.initializeSynchronizerIfNeeded().timeIntervalSince1970
         }
 
+        lastBatch -= .day
+
         let batchesToLoad = Int((nowTimestamp - lastBatch) / Default.shared.parameters.networking.batchLength)
 
         let nextBatch = lastBatch + Default.shared.parameters.networking.batchLength
