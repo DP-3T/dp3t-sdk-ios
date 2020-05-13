@@ -16,4 +16,13 @@ final class DatabaseTests: XCTestCase {
     override func tearDown() {
         try! database.emptyStorage()
     }
+
+    func testMarkingExposuresAsDeleted(){
+        try! database.exposureDaysStorage.add(.init(identifier: 0, exposedDate: .init(), reportDate: .init(), isDeleted: false))
+        let days = try! database.exposureDaysStorage.getExposureDays()
+        XCTAssertEqual(days.count, 1)
+        try! database.exposureDaysStorage.markExposuresAsDeleted()
+        let deletedDays = try! database.exposureDaysStorage.getExposureDays()
+        XCTAssertEqual(deletedDays.count, 0)
+    }
 }

@@ -71,7 +71,7 @@ class ExposureNotificationMatcher: Matcher {
             Double(truncating: summary.attenuationDurations[0]) > 15 * TimeInterval.minute {
             log.info("exposureSummary meets requiremnts")
             let exposedDate = Date(timeIntervalSinceNow: TimeInterval(summary.daysSinceLastExposure) * TimeInterval.day * (-1))
-            let day: ExposureDay = ExposureDay(identifier: 0, exposedDate: exposedDate, reportDate: Date())
+            let day: ExposureDay = ExposureDay(identifier: 0, exposedDate: exposedDate, reportDate: Date(), isDeleted: false)
             try database.exposureDaysStorage.add(day)
             delegate?.didFindMatch()
         } else {

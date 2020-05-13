@@ -276,6 +276,16 @@ class DP3TSDK {
         }
     }
 
+    /// reset exposure days
+    func resetExposureDays() throws {
+        try database.exposureDaysStorage.markExposuresAsDeleted()
+    }
+
+    /// reset the infection status
+    func resetInfectionStatus() throws {
+        state.infectionStatus = .healthy
+    }
+
     /// reset the SDK
     func reset() throws {
         log.trace()

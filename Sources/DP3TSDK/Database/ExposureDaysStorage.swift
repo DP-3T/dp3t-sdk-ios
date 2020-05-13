@@ -19,6 +19,7 @@ class ExposureDaysStorage {
     let idColumn = Expression<Int>("id")
     let reportDateColumn = Expression<Int64>("report_date")
     let exposedDateColumn = Expression<Int64>("exposed_date")
+    let isDeletedColumn = Expression<Bool>("is_deleted")
 
     /// Initializer
     /// - Parameters:
@@ -34,6 +35,7 @@ class ExposureDaysStorage {
             t.column(idColumn, primaryKey: .autoincrement)
             t.column(reportDateColumn)
             t.column(exposedDateColumn)
+            t.column(isDeletedColumn)
             t.unique([exposedDateColumn])
         })
     }
@@ -48,7 +50,8 @@ class ExposureDaysStorage {
     func add(_ exposureDate: ExposureDay) throws {
         let insert = table.insert(or: .ignore,
                                   exposedDateColumn <- exposureDate.exposedDate.millisecondsSince1970,
-                                  reportDateColumn <- exposureDate.reportDate.millisecondsSince1970)
+                                  reportDateColumn <- exposureDate.reportDate.millisecondsSince1970,
+                                  isDeletedColumn <- exposureDate.isDeleted)
         try database.run(insert)
     }
 
@@ -57,12 +60,14 @@ class ExposureDaysStorage {
     /// - Returns: list of exposure days
     func getExposureDays() throws -> [ExposureDay] {
         try deleteExpiredExpsureDays()
+        let query = table.filter(isDeletedColumn == false).order(reportDateColumn.asc)
 
         var exposureDays = [ExposureDay]()
-        for row in try database.prepare(table.order(reportDateColumn.asc)) {
+        for row in try database.prepare(query) {
             let exposureDay = ExposureDay(identifier: row[idColumn],
                                           exposedDate: Date(milliseconds: row[exposedDateColumn]),
-                                          reportDate: Date(milliseconds: row[reportDateColumn]))
+                                          reportDate: Date(milliseconds: row[reportDateColumn]),
+                                          isDeleted: row[isDeletedColumn])
             exposureDays.append(exposureDay)
         }
 
@@ -74,6 +79,11 @@ class ExposureDaysStorage {
         let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(Default.shared.parameters.crypto.numberOfDaysToKeepMatchedContacts) * TimeInterval.day)
         let deleteQuery = table.filter(reportDateColumn < thresholdDate.millisecondsSince1970)
         try database.run(deleteQuery.delete())
+    }
+
+    func markExposuresAsDeleted() throws {
+        let query = table.update(isDeletedColumn <- true)
+        try database.run(query)
     }
 
     /// Delete all entries

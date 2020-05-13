@@ -140,6 +140,24 @@ public enum DP3TTracing {
                              callback: callback)
     }
 
+    /// reset exposure days
+    @available(iOS 13.5, *)
+    public static func resetExposureDays() throws {
+        guard instance != nil else {
+            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
+        }
+        try instance.resetExposureDays()
+    }
+
+    /// reset the infection status
+    @available(iOS 13.5, *)
+    public static func resetInfectionStatus() throws {
+        guard instance != nil else {
+            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
+        }
+        try instance.resetInfectionStatus()
+    }
+
     /// reset the SDK
     @available(iOS 13.5, *)
     public static func reset() throws {

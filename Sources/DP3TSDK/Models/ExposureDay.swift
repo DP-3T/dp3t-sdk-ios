@@ -11,4 +11,5 @@ public struct ExposureDay: Equatable {
     public let identifier: Int
     public let exposedDate: Date
     public let reportDate: Date
+    let isDeleted: Bool
 }
