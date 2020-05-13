@@ -119,8 +119,40 @@ class ControlViewController: UIViewController {
                 button.setTitleColor(.blue, for: .normal)
                 button.setTitleColor(.black, for: .highlighted)
             }
-            button.setTitle("Reset", for: .normal)
+            button.setTitle("Reset SDK", for: .normal)
             button.addTarget(self, action: #selector(reset), for: .touchUpInside)
+            stackView.addArrangedSubview(button)
+        }
+
+        stackView.addSpacerView(12)
+
+        do {
+            let button = UIButton()
+            if #available(iOS 13.0, *) {
+                button.setTitleColor(.systemBlue, for: .normal)
+                button.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                button.setTitleColor(.blue, for: .normal)
+                button.setTitleColor(.black, for: .highlighted)
+            }
+            button.setTitle("Reset Infection Status", for: .normal)
+            button.addTarget(self, action: #selector(resetInfectionState), for: .touchUpInside)
+            stackView.addArrangedSubview(button)
+        }
+
+        stackView.addSpacerView(12)
+
+        do {
+            let button = UIButton()
+            if #available(iOS 13.0, *) {
+                button.setTitleColor(.systemBlue, for: .normal)
+                button.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                button.setTitleColor(.blue, for: .normal)
+                button.setTitleColor(.black, for: .highlighted)
+            }
+            button.setTitle("Reset Exposure Days", for: .normal)
+            button.addTarget(self, action: #selector(resetExposureDays), for: .touchUpInside)
             stackView.addArrangedSubview(button)
         }
 
@@ -336,6 +368,14 @@ class ControlViewController: UIViewController {
         }
     }
 
+    @objc func resetInfectionState(){
+        try? DP3TTracing.resetInfectionStatus()
+    }
+
+    @objc func resetExposureDays(){
+        try? DP3TTracing.resetExposureDays()
+    }
+
     @objc func segmentedControlChanges() {
         if segmentedControl.selectedSegmentIndex == 0 {
             try? DP3TTracing.startTracing()
@@ -385,12 +425,14 @@ class ControlViewController: UIViewController {
             startAdvertisingButton.isEnabled = true
         }
         if let lastSync = state.lastSync {
-            elements.append("last Sync: \(lastSync.debugDescription)")
+            elements.append("last Sync: \(lastSync.stringVal)")
         }
 
         switch state.infectionStatus {
-        case .exposed:
-            elements.append("InfectionStatus: EXPOSED")
+        case let .exposed(days):
+            elements.append("InfectionStatus: EXPOSED days ->")
+            elements.append(contentsOf: days.enumerated().map{"\($0.offset): \($0.element.exposedDate.description)"})
+            elements.append("--")
         case .infected:
             elements.append("InfectionStatus: INFECTED")
         case .healthy:

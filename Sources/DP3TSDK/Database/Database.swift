@@ -17,13 +17,6 @@ class DP3TDatabase {
 
     private let log = Logger(DP3TDatabase.self, category: "database")
 
-    /// application Storage
-    private let _applicationStorage: ApplicationStorage
-    var applicationStorage: ApplicationStorage {
-        guard !isDestroyed else { fatalError("Database is destroyed") }
-        return _applicationStorage
-    }
-
     /// exposure days Storage
     private let _exposureDaysStorage: ExposureDaysStorage
     var exposureDaysStorage: ExposureDaysStorage {
@@ -38,12 +31,6 @@ class DP3TDatabase {
                guard !isDestroyed else { fatalError("Database is destroyed") }
                return _logggingStorage
            }
-
-           private let _deviceInfo: DeviceInfoStorage
-           var deviceInfo: DeviceInfoStorage {
-               guard !isDestroyed else { fatalError("Database is destroyed") }
-               return _deviceInfo
-           }
        #endif
 
     /// Initializer
@@ -56,12 +43,9 @@ class DP3TDatabase {
             try? filePath.addExcludedFromBackupAttribute()
         }
         _exposureDaysStorage = try ExposureDaysStorage(database: connection)
-        _applicationStorage = try ApplicationStorage(database: connection)
 
         #if CALIBRATION
             _logggingStorage = try LoggingStorage(database: connection)
-            _deviceInfo = try DeviceInfoStorage(database: connection)
-            try _deviceInfo.set()
         #endif
 
         DispatchQueue.global(qos: .background).async {

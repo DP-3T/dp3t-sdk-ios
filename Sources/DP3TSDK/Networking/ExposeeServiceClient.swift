@@ -179,46 +179,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         })
         task.resume()
     }
-
-    /// Returns the list of all available application descriptors registered with the backend
-    /// - Parameters:
-    ///   - enviroment: The environment to use
-    ///   - completion: The completion block
-    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared, completion: @escaping (Result<[ApplicationDescriptor], DP3TNetworkingError>) -> Void) {
-        let url = enviroment.discoveryEndpoint
-        let request = URLRequest(url: url)
-
-        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
-            guard error == nil else {
-                completion(.failure(.networkSessionError(error: error!)))
-                return
-            }
-            guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(.notHTTPResponse))
-                return
-            }
-
-            let statusCode = httpResponse.statusCode
-            guard statusCode == 200 else {
-                completion(.failure(.HTTPFailureResponse(status: statusCode)))
-                return
-            }
-
-            guard let responseData = data else {
-                completion(.failure(.noDataReturned))
-                return
-            }
-
-            do {
-                let discoveryResponse = try JSONDecoder().decode(DiscoveryServiceResponse.self, from: responseData)
-                return completion(.success(discoveryResponse.applications))
-            } catch {
-                completion(.failure(.couldNotParseData(error: error, origin: 2)))
-                return
-            }
-        })
-        task.resume()
-    }
 }
 
 internal extension HTTPURLResponse {

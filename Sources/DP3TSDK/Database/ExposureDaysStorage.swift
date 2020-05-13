@@ -42,7 +42,7 @@ class ExposureDaysStorage {
 
     /// count of entries
     func count() throws -> Int {
-        try database.scalar(table.count)
+        try database.scalar(table.filter(isDeletedColumn == false).count)
     }
 
     /// add a matched contact

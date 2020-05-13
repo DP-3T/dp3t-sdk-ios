@@ -18,14 +18,6 @@ public protocol DP3TBackgroundHandler: AnyObject {
     func performBackgroundTasks(completionHandler: (_ success: Bool) -> Void)
 }
 
-/// The mode in which the SDK is initialized
-public enum DP3TApplicationInfo {
-    /// Using the discovery services from Github. https://github.com/DP-3T/dp3t-discovery
-    case discovery(_ appId: String, enviroment: Enviroment = .prod)
-    /// Manually by specifying all the necessary information
-    case manual(_ appInfo: ApplicationDescriptor)
-}
-
 @available(iOS 13.5, *)
 private var instance: DP3TSDK!
 
@@ -46,12 +38,12 @@ public enum DP3TTracing {
 
     /// initialize the SDK
     /// - Parameters:
-    ///   - appId: application identifier used for the discovery call
+    ///   - config: configuration describing the backend to use
     ///   - enviroment: enviroment to use
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
     ///   - backgroundHandler: a delegate to perform background tasks
     @available(iOS 13.5, *)
-    public static func initialize(with appInfo: DP3TApplicationInfo,
+    public static func initialize(with applicationDescriptor: ApplicationDescriptor,
                                   urlSession: URLSession = .shared,
                                   mode: DP3TMode = .production,
                                   backgroundHandler: DP3TBackgroundHandler? = nil) throws {
@@ -59,7 +51,7 @@ public enum DP3TTracing {
             fatalError("DP3TSDK already initialized")
         }
         DP3TMode.current = mode
-        instance = try DP3TSDK(appInfo: appInfo,
+        instance = try DP3TSDK(applicationDescriptor: applicationDescriptor,
                                urlSession: urlSession,
                                backgroundHandler: backgroundHandler)
     }

@@ -13,7 +13,7 @@ import ExposureNotification
 @available(iOS 13.5, *)
 class DP3TSDK {
     /// appId of this instance
-    private let appInfo: DP3TApplicationInfo
+    private let applicationDescriptor: ApplicationDescriptor
 
     /// database probably also not needed with ExposureNotification Framework
     private let database: DP3TDatabase
@@ -24,14 +24,10 @@ class DP3TSDK {
 
     private let secretKeyProvider: SecretKeyProvider
 
-    /// Fetch the discovery data and stores it
-    private let applicationSynchronizer: ApplicationSynchronizer
+    private let service: ExposeeServiceClient
 
     /// Synchronizes data on known cases
     private let synchronizer: KnownCasesSynchronizer
-
-    /// tracing service client
-    private var cachedTracingServiceClient: ExposeeServiceClient?
 
     /// the urlSession to use for networking
     private let urlSession: URLSession
@@ -61,10 +57,10 @@ class DP3TSDK {
 
     /// Initializer
     /// - Parameters:
-    ///   - appInfo: applicationInfot to use (either discovery or manually initialized)
+    ///   - applicationDescriptor: information about the backend to use
     ///   - urlSession: the url session to use for networking (app can set it to enable certificate pinning)
-    init(appInfo: DP3TApplicationInfo, urlSession: URLSession, backgroundHandler: DP3TBackgroundHandler?) throws {
-        self.appInfo = appInfo
+    init(applicationDescriptor: ApplicationDescriptor, urlSession: URLSession, backgroundHandler: DP3TBackgroundHandler?) throws {
+        self.applicationDescriptor = applicationDescriptor
         self.urlSession = urlSession
         database = try DP3TDatabase()
 
@@ -73,9 +69,12 @@ class DP3TSDK {
         matcher = ExposureNotificationMatcher(manager: manager, database: database)
         secretKeyProvider = manager
 
-        synchronizer = KnownCasesSynchronizer(appInfo: appInfo, matcher: matcher)
+        let service_ = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession)
 
-        applicationSynchronizer = ApplicationSynchronizer(appInfo: appInfo, storage: database.applicationStorage, urlSession: urlSession)
+        service = service_
+        synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service_)
+
+
 
         backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler)
 
@@ -88,6 +87,7 @@ class DP3TSDK {
         backgroundTaskManager.register()
 
         tracer.delegate = self
+        matcher.delegate = self
 
         #if CALIBRATION
         Logger.delegate = database.loggingStorage
@@ -133,22 +133,14 @@ class DP3TSDK {
             return
         }
 
-        getATracingServiceClient(forceRefresh: true) { [weak self] result in
-            switch result {
-            case let .failure(error):
-                callback?(.failure(error))
-                return
-            case let .success(service):
-                self?.synchronizer.sync(service: service) { [weak self] result in
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success:
-                            self?.state.lastSync = Date()
-                            callback?(.success(()))
-                        case let .failure(error):
-                            callback?(.failure(.networkingError(error: error)))
-                        }
-                    }
+        synchronizer.sync { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    self?.state.lastSync = Date()
+                    callback?(.success(()))
+                case let .failure(error):
+                    callback?(.failure(.networkingError(error: error)))
                 }
             }
         }
@@ -202,90 +194,42 @@ class DP3TSDK {
             case let .failure(error):
                 callback(.failure(error))
             case let .success(keys):
-                self.getATracingServiceClient(forceRefresh: false) { [weak self] result in
-                    guard let self = self else {
-                        return
-                    }
-                    switch result {
-                    case let .failure(error):
-                        DispatchQueue.main.async {
-                            callback(.failure(error))
-                        }
-                    case let .success(service):
-                        let authData: String?
-                        if case let ExposeeAuthMethod.JSONPayload(token: token) = authentication {
-                            authData = token
-                        } else {
-                            authData = nil
-                        }
+                let authData: String?
+                if case let ExposeeAuthMethod.JSONPayload(token: token) = authentication {
+                    authData = token
+                } else {
+                    authData = nil
+                }
 
-                        let completionHandler: (Result<OutstandingPublishOperation, DP3TNetworkingError>) -> Void = { [weak self] result in
-                            DispatchQueue.main.async {
-                                switch result {
-                                case let .success(outstandingPublish):
-                                    if !isFakeRequest {
-                                        self?.state.infectionStatus = .infected
-                                        self?.stopTracing()
-                                        try? self?.secretKeyProvider.reinitialize()
-                                    }
-
-                                    //only overwrite fake publish operations
-                                    if Default.shared.outstandingPublish == nil || (Default.shared.outstandingPublish?.fake == true && outstandingPublish.fake == false) {
-                                        Default.shared.outstandingPublish = outstandingPublish
-                                    }
-
-                                    callback(.success(()))
-                                case let .failure(error):
-                                    callback(.failure(.networkingError(error: error)))
-                                }
+                let completionHandler: (Result<OutstandingPublishOperation, DP3TNetworkingError>) -> Void = { [weak self] result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case let .success(outstandingPublish):
+                            if !isFakeRequest {
+                                self?.state.infectionStatus = .infected
                             }
+
+                            //only overwrite fake publish operations
+                            if Default.shared.outstandingPublish == nil || (Default.shared.outstandingPublish?.fake == true && outstandingPublish.fake == false) {
+                                Default.shared.outstandingPublish = outstandingPublish
+                            }
+
+                            callback(.success(()))
+                        case let .failure(error):
+                            callback(.failure(.networkingError(error: error)))
                         }
-                        let model = ExposeeListModel(gaenKeys: keys, authData: authData, fake: isFakeRequest, delayedKeyDate: DayDate())
-                        service.addExposeeList(model, authentication: authentication, completion: completionHandler)
                     }
                 }
+                let model = ExposeeListModel(gaenKeys: keys, authData: authData, fake: isFakeRequest, delayedKeyDate: DayDate())
+                self.service.addExposeeList(model, authentication: authentication, completion: completionHandler)
             }
-        }
-    }
-
-    /// used to construct a new tracing service client
-    private func getATracingServiceClient(forceRefresh: Bool, callback: @escaping (Result<ExposeeServiceClient, DP3TTracingError>) -> Void) {
-        if forceRefresh == false, let cachedTracingServiceClient = cachedTracingServiceClient {
-            callback(.success(cachedTracingServiceClient))
-            return
-        }
-
-        switch appInfo {
-        case let .discovery(appId, _):
-            do {
-                try applicationSynchronizer.sync { [weak self] result in
-                    guard let self = self else { return }
-                    switch result {
-                    case .success:
-                        do {
-                            let desc = try self.database.applicationStorage.descriptor(for: appId)
-                            let client = ExposeeServiceClient(descriptor: desc)
-                            self.cachedTracingServiceClient = client
-                            callback(.success(client))
-                        } catch {
-                            callback(.failure(DP3TTracingError.databaseError(error: error)))
-                        }
-                    case let .failure(error):
-                        callback(.failure(error))
-                    }
-                }
-            } catch {
-                callback(.failure(DP3TTracingError.databaseError(error: error)))
-            }
-        case let .manual(appInfo):
-            let client = ExposeeServiceClient(descriptor: appInfo, urlSession: urlSession)
-            callback(.success(client))
         }
     }
 
     /// reset exposure days
     func resetExposureDays() throws {
         try database.exposureDaysStorage.markExposuresAsDeleted()
+        state.infectionStatus = InfectionStatus.getInfectionState(from: database)
     }
 
     /// reset the infection status
@@ -324,5 +268,12 @@ class DP3TSDK {
 extension DP3TSDK: TracerDelegate {
     func stateDidChange() {
         state.trackingState = tracer.state
+    }
+}
+
+@available(iOS 13.5, *)
+extension DP3TSDK: MatcherDelegate {
+    func didFindMatch() {
+        state.infectionStatus = InfectionStatus.getInfectionState(from: database)
     }
 }

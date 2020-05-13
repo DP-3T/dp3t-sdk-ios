@@ -10,7 +10,6 @@ import ExposureNotification
 protocol SecretKeyProvider {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
     func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
-    func reinitialize() throws
     func reset()
 }
 
@@ -56,9 +55,7 @@ extension ENManager: SecretKeyProvider {
 
     func reinitialize() {}
 
-    func reset() {
-        invalidate()
-    }
+    func reset() {}
 }
 
 @available(iOS 13.5, *)

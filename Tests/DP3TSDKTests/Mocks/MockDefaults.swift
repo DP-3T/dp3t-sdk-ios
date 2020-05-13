@@ -8,6 +8,10 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
+    var parameters: DP3TParameters = .init()
+
+    var outstandingPublish: OutstandingPublishOperation? = nil
+
     var isFirstLaunch: Bool = false
 
     var lastSync: Date?

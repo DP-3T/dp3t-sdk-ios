@@ -10,26 +10,25 @@ import Foundation
  Synchronizes data on known cases
  */
 class KnownCasesSynchronizer {
-    /// The app id to use
-    private let appInfo: DP3TApplicationInfo
-
     private var defaults: DefaultStorage
 
     /// A DP3T matcher
     private weak var matcher: Matcher?
 
+    /// service client
+    private weak var service: ExposeeServiceClient!
+
     private let log = Logger(DP3TDatabase.self, category: "knownCasesSynchronizer")
 
     /// Create a known case synchronizer
     /// - Parameters:
-    ///   - appId: The app id to use
     ///   - matcher: The matcher for DP3T resolution and checks
-    init(appInfo: DP3TApplicationInfo,
-         matcher: Matcher,
+    init(matcher: Matcher,
+         service: ExposeeServiceClient,
          defaults: DefaultStorage = Default.shared) {
-        self.appInfo = appInfo
         self.matcher = matcher
         self.defaults = defaults
+        self.service = service
     }
 
     /// A callback result of async operations
@@ -41,12 +40,12 @@ class KnownCasesSynchronizer {
     ///   - callback: The callback once the task if finished
     /// - Returns: the operation which can be used to cancel the sync
     @discardableResult
-    func sync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?) -> Operation {
+    func sync(now: Date = Date(), callback: Callback?) -> Operation {
         log.trace()
         let queue = OperationQueue()
 
         let operation = BlockOperation {
-            self.internalSync(service: service, now: now, callback: callback)
+            self.internalSync(now: now, callback: callback)
         }
 
         queue.addOperation(operation)
@@ -65,7 +64,7 @@ class KnownCasesSynchronizer {
         return lastBatch
     }
 
-    private func internalSync(service: ExposeeServiceClientProtocol, now: Date = Date(), callback: Callback?) {
+    private func internalSync(now: Date = Date(), callback: Callback?) {
         log.trace()
         let nowTimestamp = now.timeIntervalSince1970
 
@@ -78,7 +77,7 @@ class KnownCasesSynchronizer {
             lastBatch = KnownCasesSynchronizer.initializeSynchronizerIfNeeded().timeIntervalSince1970
         }
 
-        lastBatch -= .day
+        lastBatch -= 5 * .day
 
         let batchesToLoad = Int((nowTimestamp - lastBatch) / Default.shared.parameters.networking.batchLength)
 

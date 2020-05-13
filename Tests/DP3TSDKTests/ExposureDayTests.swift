@@ -16,6 +16,9 @@ final class ExposureDayTests: DatabaseTestBase {
         try! database.exposureDaysStorage.markExposuresAsDeleted()
         let deletedDays = try! database.exposureDaysStorage.getExposureDays()
         XCTAssertEqual(deletedDays.count, 0)
+
+        let count = try! database.exposureDaysStorage.count()
+        XCTAssertEqual(count, 0)
     }
 
     func testOneExposureDayPerDay(){
@@ -26,5 +29,7 @@ final class ExposureDayTests: DatabaseTestBase {
         try! database.exposureDaysStorage.add(.init(identifier: 0, exposedDate: dayMin.addingTimeInterval(.hour), reportDate: .init(), isDeleted: false))
         days = try! database.exposureDaysStorage.getExposureDays()
         XCTAssertEqual(days.count, 1)
+        let count = try! database.exposureDaysStorage.count()
+        XCTAssertEqual(count, 1)
     }
 }

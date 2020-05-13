@@ -27,12 +27,6 @@ protocol DefaultStorage {
     var outstandingPublish: OutstandingPublishOperation? { get set }
 }
 
-struct OutstandingPublishOperation: Codable {
-    let authorizationHeader: String?
-    let dayToPublish: Date
-    let fake: Bool
-}
-
 /// UserDefaults Storage Singleton
 class Default: DefaultStorage {
     static var shared = Default()
