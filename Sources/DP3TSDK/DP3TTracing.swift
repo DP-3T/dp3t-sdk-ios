@@ -172,7 +172,7 @@ public enum DP3TTracing {
     @available(iOS 13.5, *)
     public static func getLogs() throws -> [LogEntry] {
         guard let instance = instance else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
+            return []
         }
 
         guard DP3TMode.current == .calibration else {
