@@ -19,6 +19,18 @@ protocol DefaultStorage {
 
     /// Current infection status
     var didMarkAsInfected: Bool { get set }
+
+    /// Parameters to configure the SDK
+    var parameters: DP3TParameters { get set }
+
+    /// Outstanding publish operation
+    var outstandingPublish: OutstandingPublishOperation? { get set }
+}
+
+struct OutstandingPublishOperation: Codable {
+    let authorizationHeader: String?
+    let dayToPublish: Date
+    let fake: Bool
 }
 
 /// UserDefaults Storage Singleton
@@ -27,45 +39,25 @@ class Default: DefaultStorage {
     var store = UserDefaults.standard
 
     /// stores if this is the first launch of the SDK
-    var isFirstLaunch: Bool {
-        get {
-            return !store.bool(forKey: "org.dpppt.firstlaunch")
-        }
-        set(newValue) {
-            store.set(!newValue, forKey: "org.dpppt.firstlaunch")
-        }
-    }
+    @Persisted(userDefaultsKey: "org.dpppt.firstlaunch", defaultValue: false)
+    var isFirstLaunch: Bool
 
     /// Last date a backend sync happend
-    var lastSync: Date? {
-        get {
-            return store.object(forKey: "org.dpppt.lastsync") as? Date
-        }
-        set(newValue) {
-            store.set(newValue, forKey: "org.dpppt.lastsync")
-        }
-    }
+    @Persisted(userDefaultsKey: "org.dpppt.lastsync", defaultValue: nil)
+    var lastSync: Date?
 
     /// Last batch release time which was loaded
     /// If nil .now should be used since it is not neccessary to load all past batches
-    var lastLoadedBatchReleaseTime: Date? {
-        get {
-            return store.object(forKey: "org.dpppt.lastLoadedBatchReleaseTime") as? Date
-        }
-        set(newValue) {
-            store.set(newValue, forKey: "org.dpppt.lastLoadedBatchReleaseTime")
-        }
-    }
+    @Persisted(userDefaultsKey: "org.dpppt.lastLoadedBatchReleaseTime", defaultValue: nil)
+    var lastLoadedBatchReleaseTime: Date?
 
     /// Current infection status
-    var didMarkAsInfected: Bool {
-        get {
-            return store.bool(forKey: "org.dpppt.didMarkAsInfected")
-        }
-        set(newValue) {
-            store.set(newValue, forKey: "org.dpppt.didMarkAsInfected")
-        }
-    }
+    @Persisted(userDefaultsKey: "org.dpppt.didMarkAsInfected", defaultValue: false)
+    var didMarkAsInfected: Bool
+
+    /// Outstanding publish operation
+    @Persisted(userDefaultsKey: "org.dpppt.outstandingPublish", defaultValue: nil)
+    var outstandingPublish: OutstandingPublishOperation?
 
     /// Parameters
     private func saveParameters(_ parameters: DP3TParameters) {
@@ -114,6 +106,31 @@ class Default: DefaultStorage {
         }
         set(newValue) {
             parametersCache = newValue
+        }
+    }
+}
+
+
+@propertyWrapper
+class Persisted<Value: Codable> {
+    init(userDefaultsKey: String, defaultValue: Value) {
+        self.userDefaultsKey = userDefaultsKey
+        if let data = UserDefaults.standard.data(forKey: userDefaultsKey) {
+            do {
+                wrappedValue = try JSONDecoder().decode(Value.self, from: data)
+            } catch {
+                wrappedValue = defaultValue
+            }
+        } else {
+            wrappedValue = defaultValue
+        }
+    }
+
+    let userDefaultsKey: String
+
+    var wrappedValue: Value {
+        didSet {
+            UserDefaults.standard.set(try! JSONEncoder().encode(wrappedValue), forKey: userDefaultsKey)
         }
     }
 }

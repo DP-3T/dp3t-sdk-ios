@@ -219,15 +219,21 @@ class DP3TSDK {
                             authData = nil
                         }
 
-                        let completionHandler: (Result<Void, DP3TNetworkingError>) -> Void = { [weak self] result in
+                        let completionHandler: (Result<OutstandingPublishOperation, DP3TNetworkingError>) -> Void = { [weak self] result in
                             DispatchQueue.main.async {
                                 switch result {
-                                case .success:
+                                case let .success(outstandingPublish):
                                     if !isFakeRequest {
                                         self?.state.infectionStatus = .infected
                                         self?.stopTracing()
                                         try? self?.secretKeyProvider.reinitialize()
                                     }
+
+                                    //only overwrite fake publish operations
+                                    if Default.shared.outstandingPublish == nil || (Default.shared.outstandingPublish?.fake == true && outstandingPublish.fake == false) {
+                                        Default.shared.outstandingPublish = outstandingPublish
+                                    }
+
                                     callback(.success(()))
                                 case let .failure(error):
                                     callback(.failure(.networkingError(error: error)))
