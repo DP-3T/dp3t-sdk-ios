@@ -43,14 +43,14 @@ class Logger {
 
     func print(_ value: @autoclosure () -> Any) {
         guard osLog.isEnabled(type: .debug) else { return }
-        os_log("%{public}@", log: osLog, type: .debug, String(describing: value()))
+        log("%{public}@", type: .debug, [String(describing: value())])
     }
 
     func dump(_ value: @autoclosure () -> Any) {
         guard osLog.isEnabled(type: .debug) else { return }
         var string = String()
         Swift.dump(value(), to: &string)
-        os_log("%{public}@", log: osLog, type: .debug, string)
+        log("%{public}@", type: .debug, [string])
     }
 
     func trace(file: StaticString = #file, function: StaticString = #function, line: UInt = #line) {
@@ -58,7 +58,7 @@ class Logger {
         let file = URL(fileURLWithPath: String(describing: file)).deletingPathExtension().lastPathComponent
         var function = String(describing: function)
         function.removeSubrange(function.firstIndex(of: "(")!...function.lastIndex(of: ")")!)
-        os_log("%{public}@.%{public}@():%ld", log: osLog, type: .debug, file, function, line)
+        log("%{public}@.%{public}@():%ld", type: .debug, [file, function, line])
     }
 
     @usableFromInline internal func log(_ message: StaticString, type: OSLogType, _ a: [CVarArg]) {
@@ -67,10 +67,13 @@ class Logger {
 
         #if CALIBRATION
         if let delegate = Logger.delegate {
-            let string = message.withUTF8Buffer {
+            var string = message.withUTF8Buffer {
                 String(decoding: $0, as: UTF8.self)
             }
-            delegate.log("[\(type.string)] [\(self.category)] \(String(format: string, arguments: a))")
+            string = string.replacingOccurrences(of: "{public}", with: "")
+                           .replacingOccurrences(of: "{private}", with: "")
+            delegate.log("[\(self.category)] \(String(format: string, arguments: a))", type: type)
+            NotificationCenter.default.post(name: .init("org.dpppt.didAddLog"), object: nil)
         }
         #endif
         
@@ -82,25 +85,6 @@ class Logger {
         case 2: os_log(message, log: osLog, type: type, a[0], a[1])
         case 1: os_log(message, log: osLog, type: type, a[0])
         default: os_log(message, log: osLog, type: type)
-        }
-    }
-}
-
-fileprivate extension OSLogType {
-    var string: String {
-        switch self {
-        case .debug:
-            return "DEBUG"
-        case .default:
-            return "DEFAULT"
-        case .error:
-            return "ERROR"
-        case .fault:
-            return "FAULT"
-        case .info:
-            return "INFO"
-        default:
-            return ""
         }
     }
 }

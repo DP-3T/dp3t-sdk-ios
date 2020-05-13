@@ -127,7 +127,8 @@ class DP3TSDK {
     /// - Throws: if a error happed
     func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
         log.trace()
-        if  case TrackingState.stopped = state.trackingState {
+        if  ENManager.authorizationStatus != .authorized {
+            log.error("cant run sync before being authorized")
             callback?(.failure(.permissonError))
             return
         }

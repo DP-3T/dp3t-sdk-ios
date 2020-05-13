@@ -36,6 +36,10 @@ class LogsViewController: UIViewController {
         }
         loadLogs()
         NotificationCenter.default.addObserver(self, selector: #selector(didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
+
+        NotificationCenter.default.addObserver(forName: .init("org.dpppt.didAddLog"), object: nil, queue: .main) { [weak self] (_) in
+            self?.reloadLogs()
+        }
     }
 
     required init?(coder _: NSCoder) {
@@ -70,6 +74,7 @@ class LogsViewController: UIViewController {
                 DispatchQueue.main.async {
                     self.refreshControl.endRefreshing()
                     self.logs = logs
+                    self.tableView.reloadData()
                 }
             }
         }
@@ -88,16 +93,22 @@ extension LogsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "logCell", for: indexPath) as! LogCell
         let log = logs[indexPath.row]
-        cell.textLabel?.text = "\(log.timestamp.stringVal)"
+        cell.textLabel?.text = "[\(log.type.string)] \(log.timestamp.stringVal)"
         cell.detailTextLabel?.text = log.message
+        switch log.type {
+        case .error:
+            cell.backgroundColor = UIColor.red.withAlphaComponent(0.5)
+        case .info:
+            cell.backgroundColor = UIColor.green.withAlphaComponent(0.05)
+        default:
+            cell.backgroundColor = .systemBackground
+        }
         return cell
     }
 }
 
 extension LogsViewController: DP3TTracingDelegate {
-    func DP3TTracingStateChanged(_: TracingState) {
-        loadLogs()
-    }
+    func DP3TTracingStateChanged(_: TracingState) {}
 }
 
 extension Date {
@@ -105,5 +116,24 @@ extension Date {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM HH:mm:ss "
         return dateFormatter.string(from: self)
+    }
+}
+
+fileprivate extension OSLogType {
+    var string: String {
+        switch self {
+        case .debug:
+            return "DEBUG"
+        case .default:
+            return "DEFAULT"
+        case .error:
+            return "ERROR"
+        case .fault:
+            return "FAULT"
+        case .info:
+            return "INFO"
+        default:
+            return ""
+        }
     }
 }

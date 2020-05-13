@@ -6,10 +6,12 @@
 
 import Foundation
 import SQLite
+import os.log
 
 #if CALIBRATION
 public struct LogEntry: Identifiable {
     public let id: Int
+    public let type: OSLogType
     public let timestamp: Date
     public let message: String
 }
@@ -26,6 +28,7 @@ class LoggingStorage: LoggingDelegate {
 
     /// Column definitions
     let idColumn = Expression<Int>("id")
+    let typeColumn = Expression<Int>("type")
     let timestampColumn = Expression<Int64>("timestamp")
     let messageColumn = Expression<String>("message")
 
@@ -42,15 +45,17 @@ class LoggingStorage: LoggingDelegate {
         try database.run(table.create(ifNotExists: true) { t in
             t.column(idColumn, primaryKey: .autoincrement)
             t.column(timestampColumn)
+            t.column(typeColumn)
             t.column(messageColumn)
         })
     }
 
-    func log(_ string: String) {
+    func log(_ string: String, type: OSLogType) {
         let timestamp = Date()
         let insert = table.insert(
             timestampColumn <- timestamp.millisecondsSince1970,
-            messageColumn <- string
+            messageColumn <- string,
+            typeColumn <- Int(type.rawValue)
         )
         _ = try? database.run(insert)
     }
@@ -67,11 +72,12 @@ class LoggingStorage: LoggingDelegate {
 
     func getLogs() throws -> [LogEntry] {
 
-        var query = table
+        let query = table.order(timestampColumn.desc)
 
         var logs: [LogEntry] = []
         for row in try database.prepare(query) {
             logs.append(LogEntry(id: row[idColumn],
+                                 type: OSLogType(rawValue: UInt8(row[typeColumn])),
                                  timestamp: Date(milliseconds: row[timestampColumn]),
                                  message: row[messageColumn]))
         }
