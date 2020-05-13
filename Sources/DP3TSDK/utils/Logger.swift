@@ -66,7 +66,7 @@ class Logger {
         // http://www.openradar.me/33203955
 
         #if CALIBRATION
-        if let delegate = Logger.delegate {
+        if let delegate = Logger.delegate, DP3TMode.current == .calibration {
             var string = message.withUTF8Buffer {
                 String(decoding: $0, as: UTF8.self)
             }

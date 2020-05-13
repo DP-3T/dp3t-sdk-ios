@@ -53,10 +53,12 @@ public enum DP3TTracing {
     @available(iOS 13.5, *)
     public static func initialize(with appInfo: DP3TApplicationInfo,
                                   urlSession: URLSession = .shared,
+                                  mode: DP3TMode = .production,
                                   backgroundHandler: DP3TBackgroundHandler? = nil) throws {
         guard instance == nil else {
             fatalError("DP3TSDK already initialized")
         }
+        DP3TMode.current = mode
         instance = try DP3TSDK(appInfo: appInfo,
                                urlSession: urlSession,
                                backgroundHandler: backgroundHandler)
@@ -153,6 +155,10 @@ public enum DP3TTracing {
     public static func getLogs() throws -> [LogEntry] {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
+        }
+
+        guard DP3TMode.current == .calibration else {
+            fatalError("logging is only available in calibration mode")
         }
         return try instance.getLogs()
     }

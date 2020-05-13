@@ -11,7 +11,7 @@ import UIKit
 func initializeSDK() {
     /// Can be initialized either by:
     /// - using the discovery:
-    try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev))
+    try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev), mode: .calibration)
     /// - passing the url:
     // try! DP3TTracing.initialize(with: .manual(.init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: nil)))
 }
