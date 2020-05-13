@@ -176,6 +176,7 @@ class DP3TSDK {
         if !isFakeRequest,
             case .infected = state.infectionStatus {
             callback(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
+            return
         }
 
         let group = DispatchGroup()
