@@ -8,15 +8,7 @@
 import SQLite
 import XCTest
 
-final class DatabaseTests: XCTestCase {
-    let connection = try! Connection(.inMemory, readonly: false)
-
-    lazy var database: DP3TDatabase! = try! DP3TDatabase(connection_: connection)
-
-    override func tearDown() {
-        try! database.emptyStorage()
-    }
-
+final class ExposureDayTests: DatabaseTestBase {
     func testMarkingExposuresAsDeleted(){
         try! database.exposureDaysStorage.add(.init(identifier: 0, exposedDate: .init(), reportDate: .init(), isDeleted: false))
         let days = try! database.exposureDaysStorage.getExposureDays()
@@ -24,5 +16,15 @@ final class DatabaseTests: XCTestCase {
         try! database.exposureDaysStorage.markExposuresAsDeleted()
         let deletedDays = try! database.exposureDaysStorage.getExposureDays()
         XCTAssertEqual(deletedDays.count, 0)
+    }
+
+    func testOneExposureDayPerDay(){
+        let dayMin = DayDate().dayMin
+        try! database.exposureDaysStorage.add(.init(identifier: 0, exposedDate: dayMin, reportDate: .init(), isDeleted: false))
+        var days = try! database.exposureDaysStorage.getExposureDays()
+        XCTAssertEqual(days.count, 1)
+        try! database.exposureDaysStorage.add(.init(identifier: 0, exposedDate: dayMin.addingTimeInterval(.hour), reportDate: .init(), isDeleted: false))
+        days = try! database.exposureDaysStorage.getExposureDays()
+        XCTAssertEqual(days.count, 1)
     }
 }
