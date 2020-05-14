@@ -16,8 +16,8 @@ public enum InfectionStatus {
     /// The user is infected and has signaled it himself
     case infected
 
-    static func getInfectionState(from storage: ExposureDayStorage) -> InfectionStatus {
-        guard Default.shared.didMarkAsInfected == false else {
+    static func getInfectionState(from storage: ExposureDayStorage, defaults: DefaultStorage = Default.shared) -> InfectionStatus {
+        guard defaults.didMarkAsInfected == false else {
             return .infected
         }
 
