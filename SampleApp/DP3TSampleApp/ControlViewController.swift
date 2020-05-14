@@ -20,8 +20,6 @@ class ControlViewController: UIViewController {
 
     let scrollView = UIScrollView()
 
-    let identifierInput = UITextField()
-
     let shareButton = UIButton()
 
     let uploadButton = UIButton()
@@ -103,7 +101,7 @@ class ControlViewController: UIViewController {
 
         do {
             let label = UILabel()
-            label.text = "Start / Stop Bluetooth Service"
+            label.text = "Start / Stop Exposure Notification Service"
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(segmentedControl)
         }
@@ -205,37 +203,6 @@ class ControlViewController: UIViewController {
         stackView.addSpacerView(12)
 
         do {
-            let label = UILabel()
-            label.text = "Set ID Prefix"
-            stackView.addArrangedSubview(label)
-
-            identifierInput.text = Default.shared.identifierPrefix ?? ""
-            identifierInput.delegate = self
-            identifierInput.font = UIFont.systemFont(ofSize: 15)
-            identifierInput.borderStyle = UITextField.BorderStyle.roundedRect
-            identifierInput.autocorrectionType = UITextAutocorrectionType.no
-            identifierInput.keyboardType = UIKeyboardType.default
-            identifierInput.returnKeyType = UIReturnKeyType.done
-            identifierInput.clearButtonMode = UITextField.ViewMode.whileEditing
-            identifierInput.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
-            identifierInput.delegate = self
-            stackView.addArrangedSubview(identifierInput)
-
-            let button = UIButton()
-            if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
-            button.setTitle("Update", for: .normal)
-            button.addTarget(self, action: #selector(updateIdentifier), for: .touchUpInside)
-            stackView.addArrangedSubview(button)
-        }
-        stackView.addSpacerView(12)
-
-        do {
             if #available(iOS 13.0, *) {
                 shareButton.setTitleColor(.systemBlue, for: .normal)
                 shareButton.setTitleColor(.systemGray, for: .highlighted)
@@ -267,12 +234,6 @@ class ControlViewController: UIViewController {
 
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    @objc func updateIdentifier() {
-        identifierInput.resignFirstResponder()
-        Default.shared.identifierPrefix = identifierInput.text
-        reset()
     }
 
     @objc func sync() {

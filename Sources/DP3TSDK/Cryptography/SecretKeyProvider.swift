@@ -15,15 +15,21 @@ protocol SecretKeyProvider: class {
     func reset()
 }
 
+
+@available(iOS 13.5, *)
+fileprivate var logger = Logger(ENManager.self, category: "SecretKeyProvider")
+
 @available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date?, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
+        logger.trace()
         // getTestDiagnosisKeys {[weak self]  (keys, error) in
         getDiagnosisKeys { [weak self] keys, error in
             guard let self = self else { return }
             if let error = error {
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
+                logger.info("received %d keys", keys.count)
                 if let onsetDate = onsetDate {
                     var filteredKeys = keys.filter { $0.date > onsetDate }.map(CodableDiagnosisKey.init(key:))
                     filteredKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - filteredKeys.count))
