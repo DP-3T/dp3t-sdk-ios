@@ -17,13 +17,6 @@ class DP3TDatabase {
 
     private let log = Logger(DP3TDatabase.self, category: "database")
 
-    /// exposure days Storage
-    private let _exposureDaysStorage: ExposureDaysStorage
-    var exposureDaysStorage: ExposureDaysStorage {
-        guard !isDestroyed else { fatalError("Database is destroyed") }
-        return _exposureDaysStorage
-    }
-
     #if CALIBRATION
            /// logging Storage
            private let _logggingStorage: LoggingStorage
@@ -42,7 +35,6 @@ class DP3TDatabase {
             connection = try Connection(filePath.absoluteString, readonly: false)
             try? filePath.addExcludedFromBackupAttribute()
         }
-        _exposureDaysStorage = try ExposureDaysStorage(database: connection)
 
         #if CALIBRATION
             _logggingStorage = try LoggingStorage(database: connection)
@@ -56,7 +48,6 @@ class DP3TDatabase {
     // deletes data older than CryptoConstants.numberOfDaysToKeepData
     func deleteOldDate() throws {
         log.trace()
-        try exposureDaysStorage.deleteExpiredExpsureDays()
     }
 
     /// Discard all data
@@ -64,7 +55,6 @@ class DP3TDatabase {
         log.trace()
         guard !isDestroyed else { fatalError("Database is destroyed") }
         try connection.transaction {
-            try exposureDaysStorage.emptyStorage()
             #if CALIBRATION
                 try loggingStorage.emptyStorage()
             #endif

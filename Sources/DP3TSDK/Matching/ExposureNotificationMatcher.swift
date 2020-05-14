@@ -13,15 +13,15 @@ class ExposureNotificationMatcher: Matcher {
 
     private let manager: ENManager
 
-    private let database: DP3TDatabase
+    private let exposureDayStorage: ExposureDayStorage
 
     private let log = Logger(ExposureNotificationMatcher.self, category: "matcher")
 
     private var localURLs: [Date: URL] = [:]
 
-    init(manager: ENManager, database: DP3TDatabase) {
+    init(manager: ENManager, exposureDayStorage: ExposureDayStorage) {
         self.manager = manager
-        self.database = database
+        self.exposureDayStorage = exposureDayStorage
     }
 
     func receivedNewKnownCaseData(_ data: Data, batchTimestamp: Date) throws {
@@ -71,8 +71,8 @@ class ExposureNotificationMatcher: Matcher {
             Double(truncating: summary.attenuationDurations[0]) > 15 * TimeInterval.minute {
             log.info("exposureSummary meets requiremnts")
             let exposedDate = Date(timeIntervalSinceNow: TimeInterval(summary.daysSinceLastExposure) * TimeInterval.day * (-1))
-            let day: ExposureDay = ExposureDay(identifier: 0, exposedDate: exposedDate, reportDate: Date(), isDeleted: false)
-            try database.exposureDaysStorage.add(day)
+            let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: exposedDate, reportDate: Date(), isDeleted: false)
+            exposureDayStorage.add(day)
             delegate?.didFindMatch()
         } else {
             log.info("exposureSummary does not meet requirements")

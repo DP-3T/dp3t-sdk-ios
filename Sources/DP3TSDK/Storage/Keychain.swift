@@ -41,11 +41,13 @@ protocol KeychainProtocol {
     ///   - object: the object to set
     ///   - key: the keyobject to use
     /// - Returns: a result which either is successful or contains the error
+    @discardableResult
     func set<T>(_ object: T, for key: KeychainKey<T>) -> Result<Void, KeychainError> where T : Decodable, T : Encodable
 
     /// Deletes a object from the keychain
     /// - Parameter key: the key to delete
     /// - Returns: a result which either is successful or contains the error
+    @discardableResult
     func delete<T>(for key: KeychainKey<T>) -> Result<Void, KeychainError> where T : Decodable, T : Encodable
 }
 

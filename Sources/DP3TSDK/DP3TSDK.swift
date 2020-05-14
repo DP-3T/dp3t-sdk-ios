@@ -18,6 +18,8 @@ class DP3TSDK {
     /// database probably also not needed with ExposureNotification Framework
     private let database: DP3TDatabase
 
+    private let exposureDayStorage: ExposureDayStorage
+
     private var tracer: Tracer
 
     private let matcher: Matcher
@@ -64,9 +66,11 @@ class DP3TSDK {
         self.urlSession = urlSession
         database = try DP3TDatabase()
 
+        exposureDayStorage = ExposureDayStorage()
+
         let manager = ENManager()
         tracer = ExposureNotificationTracer(manager: manager)
-        matcher = ExposureNotificationMatcher(manager: manager, database: database)
+        matcher = ExposureNotificationMatcher(manager: manager, exposureDayStorage: exposureDayStorage)
         secretKeyProvider = manager
 
         let service_ = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession)
@@ -78,7 +82,7 @@ class DP3TSDK {
 
         state = TracingState(trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
-                             infectionStatus: InfectionStatus.getInfectionState(from: database),
+                             infectionStatus: InfectionStatus.getInfectionState(from: exposureDayStorage),
                              backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded()
@@ -222,8 +226,8 @@ class DP3TSDK {
 
     /// reset exposure days
     func resetExposureDays() throws {
-        try database.exposureDaysStorage.markExposuresAsDeleted()
-        state.infectionStatus = InfectionStatus.getInfectionState(from: database)
+        exposureDayStorage.markExposuresAsDeleted()
+        state.infectionStatus = InfectionStatus.getInfectionState(from: exposureDayStorage)
     }
 
     /// reset the infection status
@@ -241,6 +245,7 @@ class DP3TSDK {
         Default.shared.didMarkAsInfected = false
         try database.emptyStorage()
         try database.destroyDatabase()
+        exposureDayStorage.reset()
         secretKeyProvider.reset()
         URLCache.shared.removeAllCachedResponses()
     }
@@ -269,6 +274,6 @@ extension DP3TSDK: TracerDelegate {
 @available(iOS 13.5, *)
 extension DP3TSDK: MatcherDelegate {
     func didFindMatch() {
-        state.infectionStatus = InfectionStatus.getInfectionState(from: database)
+        state.infectionStatus = InfectionStatus.getInfectionState(from: exposureDayStorage)
     }
 }
