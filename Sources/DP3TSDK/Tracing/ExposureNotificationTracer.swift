@@ -16,7 +16,7 @@ class ExposureNotificationTracer: Tracer {
 
     var delegate: TracerDelegate?
 
-    private let log = Logger(DP3TDatabase.self, category: "exposureNotificationTracer")
+    private let log = Logger(ExposureNotificationTracer.self, category: "exposureNotificationTracer")
 
     private(set) var state: TrackingState {
         didSet {

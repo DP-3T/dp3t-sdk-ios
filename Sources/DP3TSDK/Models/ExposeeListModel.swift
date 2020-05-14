@@ -19,9 +19,6 @@ struct ExposeeListModel: Encodable {
     /// Secret keys
     let gaenKeys: [CodableDiagnosisKey]
 
-    /// Authentication data provided by health institutes to verify test results
-    let authData: String?
-
     let fake: Bool
 
     let delayedKeyDate: DayDate
@@ -30,15 +27,13 @@ struct ExposeeListModel: Encodable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         // Encode key
         try container.encode(gaenKeys, forKey: .gaenKeys)
-        // Encode auth if present only
-        try container.encodeIfPresent(authData, forKey: .authData)
-
+ 
         try container.encode(fake ? 1 : 0, forKey: .fake)
 
         try container.encode(delayedKeyDate.period, forKey: .delayedKeyDate)
     }
 
     enum CodingKeys: CodingKey {
-        case gaenKeys, authData, fake, delayedKeyDate
+        case gaenKeys, fake, delayedKeyDate
     }
 }

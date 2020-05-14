@@ -37,7 +37,7 @@ class DP3TSDK {
     /// delegate
     public weak var delegate: DP3TTracingDelegate?
 
-    private let log = Logger(DP3TDatabase.self, category: "DP3TSDK")
+    private let log = Logger(DP3TSDK.self, category: "DP3TSDK")
 
     /// keeps track of  SDK state
     private var state: TracingState {
@@ -74,9 +74,7 @@ class DP3TSDK {
         service = service_
         synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service_)
 
-
-
-        backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler)
+        backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service_)
 
         state = TracingState(trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
@@ -127,9 +125,12 @@ class DP3TSDK {
     /// - Throws: if a error happed
     func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
         log.trace()
+
+        OperationQueue().addOperation(OutstandingPublishOperation(keyProvider: secretKeyProvider, serviceClient: service))
+
         if  ENManager.authorizationStatus != .authorized {
             log.error("cant run sync before being authorized")
-            callback?(.failure(.permissonError))
+            callback?(.success(()))
             return
         }
 
@@ -194,14 +195,8 @@ class DP3TSDK {
             case let .failure(error):
                 callback(.failure(error))
             case let .success(keys):
-                let authData: String?
-                if case let ExposeeAuthMethod.JSONPayload(token: token) = authentication {
-                    authData = token
-                } else {
-                    authData = nil
-                }
 
-                let completionHandler: (Result<OutstandingPublishOperation, DP3TNetworkingError>) -> Void = { [weak self] result in
+                let completionHandler: (Result<OutstandingPublish, DP3TNetworkingError>) -> Void = { [weak self] result in
                     DispatchQueue.main.async {
                         switch result {
                         case let .success(outstandingPublish):
@@ -217,7 +212,9 @@ class DP3TSDK {
                         }
                     }
                 }
-                let model = ExposeeListModel(gaenKeys: keys, authData: authData, fake: isFakeRequest, delayedKeyDate: DayDate())
+                let model = ExposeeListModel(gaenKeys: keys,
+                                             fake: isFakeRequest,
+                                             delayedKeyDate: DayDate())
                 self.service.addExposeeList(model, authentication: authentication, completion: completionHandler)
             }
         }
@@ -231,6 +228,7 @@ class DP3TSDK {
 
     /// reset the infection status
     func resetInfectionStatus() throws {
+        Default.shared.didMarkAsInfected = false
         state.infectionStatus = .healthy
     }
 

@@ -25,7 +25,8 @@ let package = Package(
         .target(
             name: "DP3TSDK",
             dependencies: ["SQLite", "SwiftProtobuf", "SwiftJWT"],
-            swiftSettings: [.define("CALIBRATION")]
+            swiftSettings: [.define("CALIBRATION"),
+                            .define("BACKGROUNDTASK_DEBUGGING", .when(platforms: [.iOS], configuration: .debug))]
         ),
         .testTarget(
             name: "DP3TSDKTests",

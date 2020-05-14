@@ -7,16 +7,17 @@
 import Foundation
 import ExposureNotification
 
-protocol SecretKeyProvider {
+protocol SecretKeyProvider: class {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
-    func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
+
+    func getDiagnosisKeys(onsetDate: Date?, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
+
     func reset()
 }
 
-
 @available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
-    func getDiagnosisKeys(onsetDate: Date, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
+    func getDiagnosisKeys(onsetDate: Date?, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
 
         // getTestDiagnosisKeys {[weak self]  (keys, error) in
         getDiagnosisKeys { [weak self] keys, error in
@@ -24,9 +25,14 @@ extension ENManager: SecretKeyProvider {
             if let error = error {
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
-                var filteredKeys = keys.filter { $0.date > onsetDate }.map(CodableDiagnosisKey.init(key:))
-                filteredKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - filteredKeys.count))
-                completionHandler(.success(filteredKeys))
+                if let onsetDate = onsetDate {
+                    var filteredKeys = keys.filter { $0.date > onsetDate }.map(CodableDiagnosisKey.init(key:))
+                    filteredKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - filteredKeys.count))
+                    completionHandler(.success(filteredKeys))
+                } else {
+                    completionHandler(.success(keys.map(CodableDiagnosisKey.init(key:))))
+                }
+
             } else {
                 fatalError("getDiagnosisKeys returned neither an error nor a keys")
             }

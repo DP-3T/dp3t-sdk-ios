@@ -6,8 +6,12 @@
 
 import Foundation
 
-struct OutstandingPublishOperation: Codable, Hashable {
+struct OutstandingPublish: Codable, Hashable, CustomDebugStringConvertible {
     let authorizationHeader: String?
     let dayToPublish: Date
     let fake: Bool
+
+    var debugDescription: String {
+        "<OutstandingPublish fake: \(fake), day: \(dayToPublish.description)>"
+    }
 }

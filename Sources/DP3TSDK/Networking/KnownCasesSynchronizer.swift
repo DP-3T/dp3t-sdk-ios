@@ -18,7 +18,7 @@ class KnownCasesSynchronizer {
     /// service client
     private weak var service: ExposeeServiceClient!
 
-    private let log = Logger(DP3TDatabase.self, category: "knownCasesSynchronizer")
+    private let log = Logger(KnownCasesSynchronizer.self, category: "knownCasesSynchronizer")
 
     /// Create a known case synchronizer
     /// - Parameters:

@@ -7,6 +7,9 @@
 import DP3TSDK
 import os
 import UIKit
+#if DEBUG
+import UserNotifications
+#endif
 
 func initializeSDK() {
     try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: nil), mode: .calibration)
@@ -17,6 +20,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        #if DEBUG
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert,.badge,.sound]) { (_, _) in }
+        #endif
+
         initializeSDK()
 
         if application.applicationState != .background {

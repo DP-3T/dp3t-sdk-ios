@@ -56,8 +56,13 @@ struct ManagingExposeeEndpoint {
         baseURL.appendingPathComponent(version)
     }
 
-    /// Get the add exposeeList endpoint URL
-    func addExposeeGaen() -> URL {
+    /// Get the add exposed endpoint URL
+    func addExposedGaen() -> URL {
         baseURLVersionned.appendingPathComponent("gaen").appendingPathComponent("exposed")
+    }
+
+    /// Get the add exposed next day endpoint URL
+    func addExposedGaenNextDay() -> URL {
+        baseURLVersionned.appendingPathComponent("gaen").appendingPathComponent("exposednextday")
     }
 }
