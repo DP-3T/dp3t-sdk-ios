@@ -11,7 +11,7 @@ class ExposureDayStorage {
 
     let parameters: DP3TParameters
 
-    let key = KeychainKey<[ExposureDay]>(key: "org.dpppt.exposureday")
+    static let key = KeychainKey<[ExposureDay]>(key: "org.dpppt.exposureday")
 
     init(keychain: KeychainProtocol = Keychain(), parameters: DP3TParameters = Default.shared.parameters) {
         self.keychain = keychain
@@ -33,11 +33,11 @@ class ExposureDayStorage {
     }
 
     func setDays(days: [ExposureDay]) {
-        keychain.set(days, for: key)
+        keychain.set(days, for: Self.key)
     }
 
     func getDays(filtered: Bool = true) -> [ExposureDay] {
-        switch keychain.get(for: key) {
+        switch keychain.get(for: Self.key) {
         case let .success(days):
             if filtered {
                 return days.filter { $0.isDeleted == false }
@@ -63,6 +63,6 @@ class ExposureDayStorage {
     }
 
     func reset() {
-        keychain.delete(for: key)
+        keychain.delete(for: Self.key)
     }
 }

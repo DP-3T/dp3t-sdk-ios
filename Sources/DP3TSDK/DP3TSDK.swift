@@ -65,6 +65,15 @@ class DP3TSDK {
     ///   - applicationDescriptor: information about the backend to use
     ///   - urlSession: the url session to use for networking (app can set it to enable certificate pinning)
     init(applicationDescriptor: ApplicationDescriptor, urlSession: URLSession, backgroundHandler: DP3TBackgroundHandler?) throws {
+
+        // reset keychain on first launch
+        if Default.shared.isFirstLaunch {
+            Default.shared.isFirstLaunch = false
+            let keychain = Keychain()
+            keychain.delete(for: ExposureDayStorage.key)
+            keychain.delete(for: OutstandingPublishStorage.key)
+        }
+
         self.applicationDescriptor = applicationDescriptor
         self.urlSession = urlSession
         #if CALIBRATION

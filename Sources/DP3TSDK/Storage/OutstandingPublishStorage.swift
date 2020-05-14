@@ -10,14 +10,14 @@ class OutstandingPublishStorage {
 
     let keychain: KeychainProtocol
 
-    let key = KeychainKey<[OutstandingPublish]>(key: "org.dpppt.outstandingpublish")
+    static let key = KeychainKey<[OutstandingPublish]>(key: "org.dpppt.outstandingpublish")
 
     init(keychain: KeychainProtocol = Keychain()) {
         self.keychain = keychain
     }
 
     func get() -> [OutstandingPublish] {
-        switch keychain.get(for: key) {
+        switch keychain.get(for: Self.key) {
         case let .success(publishes):
             return publishes
         case .failure:
@@ -38,11 +38,11 @@ class OutstandingPublishStorage {
     }
 
     func reset(){
-        keychain.delete(for: key)
+        keychain.delete(for: Self.key)
     }
 
     private func set(publishes: [OutstandingPublish]) {
-        keychain.set(publishes, for: key)
+        keychain.set(publishes, for: Self.key)
     }
     
 }
