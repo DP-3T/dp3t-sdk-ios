@@ -246,8 +246,11 @@ class DP3TSDK {
         Default.shared.lastLoadedBatchReleaseTime = nil
         Default.shared.lastSync = nil
         Default.shared.didMarkAsInfected = false
+        Default.shared.outstandingPublishes = []
+        #if CALIBRATION
         try database.emptyStorage()
         try database.destroyDatabase()
+        #endif
         exposureDayStorage.reset()
         secretKeyProvider.reset()
         URLCache.shared.removeAllCachedResponses()
