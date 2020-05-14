@@ -209,10 +209,7 @@ class DP3TSDK {
                                 self?.state.infectionStatus = .infected
                             }
 
-                            //only overwrite fake publish operations
-                            if Default.shared.outstandingPublish == nil || (Default.shared.outstandingPublish?.fake == true && outstandingPublish.fake == false) {
-                                Default.shared.outstandingPublish = outstandingPublish
-                            }
+                            Default.shared.outstandingPublishes.insert(outstandingPublish)
 
                             callback(.success(()))
                         case let .failure(error):

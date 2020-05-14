@@ -10,7 +10,7 @@ import Foundation
 class MockDefaults: DefaultStorage {
     var parameters: DP3TParameters = .init()
 
-    var outstandingPublish: OutstandingPublishOperation? = nil
+    var outstandingPublishes: Set<OutstandingPublishOperation> = []
 
     var isFirstLaunch: Bool = false
 

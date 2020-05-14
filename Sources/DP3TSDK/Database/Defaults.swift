@@ -23,8 +23,8 @@ protocol DefaultStorage {
     /// Parameters to configure the SDK
     var parameters: DP3TParameters { get set }
 
-    /// Outstanding publish operation
-    var outstandingPublish: OutstandingPublishOperation? { get set }
+    /// Outstanding publish operations
+    var outstandingPublishes: Set<OutstandingPublishOperation> { get set }
 }
 
 /// UserDefaults Storage Singleton
@@ -50,8 +50,8 @@ class Default: DefaultStorage {
     var didMarkAsInfected: Bool
 
     /// Outstanding publish operation
-    @Persisted(userDefaultsKey: "org.dpppt.outstandingPublish", defaultValue: nil)
-    var outstandingPublish: OutstandingPublishOperation?
+    @Persisted(userDefaultsKey: "org.dpppt.outstandingPublish", defaultValue: [])
+    var outstandingPublishes: Set<OutstandingPublishOperation>
 
     /// Parameters
     private func saveParameters(_ parameters: DP3TParameters) {

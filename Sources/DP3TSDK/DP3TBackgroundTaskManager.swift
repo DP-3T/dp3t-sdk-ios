@@ -23,6 +23,17 @@ private class SyncOperation: Operation {
 }
 
 @available(iOS 13.5, *)
+private class OutstandingPublish: Operation {
+    override func main() {
+        let operations = Default.shared.outstandingPublishes
+        for op in operations where op.dayToPublish < DayDate().dayMin{
+            //TODO handle outstandingPublish
+            Default.shared.outstandingPublishes.remove(op)
+        }
+    }
+}
+
+@available(iOS 13.5, *)
 private class HandlerOperation: Operation {
     weak var handler: DP3TBackgroundHandler?
 
@@ -62,7 +73,6 @@ class DP3TBackgroundTaskManager {
         guard !didRegisterBackgroundTask else { return }
         didRegisterBackgroundTask = true
 
-        //TODO: log
         BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .main) { task in
             self.handleBackgroundTask(task)
         }
@@ -74,24 +84,50 @@ class DP3TBackgroundTaskManager {
         log.trace()
 
         let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
+
+        let completionGroup = DispatchGroup()
 
         if let handler = handler {
-            queue.addOperation(HandlerOperation(handler: handler))
+            let handlerOperation = HandlerOperation(handler: handler)
+
+            completionGroup.enter()
+            handlerOperation.completionBlock = { [weak self] in
+                self?.log.info("handlerOperation finished")
+                completionGroup.leave()
+            }
+
+            queue.addOperation(handlerOperation)
         }
 
-        queue.addOperation(SyncOperation())
+        let syncOperation = SyncOperation()
+
+        completionGroup.enter()
+        syncOperation.completionBlock = { [weak self] in
+            self?.log.info("syncOperation finished")
+            completionGroup.leave()
+        }
+
+        queue.addOperation(syncOperation)
+
+        let outstandingPublishOperation = OutstandingPublish()
+        completionGroup.enter()
+        outstandingPublishOperation.completionBlock = { [weak self] in
+            self?.log.info("outstandingPublishOperation finished")
+            completionGroup.leave()
+        }
+
+        queue.addOperation(outstandingPublishOperation)
 
         task.expirationHandler = {
             queue.cancelAllOperations()
         }
 
-        scheduleBackgroundTask()
-
-        let lastOperation = queue.operations.last
-        lastOperation?.completionBlock = {
-            task.setTaskCompleted(success: !(lastOperation?.isCancelled ?? false))
+        completionGroup.notify(queue: .main) {
+            let success = !queue.operations.map { $0.isCancelled }.contains(true)
+            task.setTaskCompleted(success: success)
         }
+
+        scheduleBackgroundTask()
     }
 
     private func scheduleBackgroundTask() {
@@ -101,7 +137,7 @@ class DP3TBackgroundTaskManager {
         do {
             try BGTaskScheduler.shared.submit(taskRequest)
         } catch {
-            //TODO: log
+            log.error("background task schedule failed %@", error.localizedDescription)
         }
     }
 }

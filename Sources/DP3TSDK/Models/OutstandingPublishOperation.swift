@@ -6,7 +6,7 @@
 
 import Foundation
 
-struct OutstandingPublishOperation: Codable {
+struct OutstandingPublishOperation: Codable, Hashable {
     let authorizationHeader: String?
     let dayToPublish: Date
     let fake: Bool
