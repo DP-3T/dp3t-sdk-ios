@@ -55,9 +55,10 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     private var userAgent: String {
         let appId = descriptor.appId
         let appVersion = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "0.0"
+        let buildNumber = (Bundle.main.infoDictionary?["CFBundleVersion"] as? String) ?? "0"
         let systemVersion = UIDevice.current.systemVersion
 
-        return [appId, appVersion, "iOS", systemVersion].joined(separator: ";")
+        return [appId, appVersion, buildNumber, "iOS", systemVersion].joined(separator: ";")
     }
 
     /// Initialize the client with a  descriptor
@@ -86,6 +87,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
+        request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
 
         let (data, response, error) = urlSession.synchronousDataTask(with: request)
 
