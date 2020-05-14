@@ -19,6 +19,8 @@ class DP3TSDK {
         private let database: DP3TDatabase
     #endif
 
+    private let outstandingPublishesStorage: OutstandingPublishStorage
+
     private let exposureDayStorage: ExposureDayStorage
 
     private var tracer: Tracer
@@ -70,6 +72,7 @@ class DP3TSDK {
         #endif
 
         exposureDayStorage = ExposureDayStorage()
+        outstandingPublishesStorage = OutstandingPublishStorage()
 
         let manager = ENManager()
         tracer = ExposureNotificationTracer(manager: manager)
@@ -211,7 +214,7 @@ class DP3TSDK {
                                 self?.state.infectionStatus = .infected
                             }
 
-                            Default.shared.outstandingPublishes.insert(outstandingPublish)
+                            self?.outstandingPublishesStorage.add(outstandingPublish)
 
                             callback(.success(()))
                         case let .failure(error):
@@ -246,7 +249,7 @@ class DP3TSDK {
         Default.shared.lastLoadedBatchReleaseTime = nil
         Default.shared.lastSync = nil
         Default.shared.didMarkAsInfected = false
-        Default.shared.outstandingPublishes = []
+        outstandingPublishesStorage.reset()
         #if CALIBRATION
             try database.emptyStorage()
             try database.destroyDatabase()

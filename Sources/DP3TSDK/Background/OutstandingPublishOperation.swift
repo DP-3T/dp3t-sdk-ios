@@ -11,6 +11,8 @@ class OutstandingPublishOperation: Operation {
     weak var keyProvider: SecretKeyProvider!
     private let serviceClient: ExposeeServiceClient
 
+    private let storage = OutstandingPublishStorage()
+
     private let log = Logger(OutstandingPublishOperation.self, category: "OutstandingPublishOperation")
 
     let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
@@ -23,10 +25,10 @@ class OutstandingPublishOperation: Operation {
     override func main() {
         serialQueue.sync {
             log.trace()
-            let operations = Default.shared.outstandingPublishes
+            let operations = storage.get()
             guard operations.isEmpty == false else { return }
-            let today = DayDate(date: .init(timeIntervalSinceNow: -.day)).dayMin
-            for op in operations where today < op.dayToPublish {
+            let today = DayDate().dayMin
+            for op in operations where op.dayToPublish < today  {
                 log.info("handling outstanding Publish %@", op.debugDescription)
                 let group = DispatchGroup()
 
@@ -85,7 +87,7 @@ class OutstandingPublishOperation: Operation {
                     self.cancel()
                     return
                 }
-                Default.shared.outstandingPublishes.remove(op)
+                storage.remove(publish: op)
             }
         }
     }
