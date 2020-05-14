@@ -104,7 +104,6 @@ class Default: DefaultStorage {
     }
 }
 
-
 @propertyWrapper
 class Persisted<Value: Codable> {
     init(userDefaultsKey: String, defaultValue: Value) {

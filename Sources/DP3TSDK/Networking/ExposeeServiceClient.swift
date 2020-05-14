@@ -8,7 +8,6 @@ import Foundation
 import SwiftJWT
 import UIKit
 
-
 protocol ExposeeServiceClientProtocol {
     typealias ExposeeResult = Result<Data?, DP3TNetworkingError>
     typealias ExposeeCompletion = Result<Void, DP3TNetworkingError>
@@ -165,7 +164,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
         request.httpBody = payload
 
-        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
             guard error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))
                 return
@@ -211,7 +210,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
         request.httpBody = payload
 
-        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
             guard error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))
                 return
@@ -235,8 +234,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         })
         task.resume()
     }
-
-
 }
 
 internal extension HTTPURLResponse {

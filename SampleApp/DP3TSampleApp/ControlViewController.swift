@@ -368,11 +368,11 @@ class ControlViewController: UIViewController {
         }
     }
 
-    @objc func resetInfectionState(){
+    @objc func resetInfectionState() {
         try? DP3TTracing.resetInfectionStatus()
     }
 
-    @objc func resetExposureDays(){
+    @objc func resetExposureDays() {
         try? DP3TTracing.resetExposureDays()
     }
 
@@ -431,7 +431,7 @@ class ControlViewController: UIViewController {
         switch state.infectionStatus {
         case let .exposed(days):
             elements.append("InfectionStatus: EXPOSED days ->")
-            elements.append(contentsOf: days.enumerated().map{"\($0.offset): \($0.element.exposedDate.description)"})
+            elements.append(contentsOf: days.enumerated().map { "\($0.offset): \($0.element.exposedDate.description)" })
             elements.append("--")
         case .infected:
             elements.append("InfectionStatus: INFECTED")

@@ -4,10 +4,10 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
+import ExposureNotification
 import Foundation
 import os
 import UIKit
-import ExposureNotification
 
 /// Main class for handling SDK logic
 @available(iOS 13.5, *)
@@ -16,7 +16,7 @@ class DP3TSDK {
     private let applicationDescriptor: ApplicationDescriptor
 
     #if CALIBRATION
-    private let database: DP3TDatabase
+        private let database: DP3TDatabase
     #endif
 
     private let exposureDayStorage: ExposureDayStorage
@@ -66,7 +66,7 @@ class DP3TSDK {
         self.applicationDescriptor = applicationDescriptor
         self.urlSession = urlSession
         #if CALIBRATION
-        database = try DP3TDatabase()
+            database = try DP3TDatabase()
         #endif
 
         exposureDayStorage = ExposureDayStorage()
@@ -95,7 +95,7 @@ class DP3TSDK {
         matcher.delegate = self
 
         #if CALIBRATION
-        Logger.delegate = database.loggingStorage
+            Logger.delegate = database.loggingStorage
         #endif
 
         log.trace()
@@ -135,7 +135,7 @@ class DP3TSDK {
 
         OperationQueue().addOperation(OutstandingPublishOperation(keyProvider: secretKeyProvider, serviceClient: service))
 
-        if  ENManager.authorizationStatus != .authorized {
+        if ENManager.authorizationStatus != .authorized {
             log.error("cant run sync before being authorized")
             callback?(.success(()))
             return
@@ -248,8 +248,8 @@ class DP3TSDK {
         Default.shared.didMarkAsInfected = false
         Default.shared.outstandingPublishes = []
         #if CALIBRATION
-        try database.emptyStorage()
-        try database.destroyDatabase()
+            try database.emptyStorage()
+            try database.destroyDatabase()
         #endif
         exposureDayStorage.reset()
         secretKeyProvider.reset()
@@ -261,11 +261,10 @@ class DP3TSDK {
     }
 
     #if CALIBRATION
-    func getLogs() throws -> [LogEntry] {
-        return try database.loggingStorage.getLogs()
-    }
+        func getLogs() throws -> [LogEntry] {
+            return try database.loggingStorage.getLogs()
+        }
     #endif
-
 }
 
 // MARK: BluetoothPermissionDelegate implementation

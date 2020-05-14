@@ -9,7 +9,7 @@ import Foundation
 import UIKit.UIApplication
 
 #if BACKGROUNDTASK_DEBUGGING
-import UserNotifications
+    import UserNotifications
 #endif
 
 /// Background task registration should only happen once per run
@@ -53,14 +53,14 @@ class DP3TBackgroundTaskManager {
         log.trace()
 
         #if BACKGROUNDTASK_DEBUGGING
-        let center = UNUserNotificationCenter.current()
-        let content = UNMutableNotificationContent()
-        content.title = DP3TBackgroundTaskManager.taskIdentifier
-        content.body = "Task got triggered at \(Date().description)"
-        content.sound = UNNotificationSound.default
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-        center.add(request)
+            let center = UNUserNotificationCenter.current()
+            let content = UNMutableNotificationContent()
+            content.title = DP3TBackgroundTaskManager.taskIdentifier
+            content.body = "Task got triggered at \(Date().description)"
+            content.sound = UNNotificationSound.default
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+            center.add(request)
         #endif
 
         let queue = OperationQueue()

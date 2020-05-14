@@ -16,7 +16,7 @@ class MockKeychain: KeychainProtocol {
         return .failure(.notFound)
     }
 
-    func set<T>(_ object: T, for key: KeychainKey<T>) -> Result<Void, KeychainError>  {
+    func set<T>(_ object: T, for key: KeychainKey<T>) -> Result<Void, KeychainError> {
         store[key.key] = object
         return .success(())
     }
@@ -26,7 +26,7 @@ class MockKeychain: KeychainProtocol {
         return .success(())
     }
 
-    func reset(){
+    func reset() {
         store.removeAll()
     }
 }

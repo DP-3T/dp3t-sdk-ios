@@ -37,7 +37,7 @@ class LogsViewController: UIViewController {
         loadLogs()
         NotificationCenter.default.addObserver(self, selector: #selector(didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
 
-        NotificationCenter.default.addObserver(forName: .init("org.dpppt.didAddLog"), object: nil, queue: .main) { [weak self] (_) in
+        NotificationCenter.default.addObserver(forName: .init("org.dpppt.didAddLog"), object: nil, queue: .main) { [weak self] _ in
             self?.reloadLogs()
         }
     }
@@ -70,7 +70,7 @@ class LogsViewController: UIViewController {
 
     func loadLogs() {
         DispatchQueue.global(qos: .background).async {
-            if let logs  = try? DP3TTracing.getLogs() {
+            if let logs = try? DP3TTracing.getLogs() {
                 DispatchQueue.main.async {
                     self.refreshControl.endRefreshing()
                     self.logs = logs
@@ -119,7 +119,7 @@ extension Date {
     }
 }
 
-fileprivate extension OSLogType {
+private extension OSLogType {
     var string: String {
         switch self {
         case .debug:

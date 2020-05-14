@@ -5,7 +5,7 @@ import Foundation
 
 class Logger {
     #if CALIBRATION
-    static weak var delegate: LoggingDelegate?
+        weak static var delegate: LoggingDelegate?
     #endif
 
     let osLog: OSLog
@@ -57,7 +57,7 @@ class Logger {
         guard osLog.isEnabled(type: .debug) else { return }
         let file = URL(fileURLWithPath: String(describing: file)).deletingPathExtension().lastPathComponent
         var function = String(describing: function)
-        function.removeSubrange(function.firstIndex(of: "(")!...function.lastIndex(of: ")")!)
+        function.removeSubrange(function.firstIndex(of: "(")! ... function.lastIndex(of: ")")!)
         log("%{public}@.%{public}@():%ld", type: .debug, [file, function, line])
     }
 
@@ -66,17 +66,17 @@ class Logger {
         // http://www.openradar.me/33203955
 
         #if CALIBRATION
-        if let delegate = Logger.delegate, DP3TMode.current == .calibration {
-            var string = message.withUTF8Buffer {
-                String(decoding: $0, as: UTF8.self)
+            if let delegate = Logger.delegate, DP3TMode.current == .calibration {
+                var string = message.withUTF8Buffer {
+                    String(decoding: $0, as: UTF8.self)
+                }
+                string = string.replacingOccurrences(of: "{public}", with: "")
+                    .replacingOccurrences(of: "{private}", with: "")
+                delegate.log("[\(category)] \(String(format: string, arguments: a))", type: type)
+                NotificationCenter.default.post(name: .init("org.dpppt.didAddLog"), object: nil)
             }
-            string = string.replacingOccurrences(of: "{public}", with: "")
-                           .replacingOccurrences(of: "{private}", with: "")
-            delegate.log("[\(self.category)] \(String(format: string, arguments: a))", type: type)
-            NotificationCenter.default.post(name: .init("org.dpppt.didAddLog"), object: nil)
-        }
         #endif
-        
+
         assert(a.count <= 5)
         switch a.count {
         case 5: os_log(message, log: osLog, type: type, a[0], a[1], a[2], a[3], a[4])

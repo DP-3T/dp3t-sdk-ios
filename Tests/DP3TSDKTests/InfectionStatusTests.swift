@@ -14,7 +14,7 @@ class InfectionStatusTests: XCTestCase {
         keychain.reset()
     }
 
-    func testHealthy(){
+    func testHealthy() {
         let storage = ExposureDayStorage(keychain: keychain)
         let mockDefaults = MockDefaults()
         mockDefaults.didMarkAsInfected = false
@@ -27,7 +27,7 @@ class InfectionStatusTests: XCTestCase {
         }
     }
 
-    func testInfected(){
+    func testInfected() {
         let storage = ExposureDayStorage(keychain: keychain)
         let mockDefaults = MockDefaults()
         mockDefaults.didMarkAsInfected = true
@@ -40,7 +40,7 @@ class InfectionStatusTests: XCTestCase {
         }
     }
 
-    func testExposed(){
+    func testExposed() {
         let storage = ExposureDayStorage(keychain: keychain)
         storage.add(.init(identifier: UUID(), exposedDate: .init(), reportDate: .init(), isDeleted: false))
         let mockDefaults = MockDefaults()
@@ -54,7 +54,7 @@ class InfectionStatusTests: XCTestCase {
         }
     }
 
-    func testHelthyDeletedExposed(){
+    func testHelthyDeletedExposed() {
         let storage = ExposureDayStorage(keychain: keychain)
         storage.add(.init(identifier: UUID(), exposedDate: .init(), reportDate: .init(), isDeleted: true))
         let mockDefaults = MockDefaults()

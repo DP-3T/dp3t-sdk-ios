@@ -1,13 +1,12 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
 import Foundation
 
 struct DelayedKeyModel: Encodable {
-
     let delayedKey: CodableDiagnosisKey
 
     let fake: Bool

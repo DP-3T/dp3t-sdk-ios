@@ -4,8 +4,8 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import Foundation
 import ExposureNotification
+import Foundation
 
 @available(iOS 13.5, *)
 class ExposureNotificationMatcher: Matcher {
@@ -62,7 +62,6 @@ class ExposureNotificationMatcher: Matcher {
         if let summary = exposureSummary {
             log.info("reiceived exposureSummary: %@", summary.debugDescription)
         }
-
 
         // TODO: changed detection to more advanced logic
         // for now the attenuation duration < 50 has to be more than 15 minutes

@@ -7,7 +7,6 @@
 import Foundation
 
 class ExposureDayStorage {
-
     let keychain: KeychainProtocol
 
     let parameters: DP3TParameters
@@ -33,7 +32,7 @@ class ExposureDayStorage {
         }
     }
 
-    func setDays(days: [ExposureDay]){
+    func setDays(days: [ExposureDay]) {
         keychain.set(days, for: key)
     }
 
@@ -54,17 +53,16 @@ class ExposureDayStorage {
     func deleteExpiredExpsureDays() {
         let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(parameters.crypto.numberOfDaysToKeepMatchedContacts) * TimeInterval.day)
         let days = getDays(filtered: false)
-        let filteredDays = days.filter{ $0.reportDate >= thresholdDate }
-        setDays(days:  filteredDays)
+        let filteredDays = days.filter { $0.reportDate >= thresholdDate }
+        setDays(days: filteredDays)
     }
 
     func markExposuresAsDeleted() {
         let days = getDays(filtered: false)
-        setDays(days: days.map{ $0.deleted() })
+        setDays(days: days.map { $0.deleted() })
     }
 
-    func reset(){
+    func reset() {
         keychain.delete(for: key)
     }
-    
 }

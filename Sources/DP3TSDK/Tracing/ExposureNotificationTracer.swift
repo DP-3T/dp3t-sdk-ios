@@ -4,8 +4,8 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import Foundation
 import ExposureNotification
+import Foundation
 
 @available(iOS 13.5, *)
 class ExposureNotificationTracer: Tracer {
@@ -42,23 +42,22 @@ class ExposureNotificationTracer: Tracer {
     }
 
     func initializeObservers() {
-        self.updateState()
+        updateState()
 
-        self.stateObservation = manager.observe(\.exposureNotificationStatus, options: [.new]) { [weak self] _, _ in
+        stateObservation = manager.observe(\.exposureNotificationStatus, options: [.new]) { [weak self] _, _ in
             self?.updateState()
         }
 
-        self.enabledObservation = manager.observe(\.exposureNotificationEnabled, options: [.new]) { [weak self] _, _ in
+        enabledObservation = manager.observe(\.exposureNotificationEnabled, options: [.new]) { [weak self] _, _ in
             self?.updateState()
         }
     }
 
-    func updateState(){
-        self.state = .init(state: self.manager.exposureNotificationStatus,
-                           authorizationStatus: ENManager.authorizationStatus,
-                           enabled: self.manager.exposureNotificationEnabled)
+    func updateState() {
+        state = .init(state: manager.exposureNotificationStatus,
+                      authorizationStatus: ENManager.authorizationStatus,
+                      enabled: manager.exposureNotificationEnabled)
     }
-
 
     func setEnabled(_ enabled: Bool) {
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
@@ -73,7 +72,7 @@ class ExposureNotificationTracer: Tracer {
 
 @available(iOS 13.5, *)
 extension TrackingState {
-    init(state: ENStatus, authorizationStatus: ENAuthorizationStatus, enabled: Bool ) {
+    init(state: ENStatus, authorizationStatus: ENAuthorizationStatus, enabled: Bool) {
         if authorizationStatus == .unknown {
             self = .stopped
             return

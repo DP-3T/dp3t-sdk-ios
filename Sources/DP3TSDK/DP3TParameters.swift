@@ -42,7 +42,6 @@ public struct DP3TParameters: Codable {
     }
 
     public struct ContactMatching: Codable {
-
         public var contactAttenuationThreshold: Double = 73.0
 
         public var numberOfWindowsForExposure: Int = 3

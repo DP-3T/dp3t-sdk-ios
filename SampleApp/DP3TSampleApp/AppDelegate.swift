@@ -8,7 +8,7 @@ import DP3TSDK
 import os
 import UIKit
 #if DEBUG
-import UserNotifications
+    import UserNotifications
 #endif
 
 func initializeSDK() {
@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         #if DEBUG
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert,.badge,.sound]) { (_, _) in }
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
         #endif
 
         initializeSDK()

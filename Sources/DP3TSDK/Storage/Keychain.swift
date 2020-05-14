@@ -34,7 +34,7 @@ protocol KeychainProtocol {
     /// Get a object from the keychain
     /// - Parameter key: a key object with the type
     /// - Returns: a result which either contain the error or the object
-    func get<T>(for key: KeychainKey<T>) -> Result<T, KeychainError> where T : Decodable, T : Encodable
+    func get<T>(for key: KeychainKey<T>) -> Result<T, KeychainError> where T: Decodable, T: Encodable
 
     /// Set a object to the keychain
     /// - Parameters:
@@ -42,20 +42,19 @@ protocol KeychainProtocol {
     ///   - key: the keyobject to use
     /// - Returns: a result which either is successful or contains the error
     @discardableResult
-    func set<T>(_ object: T, for key: KeychainKey<T>) -> Result<Void, KeychainError> where T : Decodable, T : Encodable
+    func set<T>(_ object: T, for key: KeychainKey<T>) -> Result<Void, KeychainError> where T: Decodable, T: Encodable
 
     /// Deletes a object from the keychain
     /// - Parameter key: the key to delete
     /// - Returns: a result which either is successful or contains the error
     @discardableResult
-    func delete<T>(for key: KeychainKey<T>) -> Result<Void, KeychainError> where T : Decodable, T : Encodable
+    func delete<T>(for key: KeychainKey<T>) -> Result<Void, KeychainError> where T: Decodable, T: Encodable
 }
 
 /// A wrapper class for the keychain
 class Keychain: KeychainProtocol {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
-
 
     /// Get a object from the keychain
     /// - Parameter key: a key object with the type

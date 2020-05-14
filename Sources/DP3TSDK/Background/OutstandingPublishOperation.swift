@@ -1,8 +1,8 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
 import Foundation
 
@@ -19,6 +19,7 @@ class OutstandingPublishOperation: Operation {
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
     }
+
     override func main() {
         serialQueue.sync {
             log.trace()
@@ -35,7 +36,7 @@ class OutstandingPublishOperation: Operation {
 
                 if op.fake {
                     group.enter()
-                    keyProvider.getFakeDiagnosisKeys { (result) in
+                    keyProvider.getFakeDiagnosisKeys { result in
                         switch result {
                         case let .success(keys):
                             key = keys.first
@@ -51,7 +52,7 @@ class OutstandingPublishOperation: Operation {
                         switch result {
                         case let .success(keys):
                             let rollingStartNumber = DayDate(date: op.dayToPublish).period
-                            key = keys.first(where: { $0.rollingStartNumber == rollingStartNumber})
+                            key = keys.first(where: { $0.rollingStartNumber == rollingStartNumber })
                         case let .failure(error):
                             errorHappend = error
                         }
@@ -69,13 +70,12 @@ class OutstandingPublishOperation: Operation {
                 let model = DelayedKeyModel(delayedKey: key!, fake: op.fake)
 
                 group.enter()
-                serviceClient.addDelayedExposeeList(model, token: op.authorizationHeader) { (result) in
+                serviceClient.addDelayedExposeeList(model, token: op.authorizationHeader) { result in
                     switch result {
                     case .success():
                         break
                     case let .failure(error):
                         errorHappend = error
-
                     }
                     group.leave()
                 }

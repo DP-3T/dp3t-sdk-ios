@@ -4,8 +4,8 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import Foundation
 import ExposureNotification
+import Foundation
 
 protocol SecretKeyProvider: class {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
@@ -18,7 +18,6 @@ protocol SecretKeyProvider: class {
 @available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date?, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
-
         // getTestDiagnosisKeys {[weak self]  (keys, error) in
         getDiagnosisKeys { [weak self] keys, error in
             guard let self = self else { return }
@@ -46,7 +45,7 @@ extension ENManager: SecretKeyProvider {
     private func getFakeKeys(count: Int) -> [CodableDiagnosisKey] {
         var keys: [CodableDiagnosisKey] = []
         let parameters = Default.shared.parameters
-        for i in 0..<count {
+        for i in 0 ..< count {
             let day = DayDate(date: Date().addingTimeInterval(.day * Double(i) * (-1)))
             let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
             let key = (try? Crypto.generateRandomKey(lenght: parameters.crypto.keyLength)) ?? Data(count: parameters.crypto.keyLength)

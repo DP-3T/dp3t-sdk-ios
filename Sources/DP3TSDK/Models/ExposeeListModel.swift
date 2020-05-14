@@ -27,7 +27,7 @@ struct ExposeeListModel: Encodable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         // Encode key
         try container.encode(gaenKeys, forKey: .gaenKeys)
- 
+
         try container.encode(fake ? 1 : 0, forKey: .fake)
 
         try container.encode(delayedKeyDate.period, forKey: .delayedKeyDate)

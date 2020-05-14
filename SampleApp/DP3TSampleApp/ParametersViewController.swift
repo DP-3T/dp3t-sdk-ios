@@ -72,7 +72,7 @@ class ParametersViewController: UIViewController {
 
         stackView.addArrangedView(UIView())
     }
-    
+
     @objc func batchLengthUpdate() {
         let length = batchLengthInput.text ?? "7200"
         let double = Double(length) ?? 7200.0
