@@ -5,6 +5,7 @@
  */
 
 import Foundation
+#if CALIBRATION
 import SQLite
 
 /// Wrapper class for all Databases
@@ -17,14 +18,13 @@ class DP3TDatabase {
 
     private let log = Logger(DP3TDatabase.self, category: "database")
 
-    #if CALIBRATION
-           /// logging Storage
-           private let _logggingStorage: LoggingStorage
-           var loggingStorage: LoggingStorage {
-               guard !isDestroyed else { fatalError("Database is destroyed") }
-               return _logggingStorage
-           }
-       #endif
+
+    /// logging Storage
+    private let _logggingStorage: LoggingStorage
+    var loggingStorage: LoggingStorage {
+        guard !isDestroyed else { fatalError("Database is destroyed") }
+        return _logggingStorage
+    }
 
     /// Initializer
     init(connection_: Connection? = nil) throws {
@@ -36,18 +36,8 @@ class DP3TDatabase {
             try? filePath.addExcludedFromBackupAttribute()
         }
 
-        #if CALIBRATION
-            _logggingStorage = try LoggingStorage(database: connection)
-        #endif
 
-        DispatchQueue.global(qos: .background).async {
-            try? self.deleteOldDate()
-        }
-    }
-
-    // deletes data older than CryptoConstants.numberOfDaysToKeepData
-    func deleteOldDate() throws {
-        log.trace()
+        _logggingStorage = try LoggingStorage(database: connection)
     }
 
     /// Discard all data
@@ -55,9 +45,7 @@ class DP3TDatabase {
         log.trace()
         guard !isDestroyed else { fatalError("Database is destroyed") }
         try connection.transaction {
-            #if CALIBRATION
-                try loggingStorage.emptyStorage()
-            #endif
+            try loggingStorage.emptyStorage()
         }
     }
 
@@ -83,3 +71,5 @@ extension DP3TDatabase: CustomDebugStringConvertible {
         return "DB at path <\(DP3TDatabase.getDatabasePath().absoluteString)>"
     }
 }
+
+#endif

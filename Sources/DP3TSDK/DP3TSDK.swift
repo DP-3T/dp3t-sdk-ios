@@ -15,8 +15,9 @@ class DP3TSDK {
     /// appId of this instance
     private let applicationDescriptor: ApplicationDescriptor
 
-    /// database probably also not needed with ExposureNotification Framework
+    #if CALIBRATION
     private let database: DP3TDatabase
+    #endif
 
     private let exposureDayStorage: ExposureDayStorage
 
@@ -64,7 +65,9 @@ class DP3TSDK {
     init(applicationDescriptor: ApplicationDescriptor, urlSession: URLSession, backgroundHandler: DP3TBackgroundHandler?) throws {
         self.applicationDescriptor = applicationDescriptor
         self.urlSession = urlSession
+        #if CALIBRATION
         database = try DP3TDatabase()
+        #endif
 
         exposureDayStorage = ExposureDayStorage()
 
