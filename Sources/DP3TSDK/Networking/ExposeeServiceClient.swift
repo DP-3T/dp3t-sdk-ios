@@ -82,11 +82,15 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
     func getExposeeSynchronously(batchTimestamp: Date) -> Result<Data?, DP3TNetworkingError> {
-        log.debug("getExposeeSynchronously for timestamp %@", batchTimestamp.description)
+        log.debug("getExposeeSynchronously for timestamp %@ -> %lld", batchTimestamp.description, batchTimestamp.millisecondsSince1970)
         let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
+        #if ZIP
+        request.setValue("application/zip", forHTTPHeaderField: "Accept")
+        #else
         request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
+        #endif
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
 
         let (data, response, error) = urlSession.synchronousDataTask(with: request)

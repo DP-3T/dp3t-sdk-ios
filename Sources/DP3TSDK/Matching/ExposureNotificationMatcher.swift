@@ -6,6 +6,7 @@
 
 import ExposureNotification
 import Foundation
+import ZIPFoundation
 
 @available(iOS 13.5, *)
 class ExposureNotificationMatcher: Matcher {
@@ -17,20 +18,49 @@ class ExposureNotificationMatcher: Matcher {
 
     private let log = Logger(ExposureNotificationMatcher.self, category: "matcher")
 
-    private var localURLs: [Date: URL] = [:]
+    private var localURLs: [Date: [URL]] = [:]
 
     init(manager: ENManager, exposureDayStorage: ExposureDayStorage) {
         self.manager = manager
         self.exposureDayStorage = exposureDayStorage
     }
 
+    static var dateFormat: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "'key_export_'yyyy-MM-dd"
+        formatter.timeZone = Default.shared.parameters.crypto.timeZone
+        return formatter
+    }()
+
     func receivedNewKnownCaseData(_ data: Data, batchTimestamp: Date) throws {
         log.trace()
+
+        #if ZIP
+        if let archive = Archive(data: data, accessMode: .read) {
+            log.debug("unarchived archive")
+            for entry in archive {
+                guard let date = Self.dateFormat.date(from: entry.path) else { continue }
+
+                let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+                    .appendingPathComponent(UUID().uuidString)
+
+                _ = try archive.extract(entry, to: localURL)
+                if localURLs.keys.contains(date) {
+                    localURLs[date]?.append(localURL)
+                } else {
+                    localURLs[date] = [localURL]
+                }
+                log.debug("found %@ item in archive parsed date: %@", entry.path, date.description)
+
+            }
+        }
+        #else
         let filename = String(Int(batchTimestamp.timeIntervalSince1970))
         let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
             .appendingPathComponent(filename)
         try data.write(to: localURL)
-        localURLs[batchTimestamp] = localURL
+        localURLs[batchTimestamp] = [localURL]
+        #endif
     }
 
     func finalizeMatchingSession() throws {
@@ -42,7 +72,8 @@ class ExposureNotificationMatcher: Matcher {
         var exposureDetectionError: Error?
 
         // TODO: call this method for each day
-        let urls = localURLs.map { $0.value }
+        // we pass all urls in one pass for now
+        let urls = localURLs.values.reduce([], +)
         log.info("calling detectExposures with %{public}d urls", urls.count)
         manager.detectExposures(configuration: .dummyConfiguration, diagnosisKeyURLs: urls) { summary, error in
             exposureSummary = summary
@@ -56,7 +87,7 @@ class ExposureNotificationMatcher: Matcher {
             throw DP3TTracingError.exposureNotificationError(error: error)
         }
 
-        try localURLs.map { $0.value }.forEach(deleteDiagnosisKeyFile(at:))
+        try urls.forEach(deleteDiagnosisKeyFile(at:))
         localURLs.removeAll()
 
         if let summary = exposureSummary {
