@@ -43,7 +43,7 @@ class Default: DefaultStorage {
     var lastLoadedBatchReleaseTime: Date?
 
     /// Current infection status
-    @Persisted(userDefaultsKey: "org.dpppt.didMarkAsInfected", defaultValue: false)
+    @KeychainPersisted(key: "org.dpppt.didMarkAsInfected", defaultValue: false)
     var didMarkAsInfected: Bool
 
     /// Parameters
@@ -95,6 +95,13 @@ class Default: DefaultStorage {
             parametersCache = newValue
         }
     }
+
+    func reset(){
+        parameters = .init()
+        lastSync = nil
+        lastLoadedBatchReleaseTime = nil
+        didMarkAsInfected = false
+    }
 }
 
 @propertyWrapper
@@ -117,6 +124,29 @@ class Persisted<Value: Codable> {
     var wrappedValue: Value {
         didSet {
             UserDefaults.standard.set(try! JSONEncoder().encode(wrappedValue), forKey: userDefaultsKey)
+        }
+    }
+}
+
+@propertyWrapper
+class KeychainPersisted<Value: Codable> {
+    init(key: String, defaultValue: Value, keychain: KeychainProtocol = Keychain()) {
+        self.keychain = keychain
+        self.key = KeychainKey(key: key)
+        switch keychain.get(for: self.key) {
+        case let .success(value):
+            wrappedValue = value
+        case .failure:
+            wrappedValue = defaultValue
+        }
+    }
+
+    let keychain: KeychainProtocol
+    let key: KeychainKey<Value>
+
+    var wrappedValue: Value {
+        didSet {
+            keychain.set(wrappedValue, for: key)
         }
     }
 }

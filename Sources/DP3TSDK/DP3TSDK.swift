@@ -15,10 +15,6 @@ class DP3TSDK {
     /// appId of this instance
     private let applicationDescriptor: ApplicationDescriptor
 
-    #if CALIBRATION
-        private let database: DP3TDatabase
-    #endif
-
     private let outstandingPublishesStorage: OutstandingPublishStorage
 
     private let exposureDayStorage: ExposureDayStorage
@@ -72,13 +68,11 @@ class DP3TSDK {
             let keychain = Keychain()
             keychain.delete(for: ExposureDayStorage.key)
             keychain.delete(for: OutstandingPublishStorage.key)
+            Default.shared.reset()
         }
 
         self.applicationDescriptor = applicationDescriptor
         self.urlSession = urlSession
-        #if CALIBRATION
-            database = try DP3TDatabase()
-        #endif
 
         exposureDayStorage = ExposureDayStorage()
         outstandingPublishesStorage = OutstandingPublishStorage()
@@ -105,10 +99,6 @@ class DP3TSDK {
 
         tracer.delegate = self
         matcher.delegate = self
-
-        #if CALIBRATION
-            Logger.delegate = database.loggingStorage
-        #endif
 
         log.trace()
 
@@ -247,22 +237,16 @@ class DP3TSDK {
 
     /// reset the infection status
     func resetInfectionStatus() throws {
-        Default.shared.didMarkAsInfected = false
         state.infectionStatus = .healthy
     }
 
     /// reset the SDK
     func reset() throws {
+        state.infectionStatus = .healthy
         log.trace()
         stopTracing()
-        Default.shared.lastLoadedBatchReleaseTime = nil
-        Default.shared.lastSync = nil
-        Default.shared.didMarkAsInfected = false
+        Default.shared.reset()
         outstandingPublishesStorage.reset()
-        #if CALIBRATION
-            try database.emptyStorage()
-            try database.destroyDatabase()
-        #endif
         exposureDayStorage.reset()
         secretKeyProvider.reset()
         URLCache.shared.removeAllCachedResponses()
@@ -271,12 +255,6 @@ class DP3TSDK {
     @objc func backgroundRefreshStatusDidChange() {
         state.backgroundRefreshState = UIApplication.shared.backgroundRefreshStatus
     }
-
-    #if CALIBRATION
-        func getLogs() throws -> [LogEntry] {
-            return try database.loggingStorage.getLogs()
-        }
-    #endif
 }
 
 // MARK: BluetoothPermissionDelegate implementation
