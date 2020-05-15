@@ -1,20 +1,19 @@
 // swift-tools-version:5.1
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "DP3TSDK",
     platforms: [
-        // Add support for all platforms starting from a specific version.
         .iOS(.v13),
     ],
     products: [
-        // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
             name: "DP3TSDK",
             targets: ["DP3TSDK"]
         ),
+        .library(name: "DP3TSDK_LOGGING_STORAGE",
+                 targets: ["DP3TSDK_LOGGING_STORAGE"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
@@ -24,9 +23,12 @@ let package = Package(
     targets: [
         .target(
             name: "DP3TSDK",
-            dependencies: ["SQLite", "SwiftProtobuf", "SwiftJWT"],
-            swiftSettings: [.define("CALIBRATION"),
-                            .define("BACKGROUNDTASK_DEBUGGING", .when(platforms: [.iOS], configuration: .debug))]
+            dependencies: ["SwiftProtobuf", "SwiftJWT"],
+            swiftSettings: [.define("BACKGROUNDTASK_DEBUGGING", .when(platforms: [.iOS], configuration: .debug))]
+        ),
+        .target(
+            name: "DP3TSDK_LOGGING_STORAGE",
+            dependencies: ["SQLite"]
         ),
         .testTarget(
             name: "DP3TSDKTests",

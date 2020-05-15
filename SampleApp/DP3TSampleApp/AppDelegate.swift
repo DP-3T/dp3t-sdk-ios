@@ -7,12 +7,21 @@
 import DP3TSDK
 import os
 import UIKit
+import DP3TSDK_LOGGING_STORAGE
 #if DEBUG
     import UserNotifications
 #endif
 
+var loggingStorage: DP3TLoggingStorage?
+
+extension DP3TLoggingStorage: LoggingDelegate {}
+
 func initializeSDK() {
-    try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: nil), mode: .calibration)
+    if loggingStorage == nil {
+        loggingStorage = try? .init()
+        DP3TTracing.loggingDelegate = loggingStorage
+    }
+    try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: nil))
 }
 
 @UIApplicationMain

@@ -4,9 +4,7 @@ import Foundation
 @_exported import os.log
 
 class Logger {
-    #if CALIBRATION
-        weak static var delegate: LoggingDelegate?
-    #endif
+    weak static var delegate: LoggingDelegate?
 
     let osLog: OSLog
     let category: String
@@ -65,17 +63,14 @@ class Logger {
         // The Swift overlay of os_log prevents from accepting an unbounded number of args
         // http://www.openradar.me/33203955
 
-        #if CALIBRATION
-            if let delegate = Logger.delegate, DP3TMode.current == .calibration {
-                var string = message.withUTF8Buffer {
-                    String(decoding: $0, as: UTF8.self)
-                }
-                string = string.replacingOccurrences(of: "{public}", with: "")
-                    .replacingOccurrences(of: "{private}", with: "")
-                delegate.log("[\(category)] \(String(format: string, arguments: a))", type: type)
-                NotificationCenter.default.post(name: .init("org.dpppt.didAddLog"), object: nil)
+        if let delegate = Logger.delegate {
+            var string = message.withUTF8Buffer {
+                String(decoding: $0, as: UTF8.self)
             }
-        #endif
+            string = string.replacingOccurrences(of: "{public}", with: "")
+                .replacingOccurrences(of: "{private}", with: "")
+            delegate.log("[\(category)] \(String(format: string, arguments: a))", type: type)
+        }
 
         assert(a.count <= 5)
         switch a.count {

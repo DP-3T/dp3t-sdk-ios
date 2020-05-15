@@ -43,7 +43,7 @@ class ExposureNotificationMatcher: Matcher {
 
         // TODO: call this method for each day
         let urls = localURLs.map { $0.value }
-        log.info("calling detectExposures")
+        log.info("calling detectExposures with %{public}d urls", urls.count)
         manager.detectExposures(configuration: .dummyConfiguration, diagnosisKeyURLs: urls) { summary, error in
             exposureSummary = summary
             exposureDetectionError = error

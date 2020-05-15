@@ -160,17 +160,10 @@ public enum DP3TTracing {
         instance = nil
     }
 
-    #if CALIBRATION
-        @available(iOS 13.5, *)
-        public static func getLogs() throws -> [LogEntry] {
-            guard let instance = instance else {
-                return []
-            }
-
-            guard DP3TMode.current == .calibration else {
-                fatalError("logging is only available in calibration mode")
-            }
-            return try instance.getLogs()
+    public static var loggingDelegate: LoggingDelegate? {
+        set {
+            Logger.delegate = newValue
         }
-    #endif
+        get { nil }
+    }
 }

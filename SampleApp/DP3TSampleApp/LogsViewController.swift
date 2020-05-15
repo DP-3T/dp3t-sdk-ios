@@ -5,6 +5,7 @@
  */
 
 import DP3TSDK
+import DP3TSDK_LOGGING_STORAGE
 import UIKit
 
 class LogCell: UITableViewCell {
@@ -70,7 +71,7 @@ class LogsViewController: UIViewController {
 
     func loadLogs() {
         DispatchQueue.global(qos: .background).async {
-            if let logs = try? DP3TTracing.getLogs() {
+            if let logs = try? loggingStorage?.getLogs() {
                 DispatchQueue.main.async {
                     self.refreshControl.endRefreshing()
                     self.logs = logs
