@@ -45,12 +45,10 @@ public enum DP3TTracing {
     @available(iOS 13.5, *)
     public static func initialize(with applicationDescriptor: ApplicationDescriptor,
                                   urlSession: URLSession = .shared,
-                                  mode: DP3TMode = .production,
                                   backgroundHandler: DP3TBackgroundHandler? = nil) throws {
         guard instance == nil else {
             fatalError("DP3TSDK already initialized")
         }
-        DP3TMode.current = mode
         instance = try DP3TSDK(applicationDescriptor: applicationDescriptor,
                                urlSession: urlSession,
                                backgroundHandler: backgroundHandler)
