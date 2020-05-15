@@ -8,7 +8,7 @@ import Foundation
 import SwiftJWT
 import UIKit
 
-protocol ExposeeServiceClientProtocol {
+protocol ExposeeServiceClientProtocol: class {
     typealias ExposeeResult = Result<Data?, DP3TNetworkingError>
     typealias ExposeeCompletion = Result<Void, DP3TNetworkingError>
     /// Get all exposee for a known day synchronously

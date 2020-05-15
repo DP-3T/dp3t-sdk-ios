@@ -16,7 +16,7 @@ class KnownCasesSynchronizer {
     private weak var matcher: Matcher?
 
     /// service client
-    private weak var service: ExposeeServiceClient!
+    private weak var service: ExposeeServiceClientProtocol!
 
     private let log = Logger(KnownCasesSynchronizer.self, category: "knownCasesSynchronizer")
 
@@ -24,7 +24,7 @@ class KnownCasesSynchronizer {
     /// - Parameters:
     ///   - matcher: The matcher for DP3T resolution and checks
     init(matcher: Matcher,
-         service: ExposeeServiceClient,
+         service: ExposeeServiceClientProtocol,
          defaults: DefaultStorage = Default.shared) {
         self.matcher = matcher
         self.defaults = defaults
