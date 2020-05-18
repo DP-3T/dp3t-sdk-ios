@@ -49,6 +49,8 @@ public enum DP3TNetworkingError: Error {
     case batchReleaseTimeMissmatch
     /// Device time differs from server time
     case timeInconsistency(shift: TimeInterval)
+    /// JWT signature validation
+    case jwtSignatureError(code: Int, debugDescription: String)
 
     /// An error code that uniquely identify an error.
     public var errorCode: Int {
@@ -71,6 +73,8 @@ public enum DP3TNetworkingError: Error {
         case let .HTTPFailureResponse(status: status):
             // Combines the HTTP Status error with the error
             return 8000 + status
+        case .jwtSignatureError(code: let code, debugDescription: _):
+            return 900 + code
         }
     }
 }
