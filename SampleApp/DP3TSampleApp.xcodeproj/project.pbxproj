@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DF07D09F2451DA6100CFD431 /* UploadDatabaseHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF07D09E2451DA6100CFD431 /* UploadDatabaseHelper.swift */; };
 		DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = DF07D0A52451E59200CFD431 /* Alamofire */; };
 		F80AEB3B246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE in Frameworks */ = {isa = PBXBuildFile; productRef = F80AEB3A246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE */; };
 		F812AC56243DF459005F26AE /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC55243DF459005F26AE /* RootViewController.swift */; };
@@ -21,10 +20,12 @@
 		F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = F83BE14F242DDFF60043FA1E /* SnapKit */; };
 		F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85D4F3F243EFC6A00529168 /* Defaults.swift */; };
 		F85D4F42243F0D8B00529168 /* StackView+Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */; };
+		F89B452424731DD40011AD07 /* KeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F89B452324731DD40011AD07 /* KeysViewController.swift */; };
+		F89B452724731ED40011AD07 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = F89B452624731ED40011AD07 /* ZIPFoundation */; };
+		F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		DF07D09E2451DA6100CFD431 /* UploadDatabaseHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadDatabaseHelper.swift; sourceTree = "<group>"; };
 		F812AC55243DF459005F26AE /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		F812AC58243E02A1005F26AE /* ControlViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlViewController.swift; sourceTree = "<group>"; };
 		F812AC5A243E02AF005F26AE /* ParametersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParametersViewController.swift; sourceTree = "<group>"; };
@@ -38,6 +39,8 @@
 		F83BE17C242DE1BF0043FA1E /* covid-tracing-ios-sdk */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "covid-tracing-ios-sdk"; path = ..; sourceTree = "<group>"; };
 		F85D4F3F243EFC6A00529168 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
 		F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StackView+Spacing.swift"; sourceTree = "<group>"; };
+		F89B452324731DD40011AD07 /* KeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysViewController.swift; sourceTree = "<group>"; };
+		F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkingHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +52,7 @@
 				DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */,
 				F80AEB3B246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE in Frameworks */,
 				F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */,
+				F89B452724731ED40011AD07 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,8 +84,9 @@
 				F85D4F3F243EFC6A00529168 /* Defaults.swift */,
 				F8287D18246ADCA00022CFD9 /* LogsViewController.swift */,
 				F812AC55243DF459005F26AE /* RootViewController.swift */,
+				F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */,
 				F812AC58243E02A1005F26AE /* ControlViewController.swift */,
-				DF07D09E2451DA6100CFD431 /* UploadDatabaseHelper.swift */,
+				F89B452324731DD40011AD07 /* KeysViewController.swift */,
 				F812AC5A243E02AF005F26AE /* ParametersViewController.swift */,
 				F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */,
 				F83BE142242DDC460043FA1E /* Assets.xcassets */,
@@ -120,6 +125,7 @@
 				DF07D0A52451E59200CFD431 /* Alamofire */,
 				F8287D14246A78570022CFD9 /* DP3TSDK */,
 				F80AEB3A246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE */,
+				F89B452624731ED40011AD07 /* ZIPFoundation */,
 			);
 			productName = CovidTracingTestApp;
 			productReference = F83BE136242DDC450043FA1E /* DP3TSampleApp.app */;
@@ -152,6 +158,7 @@
 			packageReferences = (
 				F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */,
 				DF07D0A42451E59200CFD431 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				F89B452524731ED40011AD07 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			productRefGroup = F83BE137242DDC450043FA1E /* Products */;
 			projectDirPath = "";
@@ -179,13 +186,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F89B452424731DD40011AD07 /* KeysViewController.swift in Sources */,
 				F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */,
 				F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */,
+				F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */,
 				F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */,
 				F85D4F42243F0D8B00529168 /* StackView+Spacing.swift in Sources */,
 				F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */,
 				F812AC56243DF459005F26AE /* RootViewController.swift in Sources */,
-				DF07D09F2451DA6100CFD431 /* UploadDatabaseHelper.swift in Sources */,
 				F8287D19246ADCA00022CFD9 /* LogsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -269,10 +277,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = DP3TSampleApp/Entitlements.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = JH7CQD4MLU;
+				DEVELOPMENT_TEAM = XPL89PTG92;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -280,8 +289,9 @@
 					"@executable_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dpppt.sampleapp;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.admin.bag.covid19.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "COVID19 Exposure Demo";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -347,10 +357,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = DP3TSampleApp/Entitlements.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = JH7CQD4MLU;
+				DEVELOPMENT_TEAM = XPL89PTG92;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -358,8 +369,9 @@
 					"@executable_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dpppt.sampleapp;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.admin.bag.covid19.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "COVID19 Exposure Demo";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -406,6 +418,14 @@
 				minimumVersion = 5.0.1;
 			};
 		};
+		F89B452524731ED40011AD07 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation/";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.11;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -426,6 +446,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		F89B452624731ED40011AD07 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F89B452524731ED40011AD07 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

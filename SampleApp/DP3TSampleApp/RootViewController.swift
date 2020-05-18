@@ -11,8 +11,9 @@ class RootViewController: UITabBarController {
     var controlsViewController = ControlViewController()
     var parameterViewController = ParametersViewController()
     var logsViewController = LogsViewController()
+    var keysViewController = KeysViewController()
 
-    lazy var tabs: [UIViewController] = [controlsViewController,
+    lazy var tabs: [UIViewController] = [controlsViewController, keysViewController,
                                          parameterViewController, logsViewController]
 
     override func viewDidLoad() {

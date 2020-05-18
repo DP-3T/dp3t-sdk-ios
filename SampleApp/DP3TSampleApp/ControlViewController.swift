@@ -23,7 +23,10 @@ class ControlViewController: UIViewController {
     let shareButton = UIButton()
 
     let uploadButton = UIButton()
-    private let uploadHelper = UploadDatabaseHelper()
+
+    let uploadKeysButton = UIButton()
+
+    private let uploadHelper = NetworkingHelper()
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -229,6 +232,21 @@ class ControlViewController: UIViewController {
             stackView.addArrangedSubview(uploadButton)
         }
 
+        stackView.addSpacerView(12)
+
+        do {
+            if #available(iOS 13.0, *) {
+                uploadKeysButton.setTitleColor(.systemBlue, for: .normal)
+                uploadKeysButton.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                uploadKeysButton.setTitleColor(.blue, for: .normal)
+                uploadKeysButton.setTitleColor(.black, for: .highlighted)
+            }
+            uploadKeysButton.setTitle("Upload Keys for Debugging", for: .normal)
+            uploadKeysButton.addTarget(self, action: #selector(uploadKeys), for: .touchUpInside)
+            stackView.addArrangedSubview(uploadKeysButton)
+        }
+
         stackView.addArrangedSubview(UIView())
     }
 
@@ -309,6 +327,24 @@ class ControlViewController: UIViewController {
                 self.present(alert, animated: false)
             }
         }
+    }
+
+    @objc func uploadKeys() {
+        let alert = UIAlertController(title: "Upload Keys", message: "Enter debug device name", preferredStyle: .alert)
+
+        alert.addTextField { (textField) in
+            textField.placeholder = "debug device name"
+            textField.text = ""
+        }
+
+        alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [weak alert] (_) in
+            let textField = alert?.textFields![0]
+            self.uploadHelper.uploadDebugKeys(debugName: textField?.text ?? "noName") { (result) in
+                print(result)
+            }
+        }))
+
+        self.present(alert, animated: true, completion: nil)
     }
 
     @objc func reset() {

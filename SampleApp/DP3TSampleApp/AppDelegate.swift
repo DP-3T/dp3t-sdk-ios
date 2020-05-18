@@ -14,6 +14,8 @@ import DP3TSDK_LOGGING_STORAGE
 
 var loggingStorage: DP3TLoggingStorage?
 
+var baseUrl: URL = URL(string: "https://demo.dpppt.org/")!
+
 extension DP3TLoggingStorage: LoggingDelegate {}
 
 func initializeSDK() {
@@ -22,7 +24,7 @@ func initializeSDK() {
         DP3TTracing.loggingDelegate = loggingStorage
     }
     DP3TTracing.parameters.networking.batchLength = 5 * 60
-    try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: nil))
+    try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: baseUrl, reportBaseUrl: baseUrl))
 }
 
 @UIApplicationMain

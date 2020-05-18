@@ -6,7 +6,6 @@
 
 import ExposureNotification
 import Foundation
-import ZIPFoundation
 
 @available(iOS 13.5, *)
 class ExposureNotificationMatcher: Matcher {
