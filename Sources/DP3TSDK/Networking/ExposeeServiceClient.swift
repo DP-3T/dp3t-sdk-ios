@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import SwiftJWT
 import UIKit
 
 protocol ExposeeServiceClientProtocol: class {
@@ -47,8 +46,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     private let urlCache: URLCache
 
-    private let jwtVerifier: DP3TJWTVerifier?
-
     private let log = Logger(ExposeeServiceClient.self, category: "exposeeServiceClient")
 
     /// The user agent to send with the requests
@@ -69,11 +66,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         self.urlCache = urlCache
         exposeeEndpoint = ExposeeEndpoint(baseURL: descriptor.bucketBaseUrl)
         managingExposeeEndpoint = ManagingExposeeEndpoint(baseURL: descriptor.reportBaseUrl)
-        if #available(iOS 11.0, *), let jwtPublicKey = descriptor.jwtPublicKey {
-            jwtVerifier = DP3TJWTVerifier(publicKey: jwtPublicKey, jwtTokenHeaderKey: "Signature")
-        } else {
-            jwtVerifier = nil
-        }
     }
 
     /// Get all exposee for a known day synchronously
@@ -120,25 +112,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
         guard let responseData = data else {
             return .failure(.noDataReturned)
-        }
-
-        // Validate JWT
-        if #available(iOS 11.0, *), let verifier = jwtVerifier {
-            do {
-                let claims = try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
-
-                // Verify the batch time
-                let batchReleaseTimeRaw = claims.batchReleaseTime
-                let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
-                guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
-                    return .failure(.jwtSignatureError(code: 3, debugDescription: "Batch release time missmatch"))
-                }
-
-            } catch let error as DP3TNetworkingError {
-                return .failure(error)
-            } catch {
-                return .failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)"))
-            }
         }
 
         return .success(responseData)
@@ -261,22 +234,6 @@ internal extension HTTPURLResponse {
             // https://bugs.swift.org/browse/SR-2429
             return (allHeaderFields as NSDictionary)[key] as? String
         }
-    }
-}
-
-private struct ExposeeClaims: DP3TClaims {
-    let iss: String
-    let iat: Date
-    let exp: Date
-    let contentHash: String
-    let batchReleaseTime: String
-    let hashAlg: String
-
-    enum CodingKeys: String, CodingKey {
-        case contentHash = "content-hash"
-        case batchReleaseTime = "batch-release-time"
-        case hashAlg = "hash-alg"
-        case iss, iat, exp
     }
 }
 

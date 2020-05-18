@@ -8,11 +8,10 @@ import Foundation
 
 /// Model to describe the application configuration
 public struct ApplicationDescriptor: Codable {
-    public init(appId: String, bucketBaseUrl: URL, reportBaseUrl: URL, jwtPublicKey: Data? = nil) {
+    public init(appId: String, bucketBaseUrl: URL, reportBaseUrl: URL) {
         self.appId = appId
         self.bucketBaseUrl = bucketBaseUrl
         self.reportBaseUrl = reportBaseUrl
-        self.jwtPublicKey = jwtPublicKey
     }
 
     /// The app ID
@@ -21,6 +20,4 @@ public struct ApplicationDescriptor: Codable {
     var bucketBaseUrl: URL
     /// The backend base URL to upload key
     var reportBaseUrl: URL
-    /// The JWT public key
-    var jwtPublicKey: Data?
 }

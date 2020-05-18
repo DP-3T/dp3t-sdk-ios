@@ -22,7 +22,7 @@ func initializeSDK() {
         DP3TTracing.loggingDelegate = loggingStorage
     }
     DP3TTracing.parameters.networking.batchLength = 5 * 60
-    try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: nil))
+    try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!))
 }
 
 @UIApplicationMain
