@@ -8,7 +8,7 @@ import CoreBluetooth
 import Foundation
 
 public struct DP3TParameters: Codable {
-    static let parameterVersion: Int = 4
+    static let parameterVersion: Int = 5
 
     let version: Int
 
@@ -39,6 +39,8 @@ public struct DP3TParameters: Codable {
         public var timeShiftThreshold: TimeInterval = 30 * .second
         // 2 Hour batches
         public var batchLength: TimeInterval = .day
+
+        public var timeDeltaToEnsureBackendIsReady = 2 * .minute
     }
 
     public struct ContactMatching: Codable {
