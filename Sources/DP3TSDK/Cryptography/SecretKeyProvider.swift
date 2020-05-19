@@ -32,6 +32,9 @@ extension ENManager: SecretKeyProvider {
                 if let onsetDate = onsetDate {
                     var filteredKeys = keys.filter { $0.date > onsetDate }.map(CodableDiagnosisKey.init(key:))
                     filteredKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - filteredKeys.count))
+                    filteredKeys.sort { (lhs, rhs) -> Bool in
+                        lhs.rollingStartNumber > rhs.rollingStartNumber
+                    }
                     filteredKeys = Array(filteredKeys.prefix(Default.shared.parameters.crypto.numberOfKeysToSubmit))
                     completionHandler(.success(filteredKeys))
                 } else {
@@ -56,6 +59,7 @@ extension ENManager: SecretKeyProvider {
     }
 
     private func getFakeKeys(count: Int) -> [CodableDiagnosisKey] {
+        guard count > 0 else { return [] }
         var keys: [CodableDiagnosisKey] = []
         let parameters = Default.shared.parameters
         for i in 0 ..< count {
