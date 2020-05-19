@@ -15,7 +15,9 @@ protocol DefaultStorage {
 
     /// Last batch release time which was loaded
     /// If nil .now should be used since it is not neccessary to load all past batches
-    var lastLoadedBatchReleaseTime: Date? { get set }
+    var installationDate: Date? { get set }
+
+    var publishedAfterStore: [Date: Date] { get set }
 
     /// Current infection status
     var didMarkAsInfected: Bool { get set }
@@ -37,10 +39,11 @@ class Default: DefaultStorage {
     @Persisted(userDefaultsKey: "org.dpppt.lastsync", defaultValue: nil)
     var lastSync: Date?
 
-    /// Last batch release time which was loaded
-    /// If nil .now should be used since it is not neccessary to load all past batches
-    @Persisted(userDefaultsKey: "org.dpppt.lastLoadedBatchReleaseTime", defaultValue: nil)
-    var lastLoadedBatchReleaseTime: Date?
+    @Persisted(userDefaultsKey: "org.dpppt.installationDate", defaultValue: nil)
+    var installationDate: Date?
+
+    @Persisted(userDefaultsKey: "org.dpppt.publishedAfterStore", defaultValue: [:])
+    var publishedAfterStore: [Date: Date]
 
     /// Current infection status
     @KeychainPersisted(key: "org.dpppt.didMarkAsInfected", defaultValue: false)
@@ -99,8 +102,9 @@ class Default: DefaultStorage {
     func reset(){
         parameters = .init()
         lastSync = nil
-        lastLoadedBatchReleaseTime = nil
+        installationDate = nil
         didMarkAsInfected = false
+        publishedAfterStore = [:]
     }
 }
 

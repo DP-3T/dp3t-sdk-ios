@@ -71,6 +71,7 @@ extension KeysViewController: UITableViewDelegate {
         var localUrls: [URL] = []
         for entry in archive {
             let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+                .appendingPathComponent(UUID().uuidString)
                 .appendingPathComponent(entry.path)
             _ = try? archive.extract(entry, to: localURL)
             localUrls.append(localURL)
@@ -78,13 +79,15 @@ extension KeysViewController: UITableViewDelegate {
 
         let manager = ENManager()
         manager.activate { (error) in
+            print(localUrls)
             manager.detectExposures(configuration: .dummyConfiguration, diagnosisKeyURLs: localUrls) { (summary, error) in
-                let alertController = UIAlertController(title: "Summary", message: summary?.description ?? error?.localizedDescription ?? "nil", preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Summary", message: summary?.description ?? error.debugDescription, preferredStyle: .alert)
                 let actionOk = UIAlertAction(title: "OK",
                     style: .default,
                     handler: nil)
                 alertController.addAction(actionOk)
                 self.present(alertController, animated: true, completion: nil)
+                try? localUrls.forEach(FileManager.default.removeItem(at:))
             }
         }
     }

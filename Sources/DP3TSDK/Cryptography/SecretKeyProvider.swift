@@ -23,8 +23,7 @@ fileprivate var logger = Logger(ENManager.self, category: "SecretKeyProvider")
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date?, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.trace()
-        // getTestDiagnosisKeys {[weak self]  (keys, error) in
-        getDiagnosisKeys { [weak self] keys, error in
+        let handler: ENGetDiagnosisKeysHandler = { [weak self]  (keys, error) in
             guard let self = self else { return }
             if let error = error {
                 completionHandler(.failure(.exposureNotificationError(error: error)))
@@ -33,6 +32,7 @@ extension ENManager: SecretKeyProvider {
                 if let onsetDate = onsetDate {
                     var filteredKeys = keys.filter { $0.date > onsetDate }.map(CodableDiagnosisKey.init(key:))
                     filteredKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - filteredKeys.count))
+                    filteredKeys = Array(filteredKeys.prefix(Default.shared.parameters.crypto.numberOfKeysToSubmit))
                     completionHandler(.success(filteredKeys))
                 } else {
                     completionHandler(.success(keys.map(CodableDiagnosisKey.init(key:))))
@@ -42,6 +42,11 @@ extension ENManager: SecretKeyProvider {
                 fatalError("getDiagnosisKeys returned neither an error nor a keys")
             }
         }
+        #if DEBUG
+        getTestDiagnosisKeys(completionHandler: handler)
+        #else
+        getDiagnosisKeys(completionHandler: handler)
+        #endif
     }
 
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {

@@ -40,12 +40,12 @@ class ParametersViewController: UIViewController {
 
         let params = DP3TTracing.parameters
 
+        /*
         do {
             let label = UILabel()
             label.text = "Set buckets batch length (seconds)"
             stackView.addArrangedSubview(label)
 
-            batchLengthInput.text = "\(params.networking.batchLength)"
             batchLengthInput.delegate = self
             batchLengthInput.font = UIFont.systemFont(ofSize: 15)
             batchLengthInput.borderStyle = UITextField.BorderStyle.roundedRect
@@ -70,16 +70,16 @@ class ParametersViewController: UIViewController {
             stackView.addArrangedSubview(button)
         }
 
-        stackView.addArrangedView(UIView())
+        stackView.addArrangedView(UIView())*/
     }
-
+/*
     @objc func batchLengthUpdate() {
         let length = batchLengthInput.text ?? "7200"
         let double = Double(length) ?? 7200.0
         batchLengthInput.text = "\(double)"
         DP3TTracing.parameters.networking.batchLength = double
         batchLengthInput.resignFirstResponder()
-    }
+    }*/
 }
 
 extension ParametersViewController: DP3TTracingDelegate {

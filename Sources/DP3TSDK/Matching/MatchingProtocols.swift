@@ -16,7 +16,7 @@ protocol Matcher: class {
     /// Delegate to notify on DP3T events
     var delegate: MatcherDelegate? { get set }
 
-    func receivedNewKnownCaseData(_ data: Data, batchTimestamp: Date) throws
+    func receivedNewKnownCaseData(_ data: Data, keyDate: Date) throws
 
     func finalizeMatchingSession() throws
 }

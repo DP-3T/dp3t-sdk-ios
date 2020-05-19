@@ -8,15 +8,20 @@ import Foundation
 import SwiftJWT
 import UIKit
 
+struct ExposeeSuccess {
+    let data: Data
+    let publishedUntil: Date?
+}
+
 protocol ExposeeServiceClientProtocol: class {
     typealias ExposeeResult = Result<Data?, DP3TNetworkingError>
     typealias ExposeeCompletion = Result<Void, DP3TNetworkingError>
     /// Get all exposee for a known day synchronously
     /// - Parameters:
     ///   - batchTimestamp: The batch timestamp
-    ///   - completion: The completion block
+    ///   - publishedAfter: get results published after the given timestamp
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date) -> Result<Data?, DP3TNetworkingError>
+    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter: Date?) -> Result<ExposeeSuccess?, DP3TNetworkingError>
 
     /// Adds an exposee
     /// - Parameters:
@@ -76,21 +81,39 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
     }
 
+    /*
+
+    https://demo-dpppt.ubique.ch/v1/gaen/exposed/1589673600000
+
+    https://demo-dpppt.ubique.ch/v1/gaen/exposed/1589673600000&publishedAfter=1589838300000
+
+    last 10 days
+
+    [
+    t-10: 1589838300000,
+    t-9 : 1589838300000,
+    ]
+
+    20 x detect Exposured / day -> 2x each day group by day
+
+    Response :
+    x-published-until: 1589838300000
+    */
+
+
+
     /// Get all exposee for a known day synchronously
     /// - Parameters:
     ///   - batchTimestamp: The batch timestamp
     ///   - completion: The completion block
+    ///   - publishedAfter: get results published after the given timestamp
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date) -> Result<Data?, DP3TNetworkingError> {
+    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter: Date? = nil) -> Result<ExposeeSuccess?, DP3TNetworkingError> {
         log.debug("getExposeeSynchronously for timestamp %@ -> %lld", batchTimestamp.description, batchTimestamp.millisecondsSince1970)
-        let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
+        let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp, publishedAfter: publishedAfter)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
-        #if ZIP
         request.setValue("application/zip", forHTTPHeaderField: "Accept")
-        #else
-        request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
-        #endif
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
 
         let (data, response, error) = urlSession.synchronousDataTask(with: request)
@@ -102,16 +125,11 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             return .failure(.notHTTPResponse)
         }
 
-        /* if let date = httpResponse.date,
-             abs(Date().timeIntervalSince(date)) > Default.shared.parameters.networking.timeShiftThreshold {
-             return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
-         } */
-
         let httpStatus = httpResponse.statusCode
         switch httpStatus {
         case 200:
             break
-        case 404:
+        case 204:
             // 404 not found response means there is no data for this day
             return .success(nil)
         default:
@@ -141,7 +159,13 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             }
         }
 
-        return .success(responseData)
+        var publishedUntil: Date?
+        if let publishedUntilHeader = httpResponse.value(forHTTPHeaderField: "x-published-until") {
+            publishedUntil = try? .init(milliseconds: Int64(value: publishedUntilHeader))
+        }
+
+        let result = ExposeeSuccess(data: responseData, publishedUntil: publishedUntil)
+        return .success(result)
     }
 
     /// Adds an exposee delayed key

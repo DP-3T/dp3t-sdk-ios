@@ -23,7 +23,6 @@ func initializeSDK() {
         loggingStorage = try? .init()
         DP3TTracing.loggingDelegate = loggingStorage
     }
-    DP3TTracing.parameters.networking.batchLength = 5 * 60
     try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: baseUrl, reportBaseUrl: baseUrl))
 }
 

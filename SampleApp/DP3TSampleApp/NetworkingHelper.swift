@@ -22,7 +22,9 @@ struct ExposeeListModel: Encodable {
         // Encode key
         try container.encode(gaenKeys, forKey: .gaenKeys)
         try container.encode(fake ? 1 : 0, forKey: .fake)
-        try container.encode(Date().timeIntervalSince1970.truncatingRemainder(dividingBy: 60*60*24), forKey: .delayedKeyDate)
+        let ts = Date().timeIntervalSince1970
+        let day = ts - ts.truncatingRemainder(dividingBy: 60*60*24)
+        try container.encode(Int(day / 600), forKey: .delayedKeyDate)
     }
 
     enum CodingKeys: CodingKey {
@@ -152,11 +154,12 @@ class NetworkingHelper {
                 }
 
                 var keys = keys?.map(CodableDiagnosisKey.init(key:)) ?? []
-                while(keys.count < 13) {
-                    let nowTS = UInt32(Date().timeIntervalSince1970 / 144)
+                while(keys.count < 14) {
+                    let ts = Date().timeIntervalSince1970
+                    let day = ts - ts.truncatingRemainder(dividingBy: 60*60*24)
                     keys.append(.init(keyData: Crypto.generateRandomKey(lenght: 16),
                                       rollingPeriod: 144,
-                                      rollingStartNumber: nowTS,
+                                      rollingStartNumber: UInt32(day/600),
                                       transmissionRiskLevel: 0,
                                       fake: 1))
                 }

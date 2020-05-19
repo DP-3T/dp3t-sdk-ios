@@ -43,8 +43,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let defaults = MockDefaults()
         defaults.parameters.networking.batchLength = .hour
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
-        XCTAssertNotNil(defaults.lastLoadedBatchReleaseTime)
-        XCTAssertLessThanOrEqual(defaults.lastLoadedBatchReleaseTime!, Date())
+        XCTAssertNotNil(defaults.minimumFetchDay)
+        XCTAssertLessThanOrEqual(defaults.minimumFetchDay!, Date())
     }
 
     func testInitialNoBatch(){

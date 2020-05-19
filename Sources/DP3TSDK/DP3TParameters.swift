@@ -37,8 +37,8 @@ public struct DP3TParameters: Codable {
     public struct Networking: Codable {
         /// allowed client time inconsistency
         public var timeShiftThreshold: TimeInterval = 30 * .second
-        // 2 Hour batches
-        public var batchLength: TimeInterval = .day
+
+        public var daysToCheck: Int = 10
 
         public var timeDeltaToEnsureBackendIsReady = 2 * .minute
     }

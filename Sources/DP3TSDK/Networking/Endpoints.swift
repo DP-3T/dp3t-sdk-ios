@@ -27,18 +27,26 @@ struct ExposeeEndpoint {
     }
 
     /// Get the URL for the exposed people endpoint at a day for GAEN
-    /// - Parameter batchTimestamp: batchTimestamp
-    func getExposeeGaen(batchTimestamp: Date) -> URL {
+    /// - Parameters:
+    ///  - batchTimestamp: batchTimestamp
+    ///  - publishedAfter: get results published after the given timestamp
+    func getExposeeGaen(batchTimestamp: Date, publishedAfter: Date? = nil) -> URL {
         let milliseconds = batchTimestamp.millisecondsSince1970
-        #if ZIP
-        return baseURLVersionned.appendingPathComponent("gaen")
+        let url = baseURLVersionned.appendingPathComponent("gaen")
             .appendingPathComponent("exposed")
             .appendingPathComponent(String(milliseconds))
-        #else
-        return baseURLVersionned.appendingPathComponent("gaen")
-            .appendingPathComponent("exposedios")
-            .appendingPathComponent(String(milliseconds))
-        #endif
+
+        var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
+
+        if let publishedAfter = publishedAfter {
+            urlComponents?.queryItems = [URLQueryItem(name: "publishedAfter", value: String(publishedAfter.millisecondsSince1970))]
+        }
+
+        guard let finalUrl = urlComponents?.url  else {
+            fatalError("can't create URLComponents url")
+        }
+
+        return finalUrl
     }
 }
 

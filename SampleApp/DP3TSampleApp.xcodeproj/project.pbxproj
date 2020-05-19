@@ -21,7 +21,6 @@
 		F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85D4F3F243EFC6A00529168 /* Defaults.swift */; };
 		F85D4F42243F0D8B00529168 /* StackView+Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */; };
 		F89B452424731DD40011AD07 /* KeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F89B452324731DD40011AD07 /* KeysViewController.swift */; };
-		F89B452724731ED40011AD07 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = F89B452624731ED40011AD07 /* ZIPFoundation */; };
 		F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */; };
 /* End PBXBuildFile section */
 
@@ -52,7 +51,6 @@
 				DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */,
 				F80AEB3B246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE in Frameworks */,
 				F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */,
-				F89B452724731ED40011AD07 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,7 +123,6 @@
 				DF07D0A52451E59200CFD431 /* Alamofire */,
 				F8287D14246A78570022CFD9 /* DP3TSDK */,
 				F80AEB3A246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE */,
-				F89B452624731ED40011AD07 /* ZIPFoundation */,
 			);
 			productName = CovidTracingTestApp;
 			productReference = F83BE136242DDC450043FA1E /* DP3TSampleApp.app */;
@@ -158,7 +155,6 @@
 			packageReferences = (
 				F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */,
 				DF07D0A42451E59200CFD431 /* XCRemoteSwiftPackageReference "Alamofire" */,
-				F89B452524731ED40011AD07 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			productRefGroup = F83BE137242DDC450043FA1E /* Products */;
 			projectDirPath = "";
@@ -418,14 +414,6 @@
 				minimumVersion = 5.0.1;
 			};
 		};
-		F89B452524731ED40011AD07 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/weichsel/ZIPFoundation/";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.11;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -446,11 +434,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
-		};
-		F89B452624731ED40011AD07 /* ZIPFoundation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F89B452524731ED40011AD07 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
-			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

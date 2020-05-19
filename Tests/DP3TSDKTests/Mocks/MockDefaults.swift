@@ -16,7 +16,7 @@ class MockDefaults: DefaultStorage {
 
     var lastSync: Date?
 
-    var lastLoadedBatchReleaseTime: Date?
+    var minimumFetchDay: Date?
 
     var didMarkAsInfected: Bool = false
 }

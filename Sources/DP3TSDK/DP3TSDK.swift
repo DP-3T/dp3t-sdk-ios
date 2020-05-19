@@ -150,7 +150,7 @@ class DP3TSDK {
                     self?.state.lastSync = Date()
                     callback?(.success(()))
                 case let .failure(error):
-                    callback?(.failure(.networkingError(error: error)))
+                    callback?(.failure(error))
                 }
             }
         }

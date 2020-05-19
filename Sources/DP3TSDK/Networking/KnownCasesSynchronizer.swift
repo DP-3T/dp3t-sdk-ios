@@ -9,6 +9,7 @@ import Foundation
 /**
  Synchronizes data on known cases
  */
+@available(iOS 13.5, *)
 class KnownCasesSynchronizer {
     private var defaults: DefaultStorage
 
@@ -32,7 +33,7 @@ class KnownCasesSynchronizer {
     }
 
     /// A callback result of async operations
-    typealias Callback = (Result<Void, DP3TNetworkingError>) -> Void
+    typealias Callback = (Result<Void, DP3TTracingError>) -> Void
 
     /// Synchronizes the local database with the remote one
     /// - Parameters:
@@ -56,65 +57,108 @@ class KnownCasesSynchronizer {
     /// Stores the first SDK launch date
     @discardableResult
     static func initializeSynchronizerIfNeeded(defaults: DefaultStorage = Default.shared) -> Date {
-        guard defaults.lastLoadedBatchReleaseTime == nil else { return defaults.lastLoadedBatchReleaseTime! }
-        let nowTimestamp = Date().timeIntervalSince1970
-        let lastBatch = Date(timeIntervalSince1970: nowTimestamp - nowTimestamp.truncatingRemainder(dividingBy: defaults.parameters.networking.batchLength))
+        guard defaults.installationDate == nil else { return defaults.installationDate! }
+        let today = DayDate()
         var mutableDefaults = defaults
-        mutableDefaults.lastLoadedBatchReleaseTime = lastBatch
-        return lastBatch
+        mutableDefaults.installationDate = today.dayMin
+        return today.dayMin
     }
 
     private func internalSync(now: Date = Date(), callback: Callback?) {
         log.trace()
-        let nowTimestamp = now.timeIntervalSince1970
+        let todayDate = DayDate(date: now).dayMin
 
-        var lastBatch: TimeInterval!
-        if let storedLastBatch = defaults.lastLoadedBatchReleaseTime,
-            storedLastBatch < Date() {
-            lastBatch = storedLastBatch.timeIntervalSince1970
-        } else {
-            assert(false, "This should never happen if initializeSynchronizerIfNeeded gets called on SDK init")
-            lastBatch = KnownCasesSynchronizer.initializeSynchronizerIfNeeded().timeIntervalSince1970
-        }
+        #if DEBUG
+        let installationDate = todayDate.addingTimeInterval(-.day * 1)
+        #else
+        let installationDate = Self.initializeSynchronizerIfNeeded()
+        #endif
 
-        let batchesToLoad = Int((nowTimestamp - defaults.parameters.networking.timeDeltaToEnsureBackendIsReady - lastBatch) / defaults.parameters.networking.batchLength)
+        var minimumDate = todayDate.addingTimeInterval(-.day * Double(defaults.parameters.networking.daysToCheck - 1))
 
-        let nextBatch = lastBatch + defaults.parameters.networking.batchLength
+        minimumDate = max(minimumDate, installationDate)
 
-        for batchIndex in 0 ..< batchesToLoad {
-            let currentReleaseTime = Date(timeIntervalSince1970: nextBatch + defaults.parameters.networking.batchLength * TimeInterval(batchIndex))
-            let result = service.getExposeeSynchronously(batchTimestamp: currentReleaseTime)
-            switch result {
-            case let .failure(error):
-                callback?(.failure(error))
-                return
-            case let .success(knownCasesData):
-                do {
-                    if let data = knownCasesData {
-                        try matcher?.receivedNewKnownCaseData(data, batchTimestamp: currentReleaseTime)
-                    }
-                } catch let error as DP3TNetworkingError {
-                    log.error("matcher receive error: %@", error.localizedDescription)
-                    callback?(.failure(error))
-                    return
-                } catch {
-                    log.error("matcher receive error: %@", error.localizedDescription)
-                    callback?(.failure(.couldNotParseData(error: error, origin: 0)))
-                }
-                defaults.lastLoadedBatchReleaseTime = currentReleaseTime
+        var calendar = Calendar.current
+        calendar.timeZone = Default.shared.parameters.crypto.timeZone
+        let components = calendar.dateComponents([.day], from: minimumDate, to: todayDate)
+
+        let daysToFetch = components.day ?? 0
+
+        //cleanup old published after
+
+        var publishedAfterStore = defaults.publishedAfterStore
+        for date in publishedAfterStore.keys {
+            if date < minimumDate {
+                publishedAfterStore.removeValue(forKey: date)
             }
         }
 
-        do {
-            try matcher?.finalizeMatchingSession()
-        } catch {
-            log.error("matcher finalize error: %@", error.localizedDescription)
-            // set last batch to initial value if a error happend
-            defaults.lastLoadedBatchReleaseTime = Date(timeIntervalSince1970: lastBatch)
-            callback?(.failure(.couldNotParseData(error: error, origin: 0)))
-            return
+        let dispatchGroup = DispatchGroup()
+        let queue = OperationQueue()
+        let synchronousQueue = DispatchQueue(label: "org.dpppt.internalSync")
+
+        var occuredError: DP3TTracingError?
+
+        for day in 0...daysToFetch {
+            guard let currentKeyDate = calendar.date(byAdding: .day, value: day, to: minimumDate) else {
+                continue
+            }
+            let publishedAfter = publishedAfterStore[currentKeyDate]
+
+            dispatchGroup.enter()
+
+            queue.addOperation { [weak self] in
+                guard let self = self else { return }
+                let result = self.service.getExposeeSynchronously(batchTimestamp: currentKeyDate, publishedAfter: publishedAfter)
+                synchronousQueue.sync {
+                    switch result {
+                    case let .failure(error):
+                        synchronousQueue.sync {
+                            occuredError = .networkingError(error: error)
+                        }
+                        return
+                    case let .success(knownCasesData):
+                        do {
+                            if let result = knownCasesData {
+                                try self.matcher?.receivedNewKnownCaseData(result.data, keyDate: currentKeyDate)
+                                publishedAfterStore[currentKeyDate] = result.publishedUntil
+
+                            }
+                        } catch let error as DP3TNetworkingError {
+                            self.log.error("matcher receive error: %@", error.localizedDescription)
+
+                            occuredError = .networkingError(error: error)
+
+                            return
+                        } catch {
+                            self.log.error("matcher receive error: %@", error.localizedDescription)
+
+                            occuredError = .networkingError(error: .couldNotParseData(error: error, origin: 0))
+
+                        }
+                    }
+                }
+                dispatchGroup.leave()
+            }
         }
 
-        callback?(.success(()))
+        dispatchGroup.notify(queue: .global(qos: .userInitiated)) { [weak self] in
+            guard let self = self else { return }
+
+            do {
+                try self.matcher?.finalizeMatchingSession()
+            } catch {
+                self.log.error("matcher finalize error: %@", error.localizedDescription)
+                occuredError = .exposureNotificationError(error: error)
+            }
+
+            self.defaults.publishedAfterStore = publishedAfterStore
+
+            if let error = occuredError {
+                callback?(.failure(error))
+            } else {
+                callback?(.success(()))
+            }
+        }
     }
 }
