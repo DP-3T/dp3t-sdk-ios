@@ -113,9 +113,7 @@ class KnownCasesSynchronizer {
                 synchronousQueue.sync {
                     switch result {
                     case let .failure(error):
-                        synchronousQueue.sync {
-                            occuredError = .networkingError(error: error)
-                        }
+                        occuredError = .networkingError(error: error)
                         return
                     case let .success(knownCasesData):
                         do {
