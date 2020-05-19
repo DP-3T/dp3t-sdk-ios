@@ -193,7 +193,7 @@ class DP3TSDK {
             }
         } else {
             group.enter()
-            secretKeyProvider.getDiagnosisKeys(onsetDate: onset) { result in
+            secretKeyProvider.getDiagnosisKeys(onsetDate: onset, appDesc: self.applicationDescriptor) { result in
                 secretKeyResult = result
                 group.leave()
             }

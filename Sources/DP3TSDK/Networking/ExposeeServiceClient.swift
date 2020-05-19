@@ -42,7 +42,7 @@ protocol ExposeeServiceClientProtocol: class {
 /// The client for managing and fetching exposee
 class ExposeeServiceClient: ExposeeServiceClientProtocol {
     /// The descriptor to use for the fetch
-    private let descriptor: ApplicationDescriptor
+    let descriptor: ApplicationDescriptor
     /// The endpoint for getting exposee
     private let exposeeEndpoint: ExposeeEndpoint
     /// The endpoint for adding and removing exposee

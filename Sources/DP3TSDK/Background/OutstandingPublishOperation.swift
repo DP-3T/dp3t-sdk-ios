@@ -50,7 +50,7 @@ class OutstandingPublishOperation: Operation {
                 } else {
                     // get all keys up until today
                     group.enter()
-                    keyProvider.getDiagnosisKeys(onsetDate: nil) { result in
+                    keyProvider.getDiagnosisKeys(onsetDate: nil, appDesc: serviceClient.descriptor) { result in
                         switch result {
                         case let .success(keys):
                             let rollingStartNumber = DayDate(date: op.dayToPublish).period

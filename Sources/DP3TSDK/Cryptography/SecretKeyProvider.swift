@@ -10,7 +10,7 @@ import Foundation
 protocol SecretKeyProvider: class {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 
-    func getDiagnosisKeys(onsetDate: Date?, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
+    func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 
     func reset()
 }
@@ -21,7 +21,7 @@ fileprivate var logger = Logger(ENManager.self, category: "SecretKeyProvider")
 
 @available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
-    func getDiagnosisKeys(onsetDate: Date?, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
+    func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.trace()
         let handler: ENGetDiagnosisKeysHandler = { [weak self]  (keys, error) in
             guard let self = self else { return }
@@ -42,11 +42,13 @@ extension ENManager: SecretKeyProvider {
                 fatalError("getDiagnosisKeys returned neither an error nor a keys")
             }
         }
-        #if DEBUG
-        getDiagnosisKeys(completionHandler: handler)
-        #else
-        getDiagnosisKeys(completionHandler: handler)
-        #endif
+
+        switch appDesc.mode {
+        case .production:
+            getDiagnosisKeys(completionHandler: handler)
+        case .test:
+            getTestDiagnosisKeys(completionHandler: handler)
+        }
     }
 
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
