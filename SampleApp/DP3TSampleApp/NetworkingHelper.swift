@@ -129,7 +129,7 @@ class NetworkingHelper {
                 var result: [DebugZips] = []
                 for entry in archive {
                     let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-                        .appendingPathComponent(UUID().uuidString)
+                        .appendingPathComponent(UUID().uuidString).appendingPathExtension("zip")
                     _ = try? archive.extract(entry, to: localURL)
                     result.append(.init(name: entry.path, localUrl: localURL))
                 }
@@ -152,7 +152,7 @@ class NetworkingHelper {
                 }
 
                 var keys = keys?.map(CodableDiagnosisKey.init(key:)) ?? []
-                while(keys.count < 14) {
+                while(keys.count < 13) {
                     let nowTS = UInt32(Date().timeIntervalSince1970 / 144)
                     keys.append(.init(keyData: Crypto.generateRandomKey(lenght: 16),
                                       rollingPeriod: 144,
@@ -160,6 +160,14 @@ class NetworkingHelper {
                                       transmissionRiskLevel: 0,
                                       fake: 1))
                 }
+
+                keys.sort { (lhs, rhs) -> Bool in
+                    lhs.rollingStartNumber > rhs.rollingStartNumber
+                }
+
+                keys = Array(keys.prefix(14))
+
+
 
                 let model = ExposeeListModel(gaenKeys: keys, fake: false)
                 guard let request = Endpoint.addGaenExposee(deviceName: debugName, data: model) else {

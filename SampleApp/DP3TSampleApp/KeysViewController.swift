@@ -10,8 +10,6 @@ class KeysViewController: UIViewController {
 
     private let networkingHelper = NetworkingHelper()
 
-    private var keys = [NetworkingHelper.DebugZips]()
-
     enum Section : CaseIterable {
       case keys
     }
@@ -41,7 +39,6 @@ class KeysViewController: UIViewController {
             var snapshot = NSDiffableDataSourceSnapshot<KeysViewController.Section, NetworkingHelper.DebugZips>()
             snapshot.appendSections([.keys])
             snapshot.appendItems(result)
-            self?.keys = result
             self?.dataSource.apply(snapshot, animatingDifferences: true)
         }
         
@@ -68,9 +65,9 @@ class KeysViewController: UIViewController {
 extension KeysViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-       let key = keys[indexPath.row]
+        guard let key = dataSource.itemIdentifier(for: indexPath) else { return }
         let manager = ENManager()
-        manager.activate { (_) in
+        manager.activate { (error) in
             manager.detectExposures(configuration: .dummyConfiguration, diagnosisKeyURLs: [key.localUrl]) { (summary, error) in
                 let alertController = UIAlertController(title: "Summary", message: summary?.description ?? error?.localizedDescription ?? "nil", preferredStyle: .alert)
                 let actionOk = UIAlertAction(title: "OK",

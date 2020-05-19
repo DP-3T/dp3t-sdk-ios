@@ -344,6 +344,8 @@ class ControlViewController: UIViewController {
             }
         }))
 
+        alert.addAction(.init(title: "Cancel", style: .destructive, handler: nil))
+
         self.present(alert, animated: true, completion: nil)
     }
 
