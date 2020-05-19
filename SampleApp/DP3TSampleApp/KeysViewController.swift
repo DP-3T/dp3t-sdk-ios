@@ -1,6 +1,7 @@
 
 import UIKit
 import ExposureNotification
+import ZIPFoundation
 
 class KeysViewController: UIViewController {
 
@@ -66,9 +67,18 @@ extension KeysViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard let key = dataSource.itemIdentifier(for: indexPath) else { return }
+        let archive = Archive(url: key.localUrl, accessMode: .read)!
+        var localUrls: [URL] = []
+        for entry in archive {
+            let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+                .appendingPathComponent(entry.path)
+            _ = try? archive.extract(entry, to: localURL)
+            localUrls.append(localURL)
+        }
+
         let manager = ENManager()
         manager.activate { (error) in
-            manager.detectExposures(configuration: .dummyConfiguration, diagnosisKeyURLs: [key.localUrl]) { (summary, error) in
+            manager.detectExposures(configuration: .dummyConfiguration, diagnosisKeyURLs: localUrls) { (summary, error) in
                 let alertController = UIAlertController(title: "Summary", message: summary?.description ?? error?.localizedDescription ?? "nil", preferredStyle: .alert)
                 let actionOk = UIAlertAction(title: "OK",
                     style: .default,
