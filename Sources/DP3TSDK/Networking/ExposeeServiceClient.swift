@@ -143,15 +143,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         // Validate JWT
         if #available(iOS 11.0, *), let verifier = jwtVerifier {
             do {
-                let claims = try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
-
-                // Verify the batch time
-                let batchReleaseTimeRaw = claims.batchReleaseTime
-                let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
-                guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
-                    return .failure(.jwtSignatureError(code: 3, debugDescription: "Batch release time missmatch"))
-                }
-
+                try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
             } catch let error as DP3TNetworkingError {
                 return .failure(error)
             } catch {
@@ -293,12 +285,10 @@ private struct ExposeeClaims: DP3TClaims {
     let iat: Date
     let exp: Date
     let contentHash: String
-    let batchReleaseTime: String
     let hashAlg: String
 
     enum CodingKeys: String, CodingKey {
         case contentHash = "content-hash"
-        case batchReleaseTime = "batch-release-time"
         case hashAlg = "hash-alg"
         case iss, iat, exp
     }
