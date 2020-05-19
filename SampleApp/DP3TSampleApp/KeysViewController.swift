@@ -2,6 +2,7 @@
 import UIKit
 import ExposureNotification
 import ZIPFoundation
+import DP3TSDK
 
 class KeysViewController: UIViewController {
 
@@ -79,8 +80,7 @@ extension KeysViewController: UITableViewDelegate {
 
         let manager = ENManager()
         manager.activate { (error) in
-            print(localUrls)
-            manager.detectExposures(configuration: .dummyConfiguration, diagnosisKeyURLs: localUrls) { (summary, error) in
+            manager.detectExposures(configuration: .dummyConfiguration(), diagnosisKeyURLs: localUrls) { (summary, error) in
                 let alertController = UIAlertController(title: "Summary", message: summary?.description ?? error.debugDescription, preferredStyle: .alert)
                 let actionOk = UIAlertAction(title: "OK",
                     style: .default,
@@ -95,7 +95,7 @@ extension KeysViewController: UITableViewDelegate {
 
 @available(iOS 13.5, *)
 extension ENExposureConfiguration {
-    static var dummyConfiguration: ENExposureConfiguration = {
+    static func dummyConfiguration(parameters: DP3TParameters = DP3TTracing.parameters) -> ENExposureConfiguration {
         let configuration = ENExposureConfiguration()
         configuration.minimumRiskScore = 0
         configuration.attenuationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -106,6 +106,8 @@ extension ENExposureConfiguration {
         configuration.durationWeight = 50
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.transmissionRiskWeight = 50
+        configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.attenuationThresholdLow,
+                                                                    parameters.contactMatching.attenuationThresholdHigh]]
         return configuration
-    }()
+    }
 }

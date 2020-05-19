@@ -8,7 +8,7 @@ import CoreBluetooth
 import Foundation
 
 public struct DP3TParameters: Codable {
-    static let parameterVersion: Int = 5
+    static let parameterVersion: Int = 6
 
     let version: Int
 
@@ -49,5 +49,8 @@ public struct DP3TParameters: Codable {
         public var numberOfWindowsForExposure: Int = 3
 
         public var windowDuration: TimeInterval = .minute * 5
+
+        public var attenuationThresholdLow: Int = 50
+        public var attenuationThresholdHigh: Int = 74
     }
 }

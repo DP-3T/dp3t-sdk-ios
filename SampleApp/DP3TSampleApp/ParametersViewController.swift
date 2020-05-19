@@ -10,7 +10,8 @@ import UIKit
 class ParametersViewController: UIViewController {
     let stackView = UIStackView()
 
-    let batchLengthInput = UITextField()
+    let attenuationLow = UITextField()
+    let attenuationHigh = UITextField()
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -40,46 +41,63 @@ class ParametersViewController: UIViewController {
 
         let params = DP3TTracing.parameters
 
-        /*
+
         do {
             let label = UILabel()
-            label.text = "Set buckets batch length (seconds)"
+            label.text = "Set Attenuation Low threshold"
             stackView.addArrangedSubview(label)
 
-            batchLengthInput.delegate = self
-            batchLengthInput.font = UIFont.systemFont(ofSize: 15)
-            batchLengthInput.borderStyle = UITextField.BorderStyle.roundedRect
-            batchLengthInput.autocorrectionType = UITextAutocorrectionType.no
-            batchLengthInput.keyboardType = UIKeyboardType.numberPad
-            batchLengthInput.returnKeyType = UIReturnKeyType.done
-            batchLengthInput.clearButtonMode = UITextField.ViewMode.whileEditing
-            batchLengthInput.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
-            batchLengthInput.delegate = self
-            stackView.addArrangedSubview(batchLengthInput)
+            attenuationLow.text = "\(params.contactMatching.attenuationThresholdLow)"
+            attenuationLow.delegate = self
+            attenuationLow.font = UIFont.systemFont(ofSize: 15)
+            attenuationLow.borderStyle = UITextField.BorderStyle.roundedRect
+            attenuationLow.autocorrectionType = UITextAutocorrectionType.no
+            attenuationLow.keyboardType = UIKeyboardType.numberPad
+            attenuationLow.returnKeyType = UIReturnKeyType.done
+            attenuationLow.clearButtonMode = UITextField.ViewMode.whileEditing
+            attenuationLow.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
+            attenuationLow.delegate = self
+            stackView.addArrangedSubview(attenuationLow)
+        }
+        do {
+            let label = UILabel()
+            label.text = "Set Attenuation High Threshold"
+            stackView.addArrangedSubview(label)
 
-            let button = UIButton()
-            if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
-            button.setTitle("Update", for: .normal)
-            button.addTarget(self, action: #selector(batchLengthUpdate), for: .touchUpInside)
-            stackView.addArrangedSubview(button)
+            attenuationHigh.text = "\(params.contactMatching.attenuationThresholdHigh)"
+            attenuationHigh.delegate = self
+            attenuationHigh.font = UIFont.systemFont(ofSize: 15)
+            attenuationHigh.borderStyle = UITextField.BorderStyle.roundedRect
+            attenuationHigh.autocorrectionType = UITextAutocorrectionType.no
+            attenuationHigh.keyboardType = UIKeyboardType.numberPad
+            attenuationHigh.returnKeyType = UIReturnKeyType.done
+            attenuationHigh.clearButtonMode = UITextField.ViewMode.whileEditing
+            attenuationHigh.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
+            attenuationHigh.delegate = self
+            stackView.addArrangedSubview(attenuationHigh)
         }
 
-        stackView.addArrangedView(UIView())*/
+        let button = UIButton()
+        button.setTitleColor(.systemBlue, for: .normal)
+        button.setTitleColor(.systemGray, for: .highlighted)
+        button.setTitle("Update", for: .normal)
+        button.addTarget(self, action: #selector(attenutationUpdate), for: .touchUpInside)
+        stackView.addArrangedSubview(button)
+
+        stackView.addArrangedView(UIView())
     }
-/*
-    @objc func batchLengthUpdate() {
-        let length = batchLengthInput.text ?? "7200"
-        let double = Double(length) ?? 7200.0
-        batchLengthInput.text = "\(double)"
-        DP3TTracing.parameters.networking.batchLength = double
-        batchLengthInput.resignFirstResponder()
-    }*/
+
+    @objc func attenutationUpdate() {
+        guard let lowString = attenuationLow.text,
+            let low = Int(lowString),
+            let highString = attenuationHigh.text,
+            let high = Int(highString) else { return }
+        DP3TTracing.parameters.contactMatching.attenuationThresholdLow = low
+        DP3TTracing.parameters.contactMatching.attenuationThresholdHigh = high
+
+        attenuationLow.resignFirstResponder()
+        attenuationHigh.resignFirstResponder()
+    }
 }
 
 extension ParametersViewController: DP3TTracingDelegate {
