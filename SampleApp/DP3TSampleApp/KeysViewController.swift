@@ -4,17 +4,29 @@ import ExposureNotification
 import ZIPFoundation
 import DP3TSDK
 
+
+class KeyDiffableDataSource: UITableViewDiffableDataSource<Date, NetworkingHelper.DebugZips> {
+    static var formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yyyy"
+        return formatter
+    }()
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return Self.formatter.string(from: snapshot().sectionIdentifiers[section])
+    }
+}
+
+
 class KeysViewController: UIViewController {
 
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
+
+    private let datePicker = UIDatePicker()
+
     private let cellReuseIdentifier = "keyCell"
-    private lazy var dataSource = makeDataSource()
+    private lazy var dataSource: KeyDiffableDataSource = makeDataSource()
 
     private let networkingHelper = NetworkingHelper()
-
-    enum Section : CaseIterable {
-      case keys
-    }
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -26,30 +38,58 @@ class KeysViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func loadView() {
-        self.view = tableView
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        self.view.backgroundColor = .systemBackground
+
+        self.view.addSubview(tableView)
+        tableView.snp.makeConstraints { (make) in
+            make.left.top.right.equalTo(self.view.safeAreaLayoutGuide)
+        }
+
+        self.view.addSubview(datePicker)
+        datePicker.snp.makeConstraints { (make) in
+            make.left.right.bottom.equalTo(self.view.safeAreaLayoutGuide)
+            make.top.equalTo(tableView.snp.bottom)
+        }
+
+        datePicker.backgroundColor = .systemBackground
+        datePicker.datePickerMode = .date
+        datePicker.addTarget(self, action: #selector(self.datePickerDidChange), for: .valueChanged)
 
         tableView.register(UITableViewCell.self,forCellReuseIdentifier: cellReuseIdentifier)
         tableView.dataSource = dataSource
         tableView.delegate = self
 
-        networkingHelper.getDebugKeys(day: Date().addingTimeInterval(60*60*24)) { [weak self] result in
-            var snapshot = NSDiffableDataSourceSnapshot<KeysViewController.Section, NetworkingHelper.DebugZips>()
-            snapshot.appendSections([.keys])
-            snapshot.appendItems(result)
+        let date = Date().addingTimeInterval(60*60*24)
+        datePicker.setDate(date, animated: false)
+        networkingHelper.getDebugKeys(day: date) { [weak self] result in
+            var snapshot = NSDiffableDataSourceSnapshot<Date, NetworkingHelper.DebugZips>()
+            snapshot.appendSections([date])
+            snapshot.appendItems(result, toSection: date)
             self?.dataSource.apply(snapshot, animatingDifferences: true)
         }
-        
     }
 
-    func makeDataSource() -> UITableViewDiffableDataSource<KeysViewController.Section, NetworkingHelper.DebugZips> {
+    @objc func datePickerDidChange() {
+        let date = datePicker.date
+        guard !dataSource.snapshot().sectionIdentifiers.contains(date) else { return }
+        networkingHelper.getDebugKeys(day: date) { [weak self] result in
+            guard let self = self else { return }
+            var snapshot = self.dataSource.snapshot()
+            if !snapshot.sectionIdentifiers.contains(date) {
+                snapshot.appendSections([date])
+            }
+            snapshot.appendItems(result, toSection: date)
+            self.dataSource.apply(snapshot, animatingDifferences: true)
+        }
+    }
+
+    func makeDataSource() -> KeyDiffableDataSource {
             let reuseIdentifier = cellReuseIdentifier
 
-            return UITableViewDiffableDataSource(
+            return KeyDiffableDataSource(
                 tableView: tableView,
                 cellProvider: {  tableView, indexPath, zip in
                     let cell = tableView.dequeueReusableCell(
@@ -62,7 +102,6 @@ class KeysViewController: UIViewController {
             )
         }
 }
-
 
 extension KeysViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

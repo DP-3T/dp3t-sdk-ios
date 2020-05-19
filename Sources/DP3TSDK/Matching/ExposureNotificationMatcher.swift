@@ -25,13 +25,6 @@ class ExposureNotificationMatcher: Matcher {
         self.exposureDayStorage = exposureDayStorage
     }
 
-    static var dateFormat: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "'key_export_'yyyy-MM-dd"
-        formatter.timeZone = Default.shared.parameters.crypto.timeZone
-        return formatter
-    }()
-
     func receivedNewKnownCaseData(_ data: Data, keyDate: Date) throws {
         log.trace()
 
