@@ -99,7 +99,7 @@ class Default: DefaultStorage {
         }
     }
 
-    func reset(){
+    func reset() {
         parameters = .init()
         lastSync = nil
         installationDate = nil

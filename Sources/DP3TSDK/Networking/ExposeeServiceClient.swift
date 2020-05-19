@@ -83,24 +83,22 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     /*
 
-    https://demo-dpppt.ubique.ch/v1/gaen/exposed/1589673600000
+     https://demo-dpppt.ubique.ch/v1/gaen/exposed/1589673600000
 
-    https://demo-dpppt.ubique.ch/v1/gaen/exposed/1589673600000&publishedAfter=1589838300000
+     https://demo-dpppt.ubique.ch/v1/gaen/exposed/1589673600000&publishedAfter=1589838300000
 
-    last 10 days
+     last 10 days
 
-    [
-    t-10: 1589838300000,
-    t-9 : 1589838300000,
-    ]
+     [
+     t-10: 1589838300000,
+     t-9 : 1589838300000,
+     ]
 
-    20 x detect Exposured / day -> 2x each day group by day
+     20 x detect Exposured / day -> 2x each day group by day
 
-    Response :
-    x-published-until: 1589838300000
-    */
-
-
+     Response :
+     x-published-until: 1589838300000
+     */
 
     /// Get all exposee for a known day synchronously
     /// - Parameters:

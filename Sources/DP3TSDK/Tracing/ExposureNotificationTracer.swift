@@ -7,7 +7,6 @@
 import ExposureNotification
 import Foundation
 
-@available(iOS 13.5, *)
 class ExposureNotificationTracer: Tracer {
     private let manager: ENManager
 
@@ -59,7 +58,7 @@ class ExposureNotificationTracer: Tracer {
                       enabled: manager.exposureNotificationEnabled)
     }
 
-    func setEnabled(_ enabled: Bool, completionHandler:((Error?)->Void)?) {
+    func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?) {
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
             guard let self = self else { return }
             if let error = error {
@@ -70,7 +69,6 @@ class ExposureNotificationTracer: Tracer {
     }
 }
 
-@available(iOS 13.5, *)
 extension TrackingState {
     init(state: ENStatus, authorizationStatus: ENAuthorizationStatus, enabled: Bool) {
         if authorizationStatus == .unknown {

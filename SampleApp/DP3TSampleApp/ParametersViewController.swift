@@ -41,7 +41,6 @@ class ParametersViewController: UIViewController {
 
         let params = DP3TTracing.parameters
 
-
         do {
             let label = UILabel()
             label.text = "Set Attenuation Low threshold"

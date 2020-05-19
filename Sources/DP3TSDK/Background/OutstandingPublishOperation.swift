@@ -6,7 +6,6 @@
 
 import Foundation
 
-@available(iOS 13.5, *)
 class OutstandingPublishOperation: Operation {
     weak var keyProvider: SecretKeyProvider!
     private let serviceClient: ExposeeServiceClient
@@ -28,7 +27,7 @@ class OutstandingPublishOperation: Operation {
             let operations = storage.get()
             guard operations.isEmpty == false else { return }
             let today = DayDate().dayMin
-            for op in operations where op.dayToPublish < today  {
+            for op in operations where op.dayToPublish < today {
                 log.info("handling outstanding Publish %@", op.debugDescription)
                 let group = DispatchGroup()
 

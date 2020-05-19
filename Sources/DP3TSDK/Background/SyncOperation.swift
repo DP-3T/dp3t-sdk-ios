@@ -6,7 +6,6 @@
 
 import Foundation
 
-@available(iOS 13.5, *)
 class SyncOperation: Operation {
     override func main() {
         DP3TTracing.sync { result in

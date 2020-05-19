@@ -10,44 +10,35 @@ import Foundation
 import Foundation
 import XCTest
 
-fileprivate class MockMatcher: Matcher {
+private class MockMatcher: Matcher {
     var delegate: MatcherDelegate?
 
-    func receivedNewKnownCaseData(_ data: Data, keyDate batchTimestamp: Date) throws {
+    func receivedNewKnownCaseData(_: Data, keyDate _: Date) throws {}
 
-    }
-
-    func finalizeMatchingSession() throws {
-
-    }
+    func finalizeMatchingSession() throws {}
 }
 
-fileprivate class MockService: ExposeeServiceClientProtocol {
+private class MockService: ExposeeServiceClientProtocol {
     var requests: [Date] = []
-    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter: Date?) -> Result<ExposeeSuccess?, DP3TNetworkingError> {
+    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter _: Date?) -> Result<ExposeeSuccess?, DP3TNetworkingError> {
         requests.append(batchTimestamp)
         return .success(.init(data: "\(batchTimestamp.timeIntervalSince1970)".data(using: .utf8)!, publishedUntil: batchTimestamp))
     }
 
-    func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void) {
+    func addExposeeList(_: ExposeeListModel, authentication _: ExposeeAuthMethod, completion _: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void) {}
 
-    }
-
-    func addDelayedExposeeList(_ model: DelayedKeyModel, token: String?, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
-
-    }
+    func addDelayedExposeeList(_: DelayedKeyModel, token _: String?, completion _: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {}
 }
 
-@available(iOS 13.5, *)
 final class KnownCasesSynchronizerTests: XCTestCase {
-    func testInitialLastLoadedBatchValue(){
+    func testInitialLastLoadedBatchValue() {
         let defaults = MockDefaults()
         KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
         XCTAssertNotNil(defaults.installationDate)
         XCTAssertLessThanOrEqual(defaults.installationDate!, Date())
     }
 
-    func testInitialToday(){
+    func testInitialToday() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
@@ -56,17 +47,16 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           service: service,
                                           defaults: defaults)
         let expecation = expectation(description: "syncExpectation")
-        sync.sync { (result) in
+        sync.sync { _ in
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 1)
         XCTAssertEqual(service.requests.first!, DayDate().dayMin)
-
     }
 
-    func testInitialLoadingFirstBatch(){
+    func testInitialLoadingFirstBatch() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
@@ -75,7 +65,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           service: service,
                                           defaults: defaults)
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { (result) in
+        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -83,7 +73,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         XCTAssertEqual(service.requests.count, 1)
     }
 
-    func testInitialLoadingManyBatches(){
+    func testInitialLoadingManyBatches() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
@@ -92,7 +82,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           service: service,
                                           defaults: defaults)
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .day * 15)) { (result) in
+        sync.sync(now: .init(timeIntervalSinceNow: .day * 15)) { _ in
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -100,17 +90,19 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         XCTAssertEqual(service.requests.count, defaults.parameters.networking.daysToCheck)
     }
 
-    func testLastDesiredSyncTimeNoon(){
+    func testLastDesiredSyncTimeNoon() {
         let input = Self.formatter.date(from: "19.05.2020 12:12")!
         let output = Self.formatter.date(from: "19.05.2020 06:00")!
         XCTAssertEqual(KnownCasesSynchronizer.getLastDesiredSyncTime(ts: input), output)
     }
-    func testLastDesiredSyncTimeYesterday(){
+
+    func testLastDesiredSyncTimeYesterday() {
         let input = Self.formatter.date(from: "19.05.2020 05:55")!
         let output = Self.formatter.date(from: "18.05.2020 20:00")!
         XCTAssertEqual(KnownCasesSynchronizer.getLastDesiredSyncTime(ts: input), output)
     }
-    func testLastDesiredSyncTimeNight(){
+
+    func testLastDesiredSyncTimeNight() {
         let input = Self.formatter.date(from: "19.05.2020 23:55")!
         let output = Self.formatter.date(from: "19.05.2020 20:00")!
         XCTAssertEqual(KnownCasesSynchronizer.getLastDesiredSyncTime(ts: input), output)
@@ -119,8 +111,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
     static var formatter: DateFormatter = {
         let df = DateFormatter()
         df.dateFormat = "dd.MM.yyyy HH:mm"
-        df.timeZone = TimeZone.init(abbreviation: "UTC")!
+        df.timeZone = TimeZone(abbreviation: "UTC")!
         return df
     }()
 }
-

@@ -7,7 +7,6 @@
 import CommonCrypto
 import Foundation
 
-
 /// class which handles all cryptographic operations fot the sdk
 internal class Crypto {
     /// generates 32 bytes of random data

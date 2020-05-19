@@ -8,7 +8,6 @@ import ExposureNotification
 import Foundation
 import ZIPFoundation
 
-@available(iOS 13.5, *)
 class ExposureNotificationMatcher: Matcher {
     weak var delegate: MatcherDelegate?
 
@@ -91,7 +90,6 @@ class ExposureNotificationMatcher: Matcher {
     }
 }
 
-@available(iOS 13.5, *)
 extension ENExposureConfiguration {
     static func configuration(parameters: DP3TParameters = Default.shared.parameters) -> ENExposureConfiguration {
         let configuration = ENExposureConfiguration()

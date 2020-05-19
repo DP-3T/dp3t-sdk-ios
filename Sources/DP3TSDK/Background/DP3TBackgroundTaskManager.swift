@@ -16,7 +16,6 @@ import UIKit.UIApplication
 /// If the SDK gets destroyed and initialized again this would cause a crash
 private var didRegisterBackgroundTask: Bool = false
 
-@available(iOS 13.5, *)
 class DP3TBackgroundTaskManager {
     static let taskIdentifier: String = "org.dpppt.exposure-notification"
 

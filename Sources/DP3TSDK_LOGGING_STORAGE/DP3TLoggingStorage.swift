@@ -8,7 +8,6 @@ import Foundation
 import os.log
 import SQLite
 
-
 public struct LogEntry: Identifiable {
     public let id: Int
     public let type: OSLogType
@@ -90,6 +89,7 @@ public class DP3TLoggingStorage {
         return documentsDirectory.appendingPathComponent("DP3T_tracing_db").appendingPathExtension("sqlite")
     }
 }
+
 extension Date {
     var millisecondsSince1970: Int64 {
         return Int64((timeIntervalSince1970 * 1000.0).rounded())

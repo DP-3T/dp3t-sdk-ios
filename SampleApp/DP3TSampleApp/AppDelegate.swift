@@ -5,9 +5,9 @@
  */
 
 import DP3TSDK
+import DP3TSDK_LOGGING_STORAGE
 import os
 import UIKit
-import DP3TSDK_LOGGING_STORAGE
 #if DEBUG
     import UserNotifications
 #endif

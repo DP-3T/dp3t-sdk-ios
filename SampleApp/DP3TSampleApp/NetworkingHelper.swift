@@ -1,8 +1,8 @@
 
 import Alamofire
-import UIKit
-import ExposureNotification
 import CommonCrypto
+import ExposureNotification
+import UIKit
 import ZIPFoundation
 
 struct CodableDiagnosisKey: Codable, Equatable, Hashable {
@@ -23,7 +23,7 @@ struct ExposeeListModel: Encodable {
         try container.encode(gaenKeys, forKey: .gaenKeys)
         try container.encode(fake ? 1 : 0, forKey: .fake)
         let ts = Date().timeIntervalSince1970
-        let day = ts - ts.truncatingRemainder(dividingBy: 60*60*24)
+        let day = ts - ts.truncatingRemainder(dividingBy: 60 * 60 * 24)
         try container.encode(Int(day / 600), forKey: .delayedKeyDate)
     }
 
@@ -49,7 +49,7 @@ enum Endpoint {
 
     static func getGaenExposee(batchReleaseTime: Date) -> URLRequest {
         let ts = batchReleaseTime.timeIntervalSince1970
-        let day = Int(ts - ts.truncatingRemainder(dividingBy: 60*60*24)) * 1000
+        let day = Int(ts - ts.truncatingRemainder(dividingBy: 60 * 60 * 24)) * 1000
         let url = baseUrl.appendingPathComponent("v1").appendingPathComponent("debug").appendingPathComponent("exposed").appendingPathComponent("\(day)")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -119,9 +119,9 @@ class NetworkingHelper {
         let localUrl: URL
     }
 
-    func getDebugKeys(day: Date, completionHandler: @escaping ([DebugZips]) -> Void){
+    func getDebugKeys(day: Date, completionHandler: @escaping ([DebugZips]) -> Void) {
         let request = Endpoint.getGaenExposee(batchReleaseTime: day)
-        AF.download(request).response(completionHandler: { (response) in
+        AF.download(request).response(completionHandler: { response in
             switch response.result {
             case let .success(url) where url != nil:
                 guard let archive = ZIPFoundation.Archive(url: url!, accessMode: .read) else {
@@ -138,28 +138,26 @@ class NetworkingHelper {
                 completionHandler(result)
             default:
                 completionHandler([])
-                break
             }
         })
-        
     }
 
-    func uploadDebugKeys(debugName: String, completionHandler: @escaping (Result<Void, Error>) -> Void ){
+    func uploadDebugKeys(debugName: String, completionHandler: @escaping (Result<Void, Error>) -> Void) {
         let manager = ENManager()
-        manager.activate { (_) in
-            manager.getTestDiagnosisKeys { (keys, error) in
+        manager.activate { _ in
+            manager.getTestDiagnosisKeys { keys, error in
                 guard error == nil else {
                     manager.invalidate()
                     return
                 }
 
                 var keys = keys?.map(CodableDiagnosisKey.init(key:)) ?? []
-                while(keys.count < 14) {
+                while keys.count < 14 {
                     let ts = Date().timeIntervalSince1970
-                    let day = ts - ts.truncatingRemainder(dividingBy: 60*60*24)
+                    let day = ts - ts.truncatingRemainder(dividingBy: 60 * 60 * 24)
                     keys.append(.init(keyData: Crypto.generateRandomKey(lenght: 16),
                                       rollingPeriod: 144,
-                                      rollingStartNumber: UInt32(day/600),
+                                      rollingStartNumber: UInt32(day / 600),
                                       transmissionRiskLevel: 0,
                                       fake: 1))
                 }
@@ -170,32 +168,26 @@ class NetworkingHelper {
 
                 keys = Array(keys.prefix(14))
 
-
-
                 let model = ExposeeListModel(gaenKeys: keys, fake: false)
                 guard let request = Endpoint.addGaenExposee(deviceName: debugName, data: model) else {
                     manager.invalidate()
                     return
                 }
 
-                AF.request(request).response { (result) in
+                AF.request(request).response { result in
                     switch result.result {
                     case .success:
                         completionHandler(.success(()))
                     case let .failure(error):
                         completionHandler(.failure(error))
-                    manager.invalidate()
+                        manager.invalidate()
                     }
                 }
             }
         }
-
-
     }
 }
 
-
-@available(iOS 13.5, *)
 extension CodableDiagnosisKey {
     init(key: ENTemporaryExposureKey) {
         keyData = key.keyData
@@ -214,5 +206,4 @@ internal class Crypto {
         }
         return keyData
     }
-
 }

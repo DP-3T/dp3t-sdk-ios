@@ -1,9 +1,8 @@
 
-import UIKit
-import ExposureNotification
-import ZIPFoundation
 import DP3TSDK
-
+import ExposureNotification
+import UIKit
+import ZIPFoundation
 
 class KeyDiffableDataSource: UITableViewDiffableDataSource<Date, NetworkingHelper.DebugZips> {
     static var formatter: DateFormatter = {
@@ -11,14 +10,13 @@ class KeyDiffableDataSource: UITableViewDiffableDataSource<Date, NetworkingHelpe
         formatter.dateFormat = "dd.MM.yyyy"
         return formatter
     }()
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+
+    override func tableView(_: UITableView, titleForHeaderInSection section: Int) -> String? {
         return Self.formatter.string(from: snapshot().sectionIdentifiers[section])
     }
 }
 
-
 class KeysViewController: UIViewController {
-
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
 
     private let datePicker = UIDatePicker()
@@ -34,35 +32,35 @@ class KeysViewController: UIViewController {
         tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "keyboard"), tag: 0)
     }
 
-    required init?(coder: NSCoder) {
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.backgroundColor = .systemBackground
+        view.backgroundColor = .systemBackground
 
-        self.view.addSubview(tableView)
-        tableView.snp.makeConstraints { (make) in
+        view.addSubview(tableView)
+        tableView.snp.makeConstraints { make in
             make.left.top.right.equalTo(self.view.safeAreaLayoutGuide)
         }
 
-        self.view.addSubview(datePicker)
-        datePicker.snp.makeConstraints { (make) in
+        view.addSubview(datePicker)
+        datePicker.snp.makeConstraints { make in
             make.left.right.bottom.equalTo(self.view.safeAreaLayoutGuide)
             make.top.equalTo(tableView.snp.bottom)
         }
 
         datePicker.backgroundColor = .systemBackground
         datePicker.datePickerMode = .date
-        datePicker.addTarget(self, action: #selector(self.datePickerDidChange), for: .valueChanged)
+        datePicker.addTarget(self, action: #selector(datePickerDidChange), for: .valueChanged)
 
-        tableView.register(UITableViewCell.self,forCellReuseIdentifier: cellReuseIdentifier)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellReuseIdentifier)
         tableView.dataSource = dataSource
         tableView.delegate = self
 
-        let date = Date().addingTimeInterval(60*60*24)
+        let date = Date().addingTimeInterval(60 * 60 * 24)
         datePicker.setDate(date, animated: false)
         networkingHelper.getDebugKeys(day: date) { [weak self] result in
             var snapshot = NSDiffableDataSourceSnapshot<Date, NetworkingHelper.DebugZips>()
@@ -87,20 +85,21 @@ class KeysViewController: UIViewController {
     }
 
     func makeDataSource() -> KeyDiffableDataSource {
-            let reuseIdentifier = cellReuseIdentifier
+        let reuseIdentifier = cellReuseIdentifier
 
-            return KeyDiffableDataSource(
-                tableView: tableView,
-                cellProvider: {  tableView, indexPath, zip in
-                    let cell = tableView.dequeueReusableCell(
-                        withIdentifier: reuseIdentifier,
-                        for: indexPath)
+        return KeyDiffableDataSource(
+            tableView: tableView,
+            cellProvider: { tableView, indexPath, zip in
+                let cell = tableView.dequeueReusableCell(
+                    withIdentifier: reuseIdentifier,
+                    for: indexPath
+                )
 
-                    cell.textLabel?.text = zip.name
-                    return cell
-                }
-            )
-        }
+                cell.textLabel?.text = zip.name
+                return cell
+            }
+        )
+    }
 }
 
 extension KeysViewController: UITableViewDelegate {
@@ -118,19 +117,19 @@ extension KeysViewController: UITableViewDelegate {
         }
 
         let manager = ENManager()
-        manager.activate { (error) in
+        manager.activate { error in
             if let error = error {
                 loggingStorage?.log(error.localizedDescription, type: .error)
             }
 
             let configuration: ENExposureConfiguration = .configuration()
-            manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { (summary, error) in
+            manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { summary, error in
                 let string = summary?.description ?? error.debugDescription
                 loggingStorage?.log(string, type: .info)
                 let alertController = UIAlertController(title: "Summary", message: string, preferredStyle: .alert)
                 let actionOk = UIAlertAction(title: "OK",
-                    style: .default,
-                    handler: nil)
+                                             style: .default,
+                                             handler: nil)
                 alertController.addAction(actionOk)
                 self.present(alertController, animated: true, completion: nil)
                 try? localUrls.forEach(FileManager.default.removeItem(at:))
@@ -139,7 +138,6 @@ extension KeysViewController: UITableViewDelegate {
     }
 }
 
-@available(iOS 13.5, *)
 extension ENExposureConfiguration {
     static func configuration(parameters: DP3TParameters = DP3TTracing.parameters) -> ENExposureConfiguration {
         let configuration = ENExposureConfiguration()

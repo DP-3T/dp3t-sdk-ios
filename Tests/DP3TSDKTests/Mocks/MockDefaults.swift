@@ -10,7 +10,7 @@ import Foundation
 class MockDefaults: DefaultStorage {
     var installationDate: Date?
 
-    var publishedAfterStore: [Date : Date] = [:]
+    var publishedAfterStore: [Date: Date] = [:]
 
     var parameters: DP3TParameters = .init()
 
@@ -19,6 +19,6 @@ class MockDefaults: DefaultStorage {
     var isFirstLaunch: Bool = false
 
     var lastSync: Date?
-    
+
     var didMarkAsInfected: Bool = false
 }

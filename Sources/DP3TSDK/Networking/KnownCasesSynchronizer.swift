@@ -9,7 +9,7 @@ import Foundation
 /**
  Synchronizes data on known cases
  */
-@available(iOS 13.5, *)
+
 class KnownCasesSynchronizer {
     private var defaults: DefaultStorage
 
@@ -79,7 +79,7 @@ class KnownCasesSynchronizer {
 
         let daysToFetch = components.day ?? 0
 
-        //cleanup old published after
+        // cleanup old published after
 
         var publishedAfterStore = defaults.publishedAfterStore
         for date in publishedAfterStore.keys {
@@ -94,7 +94,7 @@ class KnownCasesSynchronizer {
 
         var occuredError: DP3TTracingError?
 
-        for day in 0...daysToFetch {
+        for day in 0 ... daysToFetch {
             guard let currentKeyDate = calendar.date(byAdding: .day, value: day, to: minimumDate) else {
                 continue
             }
@@ -120,7 +120,6 @@ class KnownCasesSynchronizer {
                             if let result = knownCasesData {
                                 try self.matcher?.receivedNewKnownCaseData(result.data, keyDate: currentKeyDate)
                                 publishedAfterStore[currentKeyDate] = result.publishedUntil
-
                             }
                         } catch let error as DP3TNetworkingError {
                             self.log.error("matcher receive error: %@", error.localizedDescription)
@@ -132,7 +131,6 @@ class KnownCasesSynchronizer {
                             self.log.error("matcher receive error: %@", error.localizedDescription)
 
                             occuredError = .networkingError(error: .couldNotParseData(error: error, origin: 0))
-
                         }
                     }
                 }
@@ -163,11 +161,11 @@ class KnownCasesSynchronizer {
     internal static func getLastDesiredSyncTime(ts: Date = .init()) -> Date {
         var calendar = Calendar.current
         calendar.timeZone = Default.shared.parameters.crypto.timeZone
-        let dateComponents = calendar.dateComponents([.hour,.day,.month,.year], from: ts)
+        let dateComponents = calendar.dateComponents([.hour, .day, .month, .year], from: ts)
         if dateComponents.hour! < 6 {
             let yesterday = calendar.date(byAdding: .day, value: -1, to: ts)!
             return calendar.date(bySettingHour: 20, minute: 0, second: 0, of: yesterday)!
-        } else if (dateComponents.hour! < 20) {
+        } else if dateComponents.hour! < 20 {
             return calendar.date(bySettingHour: 6, minute: 0, second: 0, of: ts)!
         } else {
             return calendar.date(bySettingHour: 20, minute: 0, second: 0, of: ts)!

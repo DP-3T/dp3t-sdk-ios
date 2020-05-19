@@ -42,7 +42,7 @@ struct ExposeeEndpoint {
             urlComponents?.queryItems = [URLQueryItem(name: "publishedAfter", value: String(publishedAfter.millisecondsSince1970))]
         }
 
-        guard let finalUrl = urlComponents?.url  else {
+        guard let finalUrl = urlComponents?.url else {
             fatalError("can't create URLComponents url")
         }
 

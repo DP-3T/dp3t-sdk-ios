@@ -332,21 +332,21 @@ class ControlViewController: UIViewController {
     @objc func uploadKeys() {
         let alert = UIAlertController(title: "Upload Keys", message: "Enter debug device name", preferredStyle: .alert)
 
-        alert.addTextField { (textField) in
+        alert.addTextField { textField in
             textField.placeholder = "debug device name"
             textField.text = ""
         }
 
-        alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [weak alert] (_) in
+        alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [weak alert] _ in
             let textField = alert?.textFields![0]
-            self.uploadHelper.uploadDebugKeys(debugName: textField?.text ?? "noName") { (result) in
+            self.uploadHelper.uploadDebugKeys(debugName: textField?.text ?? "noName") { result in
                 print(result)
             }
         }))
 
         alert.addAction(.init(title: "Cancel", style: .destructive, handler: nil))
 
-        self.present(alert, animated: true, completion: nil)
+        present(alert, animated: true, completion: nil)
     }
 
     @objc func reset() {

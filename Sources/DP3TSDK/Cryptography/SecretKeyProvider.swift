@@ -15,15 +15,12 @@ protocol SecretKeyProvider: class {
     func reset()
 }
 
+private var logger = Logger(ENManager.self, category: "SecretKeyProvider")
 
-@available(iOS 13.5, *)
-fileprivate var logger = Logger(ENManager.self, category: "SecretKeyProvider")
-
-@available(iOS 13.5, *)
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.trace()
-        let handler: ENGetDiagnosisKeysHandler = { [weak self]  (keys, error) in
+        let handler: ENGetDiagnosisKeysHandler = { [weak self] keys, error in
             guard let self = self else { return }
             if let error = error {
                 completionHandler(.failure(.exposureNotificationError(error: error)))
@@ -80,7 +77,6 @@ extension ENManager: SecretKeyProvider {
     func reset() {}
 }
 
-@available(iOS 13.5, *)
 extension CodableDiagnosisKey {
     init(key: ENTemporaryExposureKey) {
         keyData = key.keyData
@@ -91,7 +87,6 @@ extension CodableDiagnosisKey {
     }
 }
 
-@available(iOS 13.5, *)
 extension ENTemporaryExposureKey {
     var date: Date {
         Date(timeIntervalSince1970: TimeInterval(rollingStartNumber) * TimeInterval.minute * 10)

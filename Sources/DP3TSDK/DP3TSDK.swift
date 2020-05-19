@@ -10,7 +10,7 @@ import os
 import UIKit
 
 /// Main class for handling SDK logic
-@available(iOS 13.5, *)
+
 class DP3TSDK {
     /// appId of this instance
     private let applicationDescriptor: ApplicationDescriptor
@@ -61,7 +61,6 @@ class DP3TSDK {
     ///   - applicationDescriptor: information about the backend to use
     ///   - urlSession: the url session to use for networking (app can set it to enable certificate pinning)
     init(applicationDescriptor: ApplicationDescriptor, urlSession: URLSession, backgroundHandler: DP3TBackgroundHandler?) throws {
-
         // reset keychain on first launch
         if Default.shared.isFirstLaunch {
             Default.shared.isFirstLaunch = false
@@ -115,7 +114,7 @@ class DP3TSDK {
     }
 
     /// start tracing
-    func startTracing(completionHandler: ((Error?)->())? = nil) throws {
+    func startTracing(completionHandler: ((Error?) -> Void)? = nil) throws {
         log.trace()
         if case .infected = state.infectionStatus {
             throw DP3TTracingError.userAlreadyMarkedAsInfected
@@ -124,7 +123,7 @@ class DP3TSDK {
     }
 
     /// stop tracing
-    func stopTracing(completionHandler: ((Error?)->())? = nil) {
+    func stopTracing(completionHandler: ((Error?) -> Void)? = nil) {
         log.trace()
         tracer.setEnabled(false, completionHandler: completionHandler)
     }
@@ -193,7 +192,7 @@ class DP3TSDK {
             }
         } else {
             group.enter()
-            secretKeyProvider.getDiagnosisKeys(onsetDate: onset, appDesc: self.applicationDescriptor) { result in
+            secretKeyProvider.getDiagnosisKeys(onsetDate: onset, appDesc: applicationDescriptor) { result in
                 secretKeyResult = result
                 group.leave()
             }
@@ -259,14 +258,12 @@ class DP3TSDK {
 
 // MARK: BluetoothPermissionDelegate implementation
 
-@available(iOS 13.5, *)
 extension DP3TSDK: TracerDelegate {
     func stateDidChange() {
         state.trackingState = tracer.state
     }
 }
 
-@available(iOS 13.5, *)
 extension DP3TSDK: MatcherDelegate {
     func didFindMatch() {
         state.infectionStatus = InfectionStatus.getInfectionState(from: exposureDayStorage)

@@ -1,13 +1,12 @@
 /*
-* Created by Ubique Innovation AG
-* https://www.ubique.ch
-* Copyright (c) 2020. All rights reserved.
-*/
+ * Created by Ubique Innovation AG
+ * https://www.ubique.ch
+ * Copyright (c) 2020. All rights reserved.
+ */
 
 import Foundation
 
 class OutstandingPublishStorage {
-
     let keychain: KeychainProtocol
 
     static let key = KeychainKey<[OutstandingPublish]>(key: "org.dpppt.outstandingpublish")
@@ -37,12 +36,11 @@ class OutstandingPublishStorage {
         set(publishes: Array(elements))
     }
 
-    func reset(){
+    func reset() {
         keychain.delete(for: Self.key)
     }
 
     private func set(publishes: [OutstandingPublish]) {
         keychain.set(publishes, for: Self.key)
     }
-    
 }

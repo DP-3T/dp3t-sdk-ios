@@ -6,7 +6,6 @@
 
 import Foundation
 
-@available(iOS 13.5, *)
 class HandlerOperation: Operation {
     weak var handler: DP3TBackgroundHandler?
 

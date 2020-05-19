@@ -18,7 +18,6 @@ public protocol DP3TBackgroundHandler: AnyObject {
     func performBackgroundTasks(completionHandler: (_ success: Bool) -> Void)
 }
 
-@available(iOS 13.5, *)
 private var instance: DP3TSDK!
 
 /// DP3TTracing
@@ -42,7 +41,7 @@ public enum DP3TTracing {
     ///   - enviroment: enviroment to use
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
     ///   - backgroundHandler: a delegate to perform background tasks
-    @available(iOS 13.5, *)
+
     public static func initialize(with applicationDescriptor: ApplicationDescriptor,
                                   urlSession: URLSession = .shared,
                                   backgroundHandler: DP3TBackgroundHandler? = nil) throws {
@@ -55,7 +54,7 @@ public enum DP3TTracing {
     }
 
     /// The delegate
-    @available(iOS 13.5, *)
+
     public static var delegate: DP3TTracingDelegate? {
         set {
             guard instance != nil else {
@@ -69,8 +68,8 @@ public enum DP3TTracing {
     }
 
     /// Starts Bluetooth tracing
-    @available(iOS 13.5, *)
-    public static func startTracing(completionHandler: ((Error?)->())? = nil) throws {
+
+    public static func startTracing(completionHandler: ((Error?) -> Void)? = nil) throws {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
@@ -78,8 +77,8 @@ public enum DP3TTracing {
     }
 
     /// Stops Bluetooth tracing
-    @available(iOS 13.5, *)
-    public static func stopTracing(completionHandler: ((Error?)->())? = nil) {
+
+    public static func stopTracing(completionHandler: ((Error?) -> Void)? = nil) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
@@ -88,7 +87,7 @@ public enum DP3TTracing {
 
     /// Triggers sync with the backend to refresh the exposed list
     /// - Parameter callback: callback
-    @available(iOS 13.5, *)
+
     public static func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -102,7 +101,7 @@ public enum DP3TTracing {
 
     /// get the current status of the SDK
     /// - Parameter callback: callback
-    @available(iOS 13.5, *)
+
     public static func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -116,7 +115,7 @@ public enum DP3TTracing {
     ///   - authString: Authentication string for the exposure change
     ///   - isFakeRequest: indicates if the request should be a fake one. This method should be called regulary so people sniffing the networking traffic can no figure out if somebody is marking themself actually as exposed
     ///   - callback: callback
-    @available(iOS 13.5, *)
+
     public static func iWasExposed(onset: Date,
                                    authentication: ExposeeAuthMethod,
                                    isFakeRequest: Bool = false,
@@ -131,7 +130,7 @@ public enum DP3TTracing {
     }
 
     /// reset exposure days
-    @available(iOS 13.5, *)
+
     public static func resetExposureDays() throws {
         guard instance != nil else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -140,7 +139,7 @@ public enum DP3TTracing {
     }
 
     /// reset the infection status
-    @available(iOS 13.5, *)
+
     public static func resetInfectionStatus() throws {
         guard instance != nil else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -149,7 +148,7 @@ public enum DP3TTracing {
     }
 
     /// reset the SDK
-    @available(iOS 13.5, *)
+
     public static func reset() throws {
         guard instance != nil else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
