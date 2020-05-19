@@ -76,10 +76,8 @@ class ExposureNotificationMatcher: Matcher {
                 log.info("reiceived exposureSummary: %@", summary.debugDescription)
             }
 
-            // TODO: changed detection to more advanced logic
-            // for now the attenuation duration < 50 has to be more than 15 minutes
             if let summary = exposureSummary,
-                summary.attenuationDurations.count == 2,
+                summary.attenuationDurations.count > 0,
                 Double(truncating: summary.attenuationDurations[0]) > 15 * TimeInterval.minute {
                 log.info("exposureSummary meets requiremnts")
                 let exposedDate = Date(timeIntervalSinceNow: TimeInterval(summary.daysSinceLastExposure) * TimeInterval.day * (-1))
