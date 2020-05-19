@@ -58,7 +58,7 @@ class ExposureNotificationMatcher: Matcher {
             let semaphore = DispatchSemaphore(value: 0)
             var exposureSummary: ENExposureDetectionSummary?
             var exposureDetectionError: Error?
-            let configuration: ENExposureConfiguration = .dummyConfiguration()
+            let configuration: ENExposureConfiguration = .configuration()
             manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
                 exposureSummary = summary
                 exposureDetectionError = error
@@ -100,7 +100,7 @@ class ExposureNotificationMatcher: Matcher {
 
 @available(iOS 13.5, *)
 extension ENExposureConfiguration {
-    static func dummyConfiguration(parameters: DP3TParameters = Default.shared.parameters) -> ENExposureConfiguration {
+    static func configuration(parameters: DP3TParameters = Default.shared.parameters) -> ENExposureConfiguration {
         let configuration = ENExposureConfiguration()
         configuration.minimumRiskScore = 0
         configuration.attenuationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]

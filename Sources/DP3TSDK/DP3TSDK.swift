@@ -115,18 +115,18 @@ class DP3TSDK {
     }
 
     /// start tracing
-    func startTracing() throws {
+    func startTracing(completionHandler: ((Error?)->())? = nil) throws {
         log.trace()
         if case .infected = state.infectionStatus {
             throw DP3TTracingError.userAlreadyMarkedAsInfected
         }
-        tracer.setEnabled(true)
+        tracer.setEnabled(true, completionHandler: completionHandler)
     }
 
     /// stop tracing
-    func stopTracing() {
+    func stopTracing(completionHandler: ((Error?)->())? = nil) {
         log.trace()
-        tracer.setEnabled(false)
+        tracer.setEnabled(false, completionHandler: completionHandler)
     }
 
     /// Perform a new sync

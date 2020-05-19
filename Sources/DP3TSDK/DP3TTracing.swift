@@ -70,20 +70,20 @@ public enum DP3TTracing {
 
     /// Starts Bluetooth tracing
     @available(iOS 13.5, *)
-    public static func startTracing() throws {
+    public static func startTracing(completionHandler: ((Error?)->())? = nil) throws {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
-        try instance.startTracing()
+        try instance.startTracing(completionHandler: completionHandler)
     }
 
     /// Stops Bluetooth tracing
     @available(iOS 13.5, *)
-    public static func stopTracing() {
+    public static func stopTracing(completionHandler: ((Error?)->())? = nil) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
-        instance.stopTracing()
+        instance.stopTracing(completionHandler: completionHandler)
     }
 
     /// Triggers sync with the backend to refresh the exposed list

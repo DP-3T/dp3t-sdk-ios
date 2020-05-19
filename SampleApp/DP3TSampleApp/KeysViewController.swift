@@ -84,7 +84,7 @@ extension KeysViewController: UITableViewDelegate {
                 loggingStorage?.log(error.localizedDescription, type: .error)
             }
 
-            let configuration: ENExposureConfiguration = .dummyConfiguration()
+            let configuration: ENExposureConfiguration = .configuration()
             manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { (summary, error) in
                 let string = summary?.description ?? error.debugDescription
                 loggingStorage?.log(string, type: .info)
@@ -102,7 +102,7 @@ extension KeysViewController: UITableViewDelegate {
 
 @available(iOS 13.5, *)
 extension ENExposureConfiguration {
-    static func dummyConfiguration(parameters: DP3TParameters = DP3TTracing.parameters) -> ENExposureConfiguration {
+    static func configuration(parameters: DP3TParameters = DP3TTracing.parameters) -> ENExposureConfiguration {
         let configuration = ENExposureConfiguration()
         configuration.minimumRiskScore = 0
         configuration.attenuationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]

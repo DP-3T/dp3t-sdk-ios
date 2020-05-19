@@ -59,12 +59,13 @@ class ExposureNotificationTracer: Tracer {
                       enabled: manager.exposureNotificationEnabled)
     }
 
-    func setEnabled(_ enabled: Bool) {
+    func setEnabled(_ enabled: Bool, completionHandler:((Error?)->Void)?) {
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
             guard let self = self else { return }
             if let error = error {
                 self.state = .inactive(error: .exposureNotificationError(error: error))
             }
+            completionHandler?(error)
         }
     }
 }
