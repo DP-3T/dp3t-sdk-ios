@@ -43,7 +43,7 @@ extension ENManager: SecretKeyProvider {
             }
         }
         #if DEBUG
-        getTestDiagnosisKeys(completionHandler: handler)
+        getDiagnosisKeys(completionHandler: handler)
         #else
         getDiagnosisKeys(completionHandler: handler)
         #endif
