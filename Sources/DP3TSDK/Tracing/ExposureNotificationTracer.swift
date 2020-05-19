@@ -65,7 +65,6 @@ class ExposureNotificationTracer: Tracer {
             if let error = error {
                 self.state = .inactive(error: .exposureNotificationError(error: error))
             }
-            self.updateState()
         }
     }
 }

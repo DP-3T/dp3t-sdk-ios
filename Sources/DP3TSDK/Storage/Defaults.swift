@@ -32,7 +32,7 @@ class Default: DefaultStorage {
     var store = UserDefaults.standard
 
     /// stores if this is the first launch of the SDK
-    @Persisted(userDefaultsKey: "org.dpppt.firstlaunch", defaultValue: false)
+    @Persisted(userDefaultsKey: "org.dpppt.firstlaunch", defaultValue: true)
     var isFirstLaunch: Bool
 
     /// Last date a backend sync happend
