@@ -83,7 +83,9 @@ extension KeysViewController: UITableViewDelegate {
             if let error = error {
                 loggingStorage?.log(error.localizedDescription, type: .error)
             }
-            manager.detectExposures(configuration: .dummyConfiguration(), diagnosisKeyURLs: localUrls) { (summary, error) in
+
+            let configuration: ENExposureConfiguration = .dummyConfiguration()
+            manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { (summary, error) in
                 let string = summary?.description ?? error.debugDescription
                 loggingStorage?.log(string, type: .info)
                 let alertController = UIAlertController(title: "Summary", message: string, preferredStyle: .alert)

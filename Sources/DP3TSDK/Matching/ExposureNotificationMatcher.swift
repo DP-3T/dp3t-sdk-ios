@@ -58,7 +58,8 @@ class ExposureNotificationMatcher: Matcher {
             let semaphore = DispatchSemaphore(value: 0)
             var exposureSummary: ENExposureDetectionSummary?
             var exposureDetectionError: Error?
-            manager.detectExposures(configuration: .dummyConfiguration(), diagnosisKeyURLs: urls) { summary, error in
+            let configuration: ENExposureConfiguration = .dummyConfiguration()
+            manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
                 exposureSummary = summary
                 exposureDetectionError = error
                 semaphore.signal()
