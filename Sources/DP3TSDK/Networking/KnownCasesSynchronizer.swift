@@ -67,12 +67,7 @@ class KnownCasesSynchronizer {
     private func internalSync(now: Date = Date(), callback: Callback?) {
         log.trace()
         let todayDate = DayDate(date: now).dayMin
-
-        #if DEBUG
-        let installationDate = todayDate.addingTimeInterval(-.day * 1)
-        #else
         let installationDate = Self.initializeSynchronizerIfNeeded()
-        #endif
 
         var minimumDate = todayDate.addingTimeInterval(-.day * Double(defaults.parameters.networking.daysToCheck - 1))
 
