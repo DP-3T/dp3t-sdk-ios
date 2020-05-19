@@ -80,8 +80,13 @@ extension KeysViewController: UITableViewDelegate {
 
         let manager = ENManager()
         manager.activate { (error) in
+            if let error = error {
+                loggingStorage?.log(error.localizedDescription, type: .error)
+            }
             manager.detectExposures(configuration: .dummyConfiguration(), diagnosisKeyURLs: localUrls) { (summary, error) in
-                let alertController = UIAlertController(title: "Summary", message: summary?.description ?? error.debugDescription, preferredStyle: .alert)
+                let string = summary?.description ?? error.debugDescription
+                loggingStorage?.log(string, type: .info)
+                let alertController = UIAlertController(title: "Summary", message: string, preferredStyle: .alert)
                 let actionOk = UIAlertAction(title: "OK",
                     style: .default,
                     handler: nil)
