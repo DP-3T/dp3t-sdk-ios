@@ -88,6 +88,7 @@ class ExposureNotificationMatcher: Matcher {
                 log.info("exposureSummary does not meet requirements")
             }
         }
+        localURLs.removeAll()
     }
 
     func deleteDiagnosisKeyFile(at localURL: URL) throws {

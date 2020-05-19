@@ -98,7 +98,12 @@ class KnownCasesSynchronizer {
             guard let currentKeyDate = calendar.date(byAdding: .day, value: day, to: minimumDate) else {
                 continue
             }
+
             let publishedAfter = publishedAfterStore[currentKeyDate]
+
+            guard publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime() else {
+                continue
+            }
 
             dispatchGroup.enter()
 
@@ -154,6 +159,20 @@ class KnownCasesSynchronizer {
             } else {
                 callback?(.success(()))
             }
+        }
+    }
+
+    internal static func getLastDesiredSyncTime(ts: Date = .init()) -> Date {
+        var calendar = Calendar.current
+        calendar.timeZone = Default.shared.parameters.crypto.timeZone
+        let dateComponents = calendar.dateComponents([.hour,.day,.month,.year], from: ts)
+        if dateComponents.hour! < 6 {
+            let yesterday = calendar.date(byAdding: .day, value: -1, to: ts)!
+            return calendar.date(bySettingHour: 20, minute: 0, second: 0, of: yesterday)!
+        } else if (dateComponents.hour! < 20) {
+            return calendar.date(bySettingHour: 6, minute: 0, second: 0, of: ts)!
+        } else {
+            return calendar.date(bySettingHour: 20, minute: 0, second: 0, of: ts)!
         }
     }
 }

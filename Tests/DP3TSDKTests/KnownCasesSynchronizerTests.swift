@@ -99,5 +99,28 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         XCTAssertEqual(service.requests.count, defaults.parameters.networking.daysToCheck)
     }
+
+    func testLastDesiredSyncTimeNoon(){
+        let input = Self.formatter.date(from: "19.05.2020 12:12")!
+        let output = Self.formatter.date(from: "19.05.2020 06:00")!
+        XCTAssertEqual(KnownCasesSynchronizer.getLastDesiredSyncTime(ts: input), output)
+    }
+    func testLastDesiredSyncTimeYesterday(){
+        let input = Self.formatter.date(from: "19.05.2020 05:55")!
+        let output = Self.formatter.date(from: "18.05.2020 20:00")!
+        XCTAssertEqual(KnownCasesSynchronizer.getLastDesiredSyncTime(ts: input), output)
+    }
+    func testLastDesiredSyncTimeNight(){
+        let input = Self.formatter.date(from: "19.05.2020 23:55")!
+        let output = Self.formatter.date(from: "19.05.2020 20:00")!
+        XCTAssertEqual(KnownCasesSynchronizer.getLastDesiredSyncTime(ts: input), output)
+    }
+
+    static var formatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "dd.MM.yyyy HH:mm"
+        df.timeZone = TimeZone.init(abbreviation: "UTC")!
+        return df
+    }()
 }
 
