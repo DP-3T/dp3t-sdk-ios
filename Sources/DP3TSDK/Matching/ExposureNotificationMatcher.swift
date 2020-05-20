@@ -60,7 +60,7 @@ class ExposureNotificationMatcher: Matcher {
 
             if let error = exposureDetectionError {
                 log.error("exposureNotificationError %@", error.localizedDescription)
-                throw DP3TTracingError.exposureNotificationError(error: error)
+                throw error
             }
 
             try urls.forEach(deleteDiagnosisKeyFile(at:))
