@@ -19,9 +19,12 @@ class ExposureNotificationMatcher: Matcher {
 
     private var localURLs: [Date: [URL]] = [:]
 
-    init(manager: ENManager, exposureDayStorage: ExposureDayStorage) {
+    private let defaults: DefaultStorage
+
+    init(manager: ENManager, exposureDayStorage: ExposureDayStorage, defaults: DefaultStorage = Default.shared) {
         self.manager = manager
         self.exposureDayStorage = exposureDayStorage
+        self.defaults = defaults
     }
 
     func receivedNewKnownCaseData(_ data: Data, keyDate: Date) throws {
@@ -66,19 +69,21 @@ class ExposureNotificationMatcher: Matcher {
             try urls.forEach(deleteDiagnosisKeyFile(at:))
 
             if let summary = exposureSummary {
-                log.info("reiceived exposureSummary: %@", summary.debugDescription)
-            }
+                let parameters = defaults.parameters.contactMatching
 
-            if let summary = exposureSummary,
-                summary.attenuationDurations.count > 0,
-                Double(truncating: summary.attenuationDurations[0]) > 15 * TimeInterval.minute {
-                log.info("exposureSummary meets requiremnts")
-                let exposedDate = Date(timeIntervalSinceNow: TimeInterval(summary.daysSinceLastExposure) * TimeInterval.day * (-1))
-                let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: exposedDate, reportDate: Date(), isDeleted: false)
-                exposureDayStorage.add(day)
-                delegate?.didFindMatch()
-            } else {
-                log.info("exposureSummary does not meet requirements")
+                let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[0]) * parameters.factorHigh) / TimeInterval.minute
+
+                log.info("reiceived exposureSummary: %@ computed threshold: %d required %d", summary.debugDescription, computedThreshold, parameters.triggerThreshold)
+
+                if computedThreshold > Double(parameters.triggerThreshold) {
+                    log.info("exposureSummary meets requiremnts")
+                    let exposedDate = Date(timeIntervalSinceNow: TimeInterval(summary.daysSinceLastExposure) * TimeInterval.day * (-1))
+                    let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: exposedDate, reportDate: Date(), isDeleted: false)
+                    exposureDayStorage.add(day)
+                    delegate?.didFindMatch()
+                } else {
+                     log.info("exposureSummary does not meet requirements")
+                }
             }
         }
         localURLs.removeAll()
@@ -102,8 +107,8 @@ extension ENExposureConfiguration {
         configuration.durationWeight = 50
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.transmissionRiskWeight = 50
-        configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.attenuationThresholdLow,
-                                                                    parameters.contactMatching.attenuationThresholdHigh]]
+        configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.lowerThreshold,
+                                                                    parameters.contactMatching.higherThreshold]]
         return configuration
     }
 }

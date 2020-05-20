@@ -12,6 +12,9 @@ class ParametersViewController: UIViewController {
 
     let attenuationLow = UITextField()
     let attenuationHigh = UITextField()
+    let attenuationFactorLow = UITextField()
+    let attenuationFactorHigh = UITextField()
+    let attenuationtriggerThreshold = UITextField()
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -46,7 +49,7 @@ class ParametersViewController: UIViewController {
             label.text = "Set Attenuation Low threshold"
             stackView.addArrangedSubview(label)
 
-            attenuationLow.text = "\(params.contactMatching.attenuationThresholdLow)"
+            attenuationLow.text = "\(params.contactMatching.lowerThreshold)"
             attenuationLow.delegate = self
             attenuationLow.font = UIFont.systemFont(ofSize: 15)
             attenuationLow.borderStyle = UITextField.BorderStyle.roundedRect
@@ -63,7 +66,7 @@ class ParametersViewController: UIViewController {
             label.text = "Set Attenuation High Threshold"
             stackView.addArrangedSubview(label)
 
-            attenuationHigh.text = "\(params.contactMatching.attenuationThresholdHigh)"
+            attenuationHigh.text = "\(params.contactMatching.higherThreshold)"
             attenuationHigh.delegate = self
             attenuationHigh.font = UIFont.systemFont(ofSize: 15)
             attenuationHigh.borderStyle = UITextField.BorderStyle.roundedRect
@@ -74,6 +77,60 @@ class ParametersViewController: UIViewController {
             attenuationHigh.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
             attenuationHigh.delegate = self
             stackView.addArrangedSubview(attenuationHigh)
+        }
+
+        do {
+            let label = UILabel()
+            label.text = "Set Attenuation Factor Low"
+            stackView.addArrangedSubview(label)
+
+            attenuationFactorLow.text = "\(params.contactMatching.factorLow)"
+            attenuationFactorLow.delegate = self
+            attenuationFactorLow.font = UIFont.systemFont(ofSize: 15)
+            attenuationFactorLow.borderStyle = UITextField.BorderStyle.roundedRect
+            attenuationFactorLow.autocorrectionType = UITextAutocorrectionType.no
+            attenuationFactorLow.keyboardType = UIKeyboardType.decimalPad
+            attenuationFactorLow.returnKeyType = UIReturnKeyType.done
+            attenuationFactorLow.clearButtonMode = UITextField.ViewMode.whileEditing
+            attenuationFactorLow.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
+            attenuationFactorLow.delegate = self
+            stackView.addArrangedSubview(attenuationFactorLow)
+        }
+
+        do {
+            let label = UILabel()
+            label.text = "Set Attenuation Factor High"
+            stackView.addArrangedSubview(label)
+
+            attenuationFactorHigh.text = "\(params.contactMatching.factorHigh)"
+            attenuationFactorHigh.delegate = self
+            attenuationFactorHigh.font = UIFont.systemFont(ofSize: 15)
+            attenuationFactorHigh.borderStyle = UITextField.BorderStyle.roundedRect
+            attenuationFactorHigh.autocorrectionType = UITextAutocorrectionType.no
+            attenuationFactorHigh.keyboardType = UIKeyboardType.decimalPad
+            attenuationFactorHigh.returnKeyType = UIReturnKeyType.done
+            attenuationFactorHigh.clearButtonMode = UITextField.ViewMode.whileEditing
+            attenuationFactorHigh.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
+            attenuationFactorHigh.delegate = self
+            stackView.addArrangedSubview(attenuationFactorHigh)
+        }
+
+        do {
+            let label = UILabel()
+            label.text = "Set Attenuation Factor High"
+            stackView.addArrangedSubview(label)
+
+            attenuationtriggerThreshold.text = "\(params.contactMatching.triggerThreshold)"
+            attenuationtriggerThreshold.delegate = self
+            attenuationtriggerThreshold.font = UIFont.systemFont(ofSize: 15)
+            attenuationtriggerThreshold.borderStyle = UITextField.BorderStyle.roundedRect
+            attenuationtriggerThreshold.autocorrectionType = UITextAutocorrectionType.no
+            attenuationtriggerThreshold.keyboardType = UIKeyboardType.numberPad
+            attenuationtriggerThreshold.returnKeyType = UIReturnKeyType.done
+            attenuationtriggerThreshold.clearButtonMode = UITextField.ViewMode.whileEditing
+            attenuationtriggerThreshold.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
+            attenuationtriggerThreshold.delegate = self
+            stackView.addArrangedSubview(attenuationtriggerThreshold)
         }
 
         let button = UIButton()
@@ -90,12 +147,22 @@ class ParametersViewController: UIViewController {
         guard let lowString = attenuationLow.text,
             let low = Int(lowString),
             let highString = attenuationHigh.text,
-            let high = Int(highString) else { return }
-        DP3TTracing.parameters.contactMatching.attenuationThresholdLow = low
-        DP3TTracing.parameters.contactMatching.attenuationThresholdHigh = high
+            let high = Int(highString),
+            let factorLowString = attenuationFactorLow.text,
+            let factorLow = try? Double(value: factorLowString),
+            let factorHighString = attenuationFactorHigh.text,
+            let factorHigh = try? Double(value: factorHighString),
+            let thresholdString = attenuationtriggerThreshold.text,
+            let threshold = Int(thresholdString) else { return }
+        var params = DP3TTracing.parameters
+        params.contactMatching.lowerThreshold = low
+        params.contactMatching.higherThreshold = high
+        params.contactMatching.factorLow = factorLow
+        params.contactMatching.factorHigh = factorHigh
+        params.contactMatching.triggerThreshold = threshold
+        DP3TTracing.parameters = params
 
-        attenuationLow.resignFirstResponder()
-        attenuationHigh.resignFirstResponder()
+        [attenuationtriggerThreshold, attenuationLow, attenuationFactorLow, attenuationFactorHigh].forEach { $0.resignFirstResponder() }
     }
 }
 

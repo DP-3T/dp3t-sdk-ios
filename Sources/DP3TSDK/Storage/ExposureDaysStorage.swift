@@ -16,7 +16,7 @@ class ExposureDayStorage {
     init(keychain: KeychainProtocol = Keychain(), parameters: DP3TParameters = Default.shared.parameters) {
         self.keychain = keychain
         self.parameters = parameters
-        deleteExpiredExpsureDays()
+        deleteExpiredExposureDays()
     }
 
     var count: Int {
@@ -49,8 +49,8 @@ class ExposureDayStorage {
         }
     }
 
-    /// Deletes contacts older than CryptoConstants.numberOfDaysToKeepData
-    func deleteExpiredExpsureDays() {
+    /// Deletes contacts older than CryptoConstants.numberOfDaysToKeepMatchedContacts
+    func deleteExpiredExposureDays() {
         let thresholdDate: Date = DayDate().dayMin.addingTimeInterval(-Double(parameters.crypto.numberOfDaysToKeepMatchedContacts) * TimeInterval.day)
         let days = getDays(filtered: false)
         let filteredDays = days.filter { $0.reportDate >= thresholdDate }

@@ -124,7 +124,18 @@ extension KeysViewController: UITableViewDelegate {
 
             let configuration: ENExposureConfiguration = .configuration()
             manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { summary, error in
-                let string = summary?.description ?? error.debugDescription
+                var string = summary?.description ?? error.debugDescription
+                if let summary = summary {
+                    let parameters = DP3TTracing.parameters.contactMatching
+                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[0]) * parameters.factorHigh) / 60
+                    string.append("\n--------\n computed Threshold: \(computedThreshold)")
+                    if computedThreshold > Double(parameters.triggerThreshold) {
+                        string.append("\n meets requirement of \(parameters.triggerThreshold)")
+                    } else {
+                        string.append("\n doesn't meet requirement of \(parameters.triggerThreshold)")
+                    }
+                }
+
                 loggingStorage?.log(string, type: .info)
                 let alertController = UIAlertController(title: "Summary", message: string, preferredStyle: .alert)
                 let actionOk = UIAlertAction(title: "OK",
@@ -150,8 +161,8 @@ extension ENExposureConfiguration {
         configuration.durationWeight = 50
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.transmissionRiskWeight = 50
-        configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.attenuationThresholdLow,
-                                                                    parameters.contactMatching.attenuationThresholdHigh]]
+        configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.lowerThreshold,
+                                                                    parameters.contactMatching.higherThreshold]]
         return configuration
     }
 }

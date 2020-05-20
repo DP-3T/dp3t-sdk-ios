@@ -18,19 +18,19 @@ final class ExposureDayTests: XCTestCase {
     func testDeletionExpiredDays() {
         let parameters = DP3TParameters()
         let storage = ExposureDayStorage(keychain: keychain, parameters: parameters)
-        storage.add(.init(identifier: UUID(), exposedDate: .init(), reportDate: .init(timeIntervalSinceNow: .day * Double(parameters.crypto.numberOfDaysToKeepData) * (-1)), isDeleted: false))
+        storage.add(.init(identifier: UUID(), exposedDate: .init(), reportDate: .init(timeIntervalSinceNow: .day * Double(parameters.crypto.numberOfDaysToKeepMatchedContacts + 1) * (-1)), isDeleted: false))
         XCTAssertEqual(storage.count, 1)
-        storage.deleteExpiredExpsureDays()
+        storage.deleteExpiredExposureDays()
         XCTAssertEqual(storage.count, 0)
     }
 
     func testNotDeletionExpiredDays() {
         let parameters = DP3TParameters()
         let storage = ExposureDayStorage(keychain: keychain, parameters: parameters)
-        storage.add(.init(identifier: UUID(), exposedDate: .init(), reportDate: .init(timeIntervalSinceNow: .day * Double(parameters.crypto.numberOfDaysToKeepData - 1) * (-1)), isDeleted: false))
+        storage.add(.init(identifier: UUID(), exposedDate: .init(), reportDate: .init(timeIntervalSinceNow: .day * Double(parameters.crypto.numberOfDaysToKeepMatchedContacts - 1) * (-1)), isDeleted: false))
         XCTAssertEqual(storage.count, 1)
-        storage.deleteExpiredExpsureDays()
-        XCTAssertEqual(storage.count, 0)
+        storage.deleteExpiredExposureDays()
+        XCTAssertEqual(storage.count, 1)
     }
 
     func testMarkingExposuresAsDeleted() {

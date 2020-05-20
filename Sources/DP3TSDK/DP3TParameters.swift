@@ -8,7 +8,7 @@ import CoreBluetooth
 import Foundation
 
 public struct DP3TParameters: Codable {
-    static let parameterVersion: Int = 6
+    static let parameterVersion: Int = 7
 
     let version: Int
 
@@ -24,8 +24,6 @@ public struct DP3TParameters: Codable {
 
     public struct Crypto: Codable {
         public var keyLength: Int = 16
-
-        public var numberOfDaysToKeepData: Int = 21
 
         public var timeZone: TimeZone = TimeZone(identifier: "UTC")!
 
@@ -44,13 +42,16 @@ public struct DP3TParameters: Codable {
     }
 
     public struct ContactMatching: Codable {
-        public var contactAttenuationThreshold: Double = 73.0
 
-        public var numberOfWindowsForExposure: Int = 3
+        public var lowerThreshold: Int = 50
 
-        public var windowDuration: TimeInterval = .minute * 5
+        public var higherThreshold: Int = 60
 
-        public var attenuationThresholdLow: Int = 50
-        public var attenuationThresholdHigh: Int = 74
+        public var factorLow: Double = 1.0
+
+        public var factorHigh: Double = 0.5
+
+        public var triggerThreshold: Int = 20
+        
     }
 }
