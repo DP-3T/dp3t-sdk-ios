@@ -8,8 +8,6 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
-    var installationDate: Date?
-
     var publishedAfterStore: [Date: Date] = [:]
 
     var parameters: DP3TParameters = .init()

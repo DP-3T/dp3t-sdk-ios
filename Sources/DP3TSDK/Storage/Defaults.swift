@@ -13,10 +13,6 @@ protocol DefaultStorage {
     /// Last date a backend sync happend
     var lastSync: Date? { get set }
 
-    /// Last batch release time which was loaded
-    /// If nil .now should be used since it is not neccessary to load all past batches
-    var installationDate: Date? { get set }
-
     var publishedAfterStore: [Date: Date] { get set }
 
     /// Current infection status
@@ -38,9 +34,6 @@ class Default: DefaultStorage {
     /// Last date a backend sync happend
     @Persisted(userDefaultsKey: "org.dpppt.lastsync", defaultValue: nil)
     var lastSync: Date?
-
-    @Persisted(userDefaultsKey: "org.dpppt.installationDate", defaultValue: nil)
-    var installationDate: Date?
 
     @Persisted(userDefaultsKey: "org.dpppt.publishedAfterStore", defaultValue: [:])
     var publishedAfterStore: [Date: Date]
@@ -102,7 +95,6 @@ class Default: DefaultStorage {
     func reset() {
         parameters = .init()
         lastSync = nil
-        installationDate = nil
         didMarkAsInfected = false
         publishedAfterStore = [:]
     }

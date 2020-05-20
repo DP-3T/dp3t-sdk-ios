@@ -93,7 +93,6 @@ class DP3TSDK {
                              infectionStatus: InfectionStatus.getInfectionState(from: exposureDayStorage),
                              backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
-        KnownCasesSynchronizer.initializeSynchronizerIfNeeded()
         backgroundTaskManager.register()
 
         tracer.delegate = self

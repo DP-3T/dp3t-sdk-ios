@@ -54,24 +54,11 @@ class KnownCasesSynchronizer {
         return operation
     }
 
-    /// Stores the first SDK launch date
-    @discardableResult
-    static func initializeSynchronizerIfNeeded(defaults: DefaultStorage = Default.shared) -> Date {
-        guard defaults.installationDate == nil else { return defaults.installationDate! }
-        let today = DayDate()
-        var mutableDefaults = defaults
-        mutableDefaults.installationDate = today.dayMin
-        return today.dayMin
-    }
-
     private func internalSync(now: Date = Date(), callback: Callback?) {
         log.trace()
         let todayDate = DayDate(date: now).dayMin
-        let installationDate = Self.initializeSynchronizerIfNeeded()
 
-        var minimumDate = todayDate.addingTimeInterval(-.day * Double(defaults.parameters.networking.daysToCheck - 1))
-
-        minimumDate = max(minimumDate, installationDate)
+        let minimumDate = todayDate.addingTimeInterval(-.day * Double(defaults.parameters.networking.daysToCheck - 1))
 
         var calendar = Calendar.current
         calendar.timeZone = Default.shared.parameters.crypto.timeZone
@@ -99,7 +86,12 @@ class KnownCasesSynchronizer {
                 continue
             }
 
-            let publishedAfter = publishedAfterStore[currentKeyDate]
+            var publishedAfter: Date!
+            synchronousQueue.sync {
+                 publishedAfter = publishedAfterStore[currentKeyDate]
+            }
+
+
 
             guard publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime() else {
                 continue

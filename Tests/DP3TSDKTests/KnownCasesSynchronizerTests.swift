@@ -20,8 +20,11 @@ private class MockMatcher: Matcher {
 
 private class MockService: ExposeeServiceClientProtocol {
     var requests: [Date] = []
+    let queue = DispatchQueue(label: "synchronous")
     func getExposeeSynchronously(batchTimestamp: Date, publishedAfter _: Date?) -> Result<ExposeeSuccess?, DP3TNetworkingError> {
-        requests.append(batchTimestamp)
+        queue.sync {
+            self.requests.append(batchTimestamp)
+        }
         return .success(.init(data: "\(batchTimestamp.timeIntervalSince1970)".data(using: .utf8)!, publishedUntil: batchTimestamp))
     }
 
@@ -31,18 +34,11 @@ private class MockService: ExposeeServiceClientProtocol {
 }
 
 final class KnownCasesSynchronizerTests: XCTestCase {
-    func testInitialLastLoadedBatchValue() {
-        let defaults = MockDefaults()
-        KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
-        XCTAssertNotNil(defaults.installationDate)
-        XCTAssertLessThanOrEqual(defaults.installationDate!, Date())
-    }
 
     func testInitialToday() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
-        KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
         let sync = KnownCasesSynchronizer(matcher: matcher,
                                           service: service,
                                           defaults: defaults)
@@ -52,15 +48,14 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 1)
-        XCTAssertEqual(service.requests.first!, DayDate().dayMin)
+        XCTAssertEqual(service.requests.count, 10)
+        XCTAssert(service.requests.contains(DayDate().dayMin))
     }
 
     func testInitialLoadingFirstBatch() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
-        KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
         let sync = KnownCasesSynchronizer(matcher: matcher,
                                           service: service,
                                           defaults: defaults)
@@ -70,14 +65,13 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 1)
+        XCTAssertEqual(service.requests.count, 10)
     }
 
     func testInitialLoadingManyBatches() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
-        KnownCasesSynchronizer.initializeSynchronizerIfNeeded(defaults: defaults)
         let sync = KnownCasesSynchronizer(matcher: matcher,
                                           service: service,
                                           defaults: defaults)
