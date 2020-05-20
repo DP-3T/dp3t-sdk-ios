@@ -142,9 +142,8 @@ class KnownCasesSynchronizer {
                 occuredError = .exposureNotificationError(error: error)
             }
 
-            self.defaults.publishedAfterStore = publishedAfterStore
-
             if let error = occuredError {
+                self.defaults.publishedAfterStore = publishedAfterStore
                 callback?(.failure(error))
             } else {
                 callback?(.success(()))
