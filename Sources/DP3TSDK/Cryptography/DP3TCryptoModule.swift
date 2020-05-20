@@ -95,7 +95,8 @@ class DP3TCryptoModule {
             ephIDs.append(prgData[pos ..< pos + Default.shared.parameters.crypto.keyLength])
         }
 
-        ephIDs.shuffle()
+        var rng = SystemRandomNumberGenerator()
+        ephIDs.shuffle(using: &rng)
 
         return ephIDs
     }
