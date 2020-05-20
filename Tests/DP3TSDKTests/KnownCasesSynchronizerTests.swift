@@ -41,7 +41,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let defaults = MockDefaults()
         let sync = KnownCasesSynchronizer(matcher: matcher,
                                           service: service,
-                                          defaults: defaults)
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
         sync.sync { _ in
             expecation.fulfill()
@@ -58,7 +59,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let defaults = MockDefaults()
         let sync = KnownCasesSynchronizer(matcher: matcher,
                                           service: service,
-                                          defaults: defaults)
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
         sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
             expecation.fulfill()
@@ -74,7 +76,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let defaults = MockDefaults()
         let sync = KnownCasesSynchronizer(matcher: matcher,
                                           service: service,
-                                          defaults: defaults)
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
         sync.sync(now: .init(timeIntervalSinceNow: .day * 15)) { _ in
             expecation.fulfill()
@@ -105,7 +108,6 @@ final class KnownCasesSynchronizerTests: XCTestCase {
     static var formatter: DateFormatter = {
         let df = DateFormatter()
         df.dateFormat = "dd.MM.yyyy HH:mm"
-        df.timeZone = TimeZone(abbreviation: "UTC")!
         return df
     }()
 }

@@ -16,6 +16,8 @@ class KnownCasesSynchronizer {
     /// A DP3T matcher
     private weak var matcher: Matcher?
 
+    private let descriptor: ApplicationDescriptor
+
     /// service client
     private weak var service: ExposeeServiceClientProtocol!
 
@@ -26,10 +28,12 @@ class KnownCasesSynchronizer {
     ///   - matcher: The matcher for DP3T resolution and checks
     init(matcher: Matcher,
          service: ExposeeServiceClientProtocol,
-         defaults: DefaultStorage = Default.shared) {
+         defaults: DefaultStorage = Default.shared,
+         descriptor: ApplicationDescriptor) {
         self.matcher = matcher
         self.defaults = defaults
         self.service = service
+        self.descriptor = descriptor
     }
 
     /// A callback result of async operations
@@ -91,9 +95,7 @@ class KnownCasesSynchronizer {
                  publishedAfter = publishedAfterStore[currentKeyDate]
             }
 
-
-
-            guard publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime() else {
+            guard descriptor.mode == .test || publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime() else {
                 continue
             }
 
@@ -151,8 +153,7 @@ class KnownCasesSynchronizer {
     }
 
     internal static func getLastDesiredSyncTime(ts: Date = .init()) -> Date {
-        var calendar = Calendar.current
-        calendar.timeZone = Default.shared.parameters.crypto.timeZone
+        let calendar = Calendar.current
         let dateComponents = calendar.dateComponents([.hour, .day, .month, .year], from: ts)
         if dateComponents.hour! < 6 {
             let yesterday = calendar.date(byAdding: .day, value: -1, to: ts)!

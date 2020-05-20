@@ -84,7 +84,7 @@ class DP3TSDK {
         let service_ = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession)
 
         service = service_
-        synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service_)
+        synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service_, descriptor: applicationDescriptor)
 
         backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service_)
 
