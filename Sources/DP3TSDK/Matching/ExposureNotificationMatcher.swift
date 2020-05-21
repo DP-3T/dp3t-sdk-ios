@@ -77,7 +77,7 @@ class ExposureNotificationMatcher: Matcher {
 
                 log.info("reiceived exposureSummary: %@ computed threshold: %d required %d", summary.debugDescription, computedThreshold, parameters.triggerThreshold)
 
-                if computedThreshold > Double(parameters.triggerThreshold) {
+                if computedThreshold >= Double(parameters.triggerThreshold) {
                     log.info("exposureSummary meets requiremnts")
                     let exposedDate = Date(timeIntervalSinceNow: TimeInterval(summary.daysSinceLastExposure) * TimeInterval.day * (-1))
                     let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: exposedDate, reportDate: Date(), isDeleted: false)
