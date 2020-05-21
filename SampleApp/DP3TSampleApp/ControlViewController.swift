@@ -4,7 +4,7 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import DP3TSDK_CALIBRATION
+import DP3TSDK
 import SnapKit
 import UIKit
 
@@ -20,12 +20,13 @@ class ControlViewController: UIViewController {
 
     let scrollView = UIScrollView()
 
-    let identifierInput = UITextField()
-
     let shareButton = UIButton()
 
     let uploadButton = UIButton()
-    private let uploadHelper = UploadDatabaseHelper()
+
+    let uploadKeysButton = UIButton()
+
+    private let uploadHelper = NetworkingHelper()
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -103,37 +104,9 @@ class ControlViewController: UIViewController {
 
         do {
             let label = UILabel()
-            label.text = "Start / Stop Bluetooth Service"
+            label.text = "Start / Stop Exposure Notification Service"
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(segmentedControl)
-
-            if #available(iOS 13.0, *) {
-                startAdvertisingButton.setTitleColor(.systemBlue, for: .normal)
-                startAdvertisingButton.setTitleColor(.systemGray, for: .highlighted)
-                startAdvertisingButton.setTitleColor(.systemGray2, for: .disabled)
-            } else {
-                startAdvertisingButton.setTitleColor(.blue, for: .normal)
-                startAdvertisingButton.setTitleColor(.black, for: .highlighted)
-                startAdvertisingButton.setTitleColor(.lightGray, for: .disabled)
-            }
-            startAdvertisingButton.setTitle("Start Advertising", for: .normal)
-            startAdvertisingButton.addTarget(self, action: #selector(startAdvertising), for: .touchUpInside)
-
-            stackView.addArrangedSubview(startAdvertisingButton)
-
-            if #available(iOS 13.0, *) {
-                startReceivingButton.setTitleColor(.systemBlue, for: .normal)
-                startReceivingButton.setTitleColor(.systemGray, for: .highlighted)
-                startReceivingButton.setTitleColor(.systemGray2, for: .disabled)
-            } else {
-                startReceivingButton.setTitleColor(.blue, for: .normal)
-                startReceivingButton.setTitleColor(.black, for: .highlighted)
-                startReceivingButton.setTitleColor(.lightGray, for: .disabled)
-            }
-            startReceivingButton.setTitle("Start Receiving", for: .normal)
-            startReceivingButton.addTarget(self, action: #selector(startReceiving), for: .touchUpInside)
-
-            stackView.addArrangedSubview(startReceivingButton)
         }
 
         stackView.addSpacerView(12)
@@ -147,8 +120,40 @@ class ControlViewController: UIViewController {
                 button.setTitleColor(.blue, for: .normal)
                 button.setTitleColor(.black, for: .highlighted)
             }
-            button.setTitle("Reset", for: .normal)
+            button.setTitle("Reset SDK", for: .normal)
             button.addTarget(self, action: #selector(reset), for: .touchUpInside)
+            stackView.addArrangedSubview(button)
+        }
+
+        stackView.addSpacerView(12)
+
+        do {
+            let button = UIButton()
+            if #available(iOS 13.0, *) {
+                button.setTitleColor(.systemBlue, for: .normal)
+                button.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                button.setTitleColor(.blue, for: .normal)
+                button.setTitleColor(.black, for: .highlighted)
+            }
+            button.setTitle("Reset Infection Status", for: .normal)
+            button.addTarget(self, action: #selector(resetInfectionState), for: .touchUpInside)
+            stackView.addArrangedSubview(button)
+        }
+
+        stackView.addSpacerView(12)
+
+        do {
+            let button = UIButton()
+            if #available(iOS 13.0, *) {
+                button.setTitleColor(.systemBlue, for: .normal)
+                button.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                button.setTitleColor(.blue, for: .normal)
+                button.setTitleColor(.black, for: .highlighted)
+            }
+            button.setTitle("Reset Exposure Days", for: .normal)
+            button.addTarget(self, action: #selector(resetExposureDays), for: .touchUpInside)
             stackView.addArrangedSubview(button)
         }
 
@@ -201,37 +206,6 @@ class ControlViewController: UIViewController {
         stackView.addSpacerView(12)
 
         do {
-            let label = UILabel()
-            label.text = "Set ID Prefix"
-            stackView.addArrangedSubview(label)
-
-            identifierInput.text = Default.shared.identifierPrefix ?? ""
-            identifierInput.delegate = self
-            identifierInput.font = UIFont.systemFont(ofSize: 15)
-            identifierInput.borderStyle = UITextField.BorderStyle.roundedRect
-            identifierInput.autocorrectionType = UITextAutocorrectionType.no
-            identifierInput.keyboardType = UIKeyboardType.default
-            identifierInput.returnKeyType = UIReturnKeyType.done
-            identifierInput.clearButtonMode = UITextField.ViewMode.whileEditing
-            identifierInput.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
-            identifierInput.delegate = self
-            stackView.addArrangedSubview(identifierInput)
-
-            let button = UIButton()
-            if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
-            button.setTitle("Update", for: .normal)
-            button.addTarget(self, action: #selector(updateIdentifier), for: .touchUpInside)
-            stackView.addArrangedSubview(button)
-        }
-        stackView.addSpacerView(12)
-
-        do {
             if #available(iOS 13.0, *) {
                 shareButton.setTitleColor(.systemBlue, for: .normal)
                 shareButton.setTitleColor(.systemGray, for: .highlighted)
@@ -258,17 +232,26 @@ class ControlViewController: UIViewController {
             stackView.addArrangedSubview(uploadButton)
         }
 
+        stackView.addSpacerView(12)
+
+        do {
+            if #available(iOS 13.0, *) {
+                uploadKeysButton.setTitleColor(.systemBlue, for: .normal)
+                uploadKeysButton.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                uploadKeysButton.setTitleColor(.blue, for: .normal)
+                uploadKeysButton.setTitleColor(.black, for: .highlighted)
+            }
+            uploadKeysButton.setTitle("Upload Keys for Debugging", for: .normal)
+            uploadKeysButton.addTarget(self, action: #selector(uploadKeys), for: .touchUpInside)
+            stackView.addArrangedSubview(uploadKeysButton)
+        }
+
         stackView.addArrangedSubview(UIView())
     }
 
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    @objc func updateIdentifier() {
-        identifierInput.resignFirstResponder()
-        Default.shared.identifierPrefix = identifierInput.text
-        reset()
     }
 
     @objc func sync() {
@@ -284,19 +267,25 @@ class ControlViewController: UIViewController {
             default:
                 break
             }
+            self?.updateState()
         }
     }
 
     @objc func setExposed() {
-        DP3TTracing.iWasExposed(onset: Date(), authentication: .none) { _ in
-            DP3TTracing.status { result in
-                switch result {
-                case let .success(state):
-                    self.updateUI(state)
-                case .failure:
-                    break
-                }
+        // Share keys of last 14 days
+        DP3TTracing.iWasExposed(onset: Date(timeIntervalSinceNow: -60 * 60 * 24 * 14), authentication: .none) { [weak self] result in
+            switch result {
+            case let .failure(error):
+                let ac = UIAlertController(title: "Error",
+                                           message: error.description,
+                                           preferredStyle: .alert)
+                ac.addAction(.init(title: "Retry", style: .default) { _ in self?.setExposed() })
+                ac.addAction(.init(title: "Cancel", style: .destructive))
+                self?.present(ac, animated: true)
+            default:
+                break
             }
+            self?.updateState()
         }
     }
 
@@ -340,6 +329,26 @@ class ControlViewController: UIViewController {
         }
     }
 
+    @objc func uploadKeys() {
+        let alert = UIAlertController(title: "Upload Keys", message: "Enter debug device name", preferredStyle: .alert)
+
+        alert.addTextField { textField in
+            textField.placeholder = "debug device name"
+            textField.text = ""
+        }
+
+        alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [weak alert] _ in
+            let textField = alert?.textFields![0]
+            self.uploadHelper.uploadDebugKeys(debugName: textField?.text ?? "noName") { result in
+                print(result)
+            }
+        }))
+
+        alert.addAction(.init(title: "Cancel", style: .destructive, handler: nil))
+
+        present(alert, animated: true, completion: nil)
+    }
+
     @objc func reset() {
         DP3TTracing.stopTracing()
         try? DP3TTracing.reset()
@@ -358,6 +367,14 @@ class ControlViewController: UIViewController {
         }
     }
 
+    @objc func resetInfectionState() {
+        try? DP3TTracing.resetInfectionStatus()
+    }
+
+    @objc func resetExposureDays() {
+        try? DP3TTracing.resetExposureDays()
+    }
+
     @objc func segmentedControlChanges() {
         if segmentedControl.selectedSegmentIndex == 0 {
             try? DP3TTracing.startTracing()
@@ -368,14 +385,15 @@ class ControlViewController: UIViewController {
         }
     }
 
-    @objc func startAdvertising() {
-        try? DP3TTracing.startAdvertising()
-        Default.shared.tracingMode = .activeAdvertising
-    }
-
-    @objc func startReceiving() {
-        try? DP3TTracing.startReceiving()
-        Default.shared.tracingMode = .activeReceiving
+    func updateState() {
+        DP3TTracing.status { result in
+            switch result {
+            case let .success(state):
+                self.updateUI(state)
+            case .failure:
+                break
+            }
+        }
     }
 
     func updateUI(_ state: TracingState) {
@@ -396,7 +414,7 @@ class ControlViewController: UIViewController {
             break
         }
         switch state.trackingState {
-        case .active, .activeReceiving, .activeAdvertising:
+        case .active:
             segmentedControl.selectedSegmentIndex = 0
             startReceivingButton.isEnabled = false
             startAdvertisingButton.isEnabled = false
@@ -410,15 +428,15 @@ class ControlViewController: UIViewController {
         }
 
         switch state.infectionStatus {
-        case .exposed:
-            elements.append("InfectionStatus: EXPOSED")
+        case let .exposed(days):
+            elements.append("InfectionStatus: EXPOSED days ->")
+            elements.append(contentsOf: days.enumerated().map { "\($0.offset): \($0.element.exposedDate.description)" })
+            elements.append("--")
         case .infected:
             elements.append("InfectionStatus: INFECTED")
         case .healthy:
             elements.append("InfectionStatus: HEALTHY")
         }
-        elements.append("Handshakes: \(state.numberOfHandshakes)")
-        elements.append("Contacts: \(state.numberOfContacts)")
 
         statusLabel.text = elements.joined(separator: "\n")
     }
@@ -458,10 +476,6 @@ private extension TrackingState {
         switch self {
         case .active:
             return "active"
-        case .activeAdvertising:
-            return "activeAdvertising"
-        case .activeReceiving:
-            return "activeReceiving"
         case let .inactive(error):
             return "inactive \(error.localizedDescription)"
         case .stopped:
@@ -477,8 +491,6 @@ extension DP3TTracingError {
             return "bluetoothTurnedOff"
         case let .caseSynchronizationError(errors: errors):
             return "caseSynchronizationError \(errors.map { $0.localizedDescription })"
-        case let .cryptographyError(error: error):
-            return "cryptographyError \(error)"
         case let .databaseError(error: error):
             return "databaseError \(error?.localizedDescription ?? "nil")"
         case let .networkingError(error: error):
@@ -487,8 +499,8 @@ extension DP3TTracingError {
             return "networkingError"
         case .userAlreadyMarkedAsInfected:
             return "userAlreadyMarkedAsInfected"
-        case let .coreBluetoothError(error: error):
-            return "coreBluetoothError \(error.localizedDescription)"
+        case let .exposureNotificationError(error: error):
+            return "exposureNotificationError \(error.localizedDescription)"
         }
     }
 }

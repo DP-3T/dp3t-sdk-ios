@@ -4,25 +4,26 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import DP3TSDK_CALIBRATION
+import DP3TSDK
+import DP3TSDK_LOGGING_STORAGE
 import os
 import UIKit
+#if DEBUG
+    import UserNotifications
+#endif
+
+var loggingStorage: DP3TLoggingStorage?
+
+var baseUrl: URL = URL(string: "https://demo.dpppt.org/")!
+
+extension DP3TLoggingStorage: LoggingDelegate {}
 
 func initializeSDK() {
-    /// Can be initialized either by:
-    /// - using the discovery:
-    let appVersion: String
-    if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-        appVersion = "\(version)(\(build))"
-    } else {
-        appVersion = "N/A"
+    if loggingStorage == nil {
+        loggingStorage = try? .init()
+        DP3TTracing.loggingDelegate = loggingStorage
     }
-    try! DP3TTracing.initialize(with: .discovery("org.dpppt.demo", enviroment: .dev),
-                                mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? "", appVersion: appVersion))
-    /// - passing the url:
-    // try! DP3TTracing.initialize(with: .manual(.init(appId: "org.dpppt.demo", bucketBaseUrl: URL(string: "https://demo.dpppt.org/")!, reportBaseUrl: URL(string: "https://demo.dpppt.org/")!, jwtPublicKey: nil)),
-    //                            mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? ""))
+    try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: baseUrl, reportBaseUrl: baseUrl, mode: .test))
 }
 
 @UIApplicationMain
@@ -30,6 +31,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        #if DEBUG
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
+        #endif
+
         initializeSDK()
 
         if application.applicationState != .background {
@@ -41,10 +46,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             break
         case .active:
             try? DP3TTracing.startTracing()
-        case .activeAdvertising:
-            try? DP3TTracing.startAdvertising()
-        case .activeReceiving:
-            try? DP3TTracing.startReceiving()
         }
 
         return true

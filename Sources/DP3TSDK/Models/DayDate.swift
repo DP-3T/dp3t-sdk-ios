@@ -17,7 +17,7 @@ struct DayDate: Codable, CustomStringConvertible, Equatable, Hashable, Comparabl
         timestamp = calendar.date(from: components)!.timeIntervalSince1970
     }
 
-    public func getNext() -> DayDate {
+    func getNext() -> DayDate {
         let nextDay = Date(timeIntervalSince1970: timestamp).addingTimeInterval(.day)
         return DayDate(date: nextDay)
     }
@@ -36,5 +36,9 @@ struct DayDate: Codable, CustomStringConvertible, Equatable, Hashable, Comparabl
 
     var description: String {
         return "<DayDate \(Date(timeIntervalSince1970: timestamp))>"
+    }
+
+    var period: UInt32 {
+        return UInt32(timestamp / (10 * .minute))
     }
 }

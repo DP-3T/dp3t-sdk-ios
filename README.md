@@ -10,9 +10,9 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
 
 
 ## Introduction
-This is the first implementation of the DP-3T "low bandwidth" protocol. The current implementation does not use the as yet unreleased "Contact Tracing" API of Apple/Google--**and has limitations as a result**. Our "hybrid approach" uses Bluetooth Low Energy (BLE) to exchange `EphID`s. It uses advertisements whenever possible and falls back to GATT Server connections if not possible to transmit/collect an `EphID` this way (e.g., on iOS devices when the app is in background). This approach can result in higher energy consumption and scalability issues and will be replaced by the Apple/Google API.
+This is the first implementation of the DP-3T protocol using the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework of Apple/Google. Only approved government public health authorities can access the APIs. Therefore, using this SDK will result in an API error unless you were granted the `com.apple.developer.exposure-notification` entitlement by apple. Therefore the minimum deployment target is iOS 13.5.
 
-Our immediate roadmap is: to support the Apple/Google wire protocol, to be forward-compatible, and to support the actual Apple/Google API as soon as it is released to iOS and Android devices.
+Our prestandard solution that is not using the Apple/Google framework can be found under the [tag prestandard](https://github.com/DP-3T/dp3t-sdk-ios/tree/prestandard).
 
 ## Repositories
 * Android SDK & Calibration app: [dp3t-sdk-android](https://github.com/DP-3T/dp3t-sdk-android)
@@ -46,16 +46,16 @@ Included in this repository is a Calibration App that can run, debug and test th
 ### Initialization
 Name | Description | Function Name
 ---- | ----------- | -------------
-init | Initializes the SDK and configures it | `func initialize(with appinfo: DP3TApplicationInfo)` 
+init | Initializes the SDK and configures it | `initialize(applicationDescriptor:urlSession:backgroundHandler)` 
 
 ### Methods 
 Name | Description | Function Name
 ---- | ----------- | -------------
-startTracing | Starts Bluetooth tracing | `func startTracing() throws`
-stopTracing | Stops Bluetooth tracing | `func stopTracing()`
-sync | Pro-actively triggers sync with backend to refresh exposed list | `func sync(callback: ((Result<Void, DP3TTracingErrors>) -> Void)?)`
-status | Returns a TracingState-Object describing the current state. This contains:<br/>- `numberOfHandshakes` : `Int` <br /> - `trackingState` : `TrackingState` <br /> - `lastSync` : `Date` <br /> - `infectionStatus`:`InfectionStatus`<br /> - `backgroundRefreshState`:`UIBackgroundRefreshStatus ` | `func status(callback: (Result<TracingState, DP3TTracingErrors>) -> Void)`
-iWasExposed | This method must be called upon positive test. | `func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, DP3TTracingErrors>) -> Void)`
+startTracing | Starts Bluetooth tracing | `func startTracing(completionHandler: )throws` 
+stopTracing | Stops Bluetooth tracing | `func stopTracing(completionHandler:)` 
+sync | Pro-actively triggers sync with backend to refresh exposed list | `func sync(callback:)` 
+status | Returns a TracingState-Object describing the current state. This contains:<br/>- `numberOfHandshakes` : `Int` <br /> - `trackingState` : `TrackingState` <br /> - `lastSync` : `Date` <br /> - `infectionStatus`:`InfectionStatus`<br /> - `backgroundRefreshState`:`UIBackgroundRefreshStatus ` | `func status(callback:)` 
+iWasExposed | This method must be called upon positive test. | `func iWasExposed(onset:authentication:isFakeRequest:callback:)` 
 reset | Removes all SDK related data (key and database) and de-initializes SDK | `func reset() throws`
 
 
@@ -81,7 +81,7 @@ DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
 
   ```ruby
 
-  pod 'DP3TSDK', => '0.0.2'
+  pod 'DP3TSDK', => '0.4.0'
 
   ```
 
@@ -93,23 +93,11 @@ This version points to the HEAD of the `develop` branch and will always fetch th
 
 In your AppDelegate in the `didFinishLaunchingWithOptions` function you have to initialize the SDK.
 
-There are two ways to initialize the SDK:
-
-##### By using the discovery
-
-The provided app has to be registered in the discovery service on [Github](https://github.com/DP-3T/dp3t-discovery) by issuing a pull request.
-
-```swift
-try DP3TTracing.initialize(with: .discovery("com.example.your.app", enviroment: .prod))
-```
-##### By manually specifying the backend url
-
 ```swift
 let url = URL(string: "https://example.com/your/api/")!
-try DP3TTracing.initialize(with: .manual(.init(appId: "com.example.your.app", 
-                                               bucketBaseUrl: url,
-                                               reportBaseUrl: url,
-                                               jwtPublicKey: data)))
+try! DP3TTracing.initialize(with: .init(appId: "com.example.your.app", 
+                                        bucketBaseUrl: url, 
+                                        reportBaseUrl: url))
 ```
 
 ##### 
@@ -158,7 +146,7 @@ The SDK will call your delegate on every state change, this includes: Handshake 
 
 ### Report user exposed
 ```swift
-DP3TTracing.iWasExposed(onset: Date(), authString: "") { result in
+DP3TTracing.iWasExposed(onset: Date(), authentication: .none) { result in
 	// Handle result here
 }
 ```
@@ -173,21 +161,21 @@ DP3TTracing.sync() { result in
 
 #### Background Tasks
 
-The SDK supports iOS 13 Background tasks. To enable them the app has to support the `Background fetch` capability and include  `org.dpppt.synctask` in the `BGTaskSchedulerPermittedIdentifiers`  `Info.plist` property.
+The SDK supports iOS 13 Background tasks. To enable them the app has to support the `Background process` capability and include  `org.dpppt.exposure-notification` in the `BGTaskSchedulerPermittedIdentifiers`  `Info.plist` property.
 
 `Info.plist` sample:
 
 ```swift
 <key>BGTaskSchedulerPermittedIdentifiers</key>
 <array>
-	<string>org.dpppt.synctask</string>
+	<string>org.dpppt.exposure-notification</string>
 </array>
 <key>UIBackgroundModes</key>
 	<array>
-	<string>fetch</string>
+	<string>processing</string>
 </array>
 ```
 
-
 ## License
+
 This project is licensed under the terms of the MPL 2 license. See the [LICENSE](LICENSE) file.

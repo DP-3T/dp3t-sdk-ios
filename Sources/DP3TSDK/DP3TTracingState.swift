@@ -16,16 +16,14 @@ public enum InfectionStatus {
     /// The user is infected and has signaled it himself
     case infected
 
-    static func getInfectionState(from database: DP3TDatabase) -> InfectionStatus {
-        guard Default.shared.didMarkAsInfected == false else {
+    static func getInfectionState(from storage: ExposureDayStorage, defaults: DefaultStorage = Default.shared) -> InfectionStatus {
+        guard defaults.didMarkAsInfected == false else {
             return .infected
         }
 
-        let matchingDays = try? database.exposureDaysStorage.count()
-        let hasMatchingDays: Bool = (matchingDays ?? 0) > 0
-        if hasMatchingDays,
-            let matchedDays = try? database.exposureDaysStorage.getExposureDays() {
-            return .exposed(days: matchedDays)
+        let matchingDays = storage.getDays()
+        if matchingDays.isEmpty == false {
+            return .exposed(days: matchingDays)
         } else {
             return .healthy
         }
@@ -33,27 +31,30 @@ public enum InfectionStatus {
 }
 
 /// The tracking state of the bluetooth and the other networking api
-public enum TrackingState {
+public enum TrackingState: Equatable {
     /// The tracking is active and working fine
     case active
-
-    #if CALIBRATION
-        case activeReceiving
-        case activeAdvertising
-    #endif
-
     /// The tracking is stopped by the user
     case stopped
     /// The tracking is facing some issues that needs to be solved
     case inactive(error: DP3TTracingError)
+
+    public static func == (lhs: TrackingState, rhs: TrackingState) -> Bool {
+        switch (lhs, rhs) {
+        case (.active, .active):
+            return true
+        case (.stopped, stopped):
+            return true
+        case let (.inactive(lhsError), .inactive(rhsError)):
+            return lhsError.localizedDescription == rhsError.localizedDescription
+        default:
+            return false
+        }
+    }
 }
 
 /// The state of the API
 public struct TracingState {
-    /// The number of handshakes with other phones
-    public var numberOfHandshakes: Int
-    /// The number of encounters with other people
-    public var numberOfContacts: Int
     /// The tracking state of the bluetooth and the other networking api
     public var trackingState: TrackingState
     /// The last syncronization when the list of infected people was fetched
