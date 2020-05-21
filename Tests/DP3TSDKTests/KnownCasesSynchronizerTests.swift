@@ -13,17 +13,27 @@ import XCTest
 private class MockMatcher: Matcher {
     var delegate: MatcherDelegate?
 
+    var error: Error?
+
     func receivedNewKnownCaseData(_: Data, keyDate _: Date) throws {}
 
-    func finalizeMatchingSession() throws {}
+    func finalizeMatchingSession() throws {
+        if let error = error {
+            throw error
+        }
+    }
 }
 
 private class MockService: ExposeeServiceClientProtocol {
     var requests: [Date] = []
     let queue = DispatchQueue(label: "synchronous")
+    var error: DP3TNetworkingError?
     func getExposeeSynchronously(batchTimestamp: Date, publishedAfter _: Date?) -> Result<ExposeeSuccess?, DP3TNetworkingError> {
         queue.sync {
             self.requests.append(batchTimestamp)
+        }
+        if let error = error {
+            return .failure(error)
         }
         return .success(.init(data: "\(batchTimestamp.timeIntervalSince1970)".data(using: .utf8)!, publishedUntil: batchTimestamp))
     }
@@ -51,6 +61,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         XCTAssertEqual(service.requests.count, 10)
         XCTAssert(service.requests.contains(DayDate().dayMin))
+        XCTAssert(!defaults.publishedAfterStore.isEmpty)
     }
 
     func testInitialLoadingFirstBatch() {
@@ -68,6 +79,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 10)
+        XCTAssert(!defaults.publishedAfterStore.isEmpty)
     }
 
     func testInitialLoadingManyBatches() {
@@ -85,6 +97,43 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, defaults.parameters.networking.daysToCheck)
+        XCTAssert(!defaults.publishedAfterStore.isEmpty)
+    }
+
+    func testDontStorePublishedAfterNetworkingError() {
+        let matcher = MockMatcher()
+        let service = MockService()
+        service.error = .couldNotEncodeBody
+        let defaults = MockDefaults()
+        let sync = KnownCasesSynchronizer(matcher: matcher,
+                                          service: service,
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+        let expecation = expectation(description: "syncExpectation")
+        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+            expecation.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+
+        XCTAssert(defaults.publishedAfterStore.isEmpty)
+    }
+
+    func testDontStorePublishedAfterMatchingError() {
+        let matcher = MockMatcher()
+        let service = MockService()
+        matcher.error = DP3TTracingError.bluetoothTurnedOff
+        let defaults = MockDefaults()
+        let sync = KnownCasesSynchronizer(matcher: matcher,
+                                          service: service,
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+        let expecation = expectation(description: "syncExpectation")
+        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+            expecation.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+
+        XCTAssert(defaults.publishedAfterStore.isEmpty)
     }
 
     func testLastDesiredSyncTimeNoon() {

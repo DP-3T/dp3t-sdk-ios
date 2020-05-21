@@ -143,9 +143,9 @@ class KnownCasesSynchronizer {
             }
 
             if let error = occuredError {
-                self.defaults.publishedAfterStore = publishedAfterStore
                 callback?(.failure(error))
             } else {
+                self.defaults.publishedAfterStore = publishedAfterStore
                 callback?(.success(()))
             }
         }
