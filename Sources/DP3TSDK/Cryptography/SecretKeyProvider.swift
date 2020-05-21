@@ -23,6 +23,7 @@ extension ENManager: SecretKeyProvider {
         let handler: ENGetDiagnosisKeysHandler = { [weak self] keys, error in
             guard let self = self else { return }
             if let error = error {
+                log.error("getDiagnosisKeys error: %@", error.localizedDescription)
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
                 logger.info("received %d keys", keys.count)
@@ -45,13 +46,16 @@ extension ENManager: SecretKeyProvider {
 
         switch appDesc.mode {
         case .production:
+            logger.info("calling ENManager.getDiagnosisKeys")
             getDiagnosisKeys(completionHandler: handler)
         case .test:
+            logger.info("calling ENManager.getDiagnosisKeys")
             getTestDiagnosisKeys(completionHandler: handler)
         }
     }
 
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
+        logger.info("getFakeDiagnosisKeys")
         completionHandler(.success(getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit)))
     }
 

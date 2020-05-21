@@ -49,11 +49,13 @@ class ExposureNotificationMatcher: Matcher {
         guard localURLs.isEmpty == false else { return }
 
         for (day, urls) in localURLs {
-            log.info("calling detectExposures for day %@", day.description)
+
             let semaphore = DispatchSemaphore(value: 0)
             var exposureSummary: ENExposureDetectionSummary?
             var exposureDetectionError: Error?
             let configuration: ENExposureConfiguration = .configuration()
+
+            log.info("calling detectExposures for day %@ and config: %@", day.description, configuration.description)
             manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
                 exposureSummary = summary
                 exposureDetectionError = error

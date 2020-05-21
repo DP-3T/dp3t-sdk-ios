@@ -30,6 +30,7 @@ class ExposureNotificationTracer: Tracer {
 
         state = .stopped
 
+        log.info("calling ENMananger.activate")
         manager.activate { [weak self] _ in
             guard let self = self else { return }
             self.initializeObservers()
@@ -59,6 +60,9 @@ class ExposureNotificationTracer: Tracer {
     }
 
     func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?) {
+
+        log.info("calling ENMananger.setExposureNotificationEnabled %@", enabled ? "true" : "false")
+
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
             guard let self = self else { return }
             if let error = error {
