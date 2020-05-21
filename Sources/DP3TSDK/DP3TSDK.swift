@@ -203,7 +203,11 @@ class DP3TSDK {
                 callback(.failure(error))
             case let .success(keys):
 
-                let completionHandler: (Result<OutstandingPublish, DP3TNetworkingError>) -> Void = { [weak self] result in
+                let model = ExposeeListModel(gaenKeys: keys,
+                                             fake: isFakeRequest,
+                                             delayedKeyDate: DayDate())
+
+                self.service.addExposeeList(model, authentication: authentication) { [weak self] result in
                     DispatchQueue.main.async {
                         switch result {
                         case let .success(outstandingPublish):
@@ -211,7 +215,10 @@ class DP3TSDK {
                                 self?.state.infectionStatus = .infected
                             }
 
-                            self?.outstandingPublishesStorage.add(outstandingPublish)
+                            let dayToPublish = DayDate(date: outstandingPublish.dayToPublish)
+                            if !keys.contains(where: { $0.rollingStartNumber ==  dayToPublish.period}) {
+                                self?.outstandingPublishesStorage.add(outstandingPublish)
+                            }
 
                             callback(.success(()))
                         case let .failure(error):
@@ -219,10 +226,6 @@ class DP3TSDK {
                         }
                     }
                 }
-                let model = ExposeeListModel(gaenKeys: keys,
-                                             fake: isFakeRequest,
-                                             delayedKeyDate: DayDate())
-                self.service.addExposeeList(model, authentication: authentication, completion: completionHandler)
             }
         }
     }
