@@ -154,16 +154,16 @@ class KnownCasesSynchronizer {
         }
     }
 
-    internal static func getLastDesiredSyncTime(ts: Date = .init()) -> Date {
+    internal static func getLastDesiredSyncTime(ts: Date = .init(), defaults: DefaultStorage = Default.shared) -> Date {
         let calendar = Calendar.current
         let dateComponents = calendar.dateComponents([.hour, .day, .month, .year], from: ts)
-        if dateComponents.hour! < 6 {
+        if dateComponents.hour! < defaults.parameters.networking.syncHourMorning {
             let yesterday = calendar.date(byAdding: .day, value: -1, to: ts)!
-            return calendar.date(bySettingHour: 20, minute: 0, second: 0, of: yesterday)!
-        } else if dateComponents.hour! < 20 {
-            return calendar.date(bySettingHour: 6, minute: 0, second: 0, of: ts)!
+            return calendar.date(bySettingHour: defaults.parameters.networking.syncHourEvening, minute: 0, second: 0, of: yesterday)!
+        } else if dateComponents.hour! < defaults.parameters.networking.syncHourEvening {
+            return calendar.date(bySettingHour: defaults.parameters.networking.syncHourMorning, minute: 0, second: 0, of: ts)!
         } else {
-            return calendar.date(bySettingHour: 20, minute: 0, second: 0, of: ts)!
+            return calendar.date(bySettingHour: defaults.parameters.networking.syncHourEvening, minute: 0, second: 0, of: ts)!
         }
     }
 }
