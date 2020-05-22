@@ -29,14 +29,15 @@ private class MockService: ExposeeServiceClientProtocol {
     let queue = DispatchQueue(label: "synchronous")
     var error: DP3TNetworkingError?
     var publishedUntil: Date = .init()
-    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter _: Date?) -> Result<ExposeeSuccess?, DP3TNetworkingError> {
+    var data: Data? = "Data".data(using: .utf8)
+    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter _: Date?) -> Result<ExposeeSuccess, DP3TNetworkingError> {
         queue.sync {
             self.requests.append(batchTimestamp)
         }
         if let error = error {
             return .failure(error)
         }
-        return .success(.init(data: "\(batchTimestamp.timeIntervalSince1970)".data(using: .utf8)!, publishedUntil: .init()))
+        return .success(.init(data: data, publishedUntil: .init()))
     }
 
     func addExposeeList(_: ExposeeListModel, authentication _: ExposeeAuthMethod, completion _: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void) {}
@@ -80,7 +81,26 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 10)
-        XCTAssert(!defaults.publishedAfterStore.isEmpty)
+        XCTAssertEqual(defaults.publishedAfterStore.count, 10)
+    }
+
+    func testStoringPublishedAfterNoData() {
+        let matcher = MockMatcher()
+        let service = MockService()
+        service.data = nil
+        let defaults = MockDefaults()
+        let sync = KnownCasesSynchronizer(matcher: matcher,
+                                          service: service,
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+        let expecation = expectation(description: "syncExpectation")
+        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+            expecation.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+
+        XCTAssertEqual(service.requests.count, 10)
+        XCTAssertEqual(defaults.publishedAfterStore.count, 10)
     }
 
     func testInitialLoadingManyBatches() {
@@ -98,7 +118,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, defaults.parameters.networking.daysToCheck)
-        XCTAssert(!defaults.publishedAfterStore.isEmpty)
+        XCTAssertEqual(defaults.publishedAfterStore.count, defaults.parameters.networking.daysToCheck)
     }
 
     func testDontStorePublishedAfterNetworkingError() {
@@ -152,7 +172,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 10)
-        XCTAssert(!defaults.publishedAfterStore.isEmpty)
+        XCTAssertEqual(defaults.publishedAfterStore.count, 10)
 
         service.requests = []
 
@@ -163,6 +183,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests, [])
+        XCTAssertEqual(defaults.publishedAfterStore.count, 10)
     }
 
     func testRepeatingRequestsAfterDay(){
@@ -180,7 +201,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 10)
-        XCTAssert(!defaults.publishedAfterStore.isEmpty)
+        XCTAssertEqual(defaults.publishedAfterStore.count, 10)
 
         service.requests = []
 
@@ -191,7 +212,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 10)
-        XCTAssert(!defaults.publishedAfterStore.isEmpty)
+        XCTAssertEqual(defaults.publishedAfterStore.count, 10)
     }
 
     func testLastDesiredSyncTimeNoon() {
