@@ -30,7 +30,7 @@ private class MockService: ExposeeServiceClientProtocol {
     var error: DP3TNetworkingError?
     var publishedUntil: Date = .init()
     var data: Data? = "Data".data(using: .utf8)
-    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter _: Date?) -> Result<ExposeeSuccess, DP3TNetworkingError> {
+    func getExposeeSynchronously(batchTimestamp: Date) -> Result<ExposeeSuccess, DP3TNetworkingError> {
         queue.sync {
             self.requests.append(batchTimestamp)
         }

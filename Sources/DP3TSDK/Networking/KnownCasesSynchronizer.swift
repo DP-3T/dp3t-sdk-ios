@@ -103,7 +103,7 @@ class KnownCasesSynchronizer {
 
             queue.addOperation { [weak self] in
                 guard let self = self else { return }
-                let result = self.service.getExposeeSynchronously(batchTimestamp: currentKeyDate, publishedAfter: publishedAfter)
+                let result = self.service.getExposeeSynchronously(batchTimestamp: currentKeyDate)
                 synchronousQueue.sync {
                     switch result {
                     case let .failure(error):
