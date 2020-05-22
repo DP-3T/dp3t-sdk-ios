@@ -9,7 +9,7 @@ import SwiftJWT
 import UIKit
 
 struct ExposeeSuccess {
-    let data: Data
+    let data: Data?
     let publishedUntil: Date?
 }
 
@@ -21,7 +21,7 @@ protocol ExposeeServiceClientProtocol: class {
     ///   - batchTimestamp: The batch timestamp
     ///   - publishedAfter: get results published after the given timestamp
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter: Date?) -> Result<ExposeeSuccess?, DP3TNetworkingError>
+    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter: Date?) -> Result<ExposeeSuccess, DP3TNetworkingError>
 
     /// Adds an exposee
     /// - Parameters:
@@ -106,7 +106,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - completion: The completion block
     ///   - publishedAfter: get results published after the given timestamp
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter: Date? = nil) -> Result<ExposeeSuccess?, DP3TNetworkingError> {
+    func getExposeeSynchronously(batchTimestamp: Date, publishedAfter: Date? = nil) -> Result<ExposeeSuccess, DP3TNetworkingError> {
         log.debug("getExposeeSynchronously for timestamp %@ -> %lld", batchTimestamp.description, batchTimestamp.millisecondsSince1970)
         let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp, publishedAfter: publishedAfter)
 
@@ -123,13 +123,18 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             return .failure(.notHTTPResponse)
         }
 
+        var publishedUntil: Date?
+        if let publishedUntilHeader = httpResponse.value(forHTTPHeaderField: "x-published-until") {
+            publishedUntil = try? .init(milliseconds: Int64(value: publishedUntilHeader))
+        }
+
         let httpStatus = httpResponse.statusCode
         switch httpStatus {
         case 200:
             break
         case 204:
-            // 404 not found response means there is no data for this day
-            return .success(nil)
+            // 204 response means there is no data for this day
+            return .success(.init(data: nil, publishedUntil: publishedUntil))
         default:
             return .failure(.HTTPFailureResponse(status: httpStatus))
         }
@@ -147,11 +152,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             } catch {
                 return .failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)"))
             }
-        }
-
-        var publishedUntil: Date?
-        if let publishedUntilHeader = httpResponse.value(forHTTPHeaderField: "x-published-until") {
-            publishedUntil = try? .init(milliseconds: Int64(value: publishedUntilHeader))
         }
 
         let result = ExposeeSuccess(data: responseData, publishedUntil: publishedUntil)

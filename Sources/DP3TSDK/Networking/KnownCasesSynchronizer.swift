@@ -111,10 +111,13 @@ class KnownCasesSynchronizer {
                         return
                     case let .success(knownCasesData):
                         do {
-                            if let result = knownCasesData {
-                                try self.matcher?.receivedNewKnownCaseData(result.data, keyDate: currentKeyDate)
-                                publishedAfterStore[currentKeyDate] = result.publishedUntil
+
+                            if let data = knownCasesData.data {
+                                try self.matcher?.receivedNewKnownCaseData(data, keyDate: currentKeyDate)
                             }
+
+                            publishedAfterStore[currentKeyDate] = knownCasesData.publishedUntil
+
                         } catch let error as DP3TNetworkingError {
                             self.log.error("matcher receive error: %@", error.localizedDescription)
 
