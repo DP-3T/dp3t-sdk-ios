@@ -95,7 +95,7 @@ class KnownCasesSynchronizer {
                  publishedAfter = publishedAfterStore[currentKeyDate]
             }
 
-            guard descriptor.mode == .test || publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime() else {
+            guard descriptor.mode == .test || publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime(ts: now) else {
                 continue
             }
 
