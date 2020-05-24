@@ -23,6 +23,8 @@ class KnownCasesSynchronizer {
 
     private let log = Logger(KnownCasesSynchronizer.self, category: "knownCasesSynchronizer")
 
+    private let queue = DispatchQueue(label: "org.dpppt.sync")
+
     /// Create a known case synchronizer
     /// - Parameters:
     ///   - matcher: The matcher for DP3T resolution and checks
@@ -43,19 +45,13 @@ class KnownCasesSynchronizer {
     /// - Parameters:
     ///   - service: The service to use for synchronization
     ///   - callback: The callback once the task if finished
-    /// - Returns: the operation which can be used to cancel the sync
-    @discardableResult
-    func sync(now: Date = Date(), callback: Callback?) -> Operation {
+    func sync(now: Date = Date(), callback: Callback?) {
         log.trace()
-        let queue = OperationQueue()
 
-        let operation = BlockOperation {
+        queue.sync {
             self.internalSync(now: now, callback: callback)
         }
 
-        queue.addOperation(operation)
-
-        return operation
     }
 
     private func internalSync(now: Date = Date(), callback: Callback?) {
