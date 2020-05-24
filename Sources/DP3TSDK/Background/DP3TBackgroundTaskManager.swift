@@ -88,15 +88,6 @@ class DP3TBackgroundTaskManager {
 
         queue.addOperation(syncOperation)
 
-        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: keyProvider, serviceClient: serviceClient)
-        completionGroup.enter()
-        outstandingPublishOperation.completionBlock = { [weak self] in
-            self?.log.info("outstandingPublishOperation finished")
-            completionGroup.leave()
-        }
-
-        queue.addOperation(outstandingPublishOperation)
-
         task.expirationHandler = {
             queue.cancelAllOperations()
         }

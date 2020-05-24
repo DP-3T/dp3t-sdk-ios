@@ -8,7 +8,7 @@ import CoreBluetooth
 import Foundation
 
 public struct DP3TParameters: Codable {
-    static let parameterVersion: Int = 9
+    static let parameterVersion: Int = 10
 
     let version: Int
 
@@ -49,7 +49,7 @@ public struct DP3TParameters: Codable {
 
         public var lowerThreshold: Int = 50
 
-        public var higherThreshold: Int = 60
+        public var higherThreshold: Int = 55
 
         public var factorLow: Double = 1.0
 
