@@ -21,6 +21,8 @@ class ExposureNotificationMatcher: Matcher {
 
     private let defaults: DefaultStorage
 
+    let synchronousQueue = DispatchQueue(label: "org.dpppt.matcher")
+
     init(manager: ENManager, exposureDayStorage: ExposureDayStorage, defaults: DefaultStorage = Default.shared) {
         self.manager = manager
         self.exposureDayStorage = exposureDayStorage
@@ -38,55 +40,61 @@ class ExposureNotificationMatcher: Matcher {
 
                 _ = try archive.extract(entry, to: localURL)
 
-                log.debug("found %@ item in archive", entry.path)
-                localURLs[keyDate, default: []].append(localURL)
+                synchronousQueue.sync {
+                    self.log.debug("found %@ item in archive", entry.path)
+                    self.localURLs[keyDate, default: []].append(localURL)
+                }
             }
         }
     }
 
     func finalizeMatchingSession() throws {
         log.trace()
-        guard localURLs.isEmpty == false else { return }
+        try synchronousQueue.sync {
+            guard localURLs.isEmpty == false else { return }
 
-        for (day, urls) in localURLs {
-            log.info("calling detectExposures for day %@", day.description)
-            let semaphore = DispatchSemaphore(value: 0)
-            var exposureSummary: ENExposureDetectionSummary?
-            var exposureDetectionError: Error?
-            let configuration: ENExposureConfiguration = .configuration()
-            manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
-                exposureSummary = summary
-                exposureDetectionError = error
-                semaphore.signal()
-            }
-            semaphore.wait()
+            for (day, urls) in localURLs {
 
-            if let error = exposureDetectionError {
-                log.error("exposureNotificationError %@", error.localizedDescription)
-                throw error
-            }
+                let semaphore = DispatchSemaphore(value: 0)
+                var exposureSummary: ENExposureDetectionSummary?
+                var exposureDetectionError: Error?
+                let configuration: ENExposureConfiguration = .configuration()
 
-            try urls.forEach(deleteDiagnosisKeyFile(at:))
+                log.info("calling detectExposures for day %@ and config: %@", day.description, configuration.description)
+                manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
+                    exposureSummary = summary
+                    exposureDetectionError = error
+                    semaphore.signal()
+                }
+                semaphore.wait()
 
-            if let summary = exposureSummary {
-                let parameters = defaults.parameters.contactMatching
+                if let error = exposureDetectionError {
+                    log.error("exposureNotificationError %@", error.localizedDescription)
+                    throw error
+                }
 
-                let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[0]) * parameters.factorHigh) / TimeInterval.minute
+                try urls.forEach(deleteDiagnosisKeyFile(at:))
 
-                log.info("reiceived exposureSummary: %@ computed threshold: %d required %d", summary.debugDescription, computedThreshold, parameters.triggerThreshold)
+                if let summary = exposureSummary {
+                    let parameters = defaults.parameters.contactMatching
 
-                if computedThreshold > Double(parameters.triggerThreshold) {
-                    log.info("exposureSummary meets requiremnts")
-                    let exposedDate = Date(timeIntervalSinceNow: TimeInterval(summary.daysSinceLastExposure) * TimeInterval.day * (-1))
-                    let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: exposedDate, reportDate: Date(), isDeleted: false)
-                    exposureDayStorage.add(day)
-                    delegate?.didFindMatch()
-                } else {
-                     log.info("exposureSummary does not meet requirements")
+                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[0]) * parameters.factorHigh) / TimeInterval.minute
+
+                    log.info("reiceived exposureSummary: %@ computed threshold: %d required %d", summary.debugDescription, computedThreshold, parameters.triggerThreshold)
+
+                    if computedThreshold >= Double(parameters.triggerThreshold) {
+                        log.info("exposureSummary meets requiremnts")
+                        let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: day, reportDate: Date(), isDeleted: false)
+                        exposureDayStorage.add(day)
+                        delegate?.didFindMatch()
+                    } else {
+                         log.info("exposureSummary does not meet requirements")
+                    }
                 }
             }
+            localURLs.removeAll()
         }
-        localURLs.removeAll()
+
     }
 
     func deleteDiagnosisKeyFile(at localURL: URL) throws {

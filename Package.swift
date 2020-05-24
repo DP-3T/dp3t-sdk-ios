@@ -24,7 +24,7 @@ let package = Package(
     targets: [
         .target(
             name: "DP3TSDK",
-            dependencies: ["SwiftProtobuf", "SwiftJWT", "ZIPFoundation"],
+            dependencies: ["SwiftJWT", "ZIPFoundation"],
             swiftSettings: [.define("BACKGROUNDTASK_DEBUGGING", .when(platforms: [.iOS], configuration: .debug))]
         ),
         .target(
@@ -33,7 +33,7 @@ let package = Package(
         ),
         .testTarget(
             name: "DP3TSDKTests",
-            dependencies: ["DP3TSDK"]
+            dependencies: ["DP3TSDK", "SwiftProtobuf"]
         ),
     ]
 )

@@ -91,7 +91,7 @@ class KnownCasesSynchronizer {
                  publishedAfter = publishedAfterStore[currentKeyDate]
             }
 
-            guard descriptor.mode == .test || publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime() else {
+            guard descriptor.mode == .test || publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime(ts: now) else {
                 continue
             }
 
@@ -99,7 +99,7 @@ class KnownCasesSynchronizer {
 
             queue.addOperation { [weak self] in
                 guard let self = self else { return }
-                let result = self.service.getExposeeSynchronously(batchTimestamp: currentKeyDate, publishedAfter: publishedAfter)
+                let result = self.service.getExposeeSynchronously(batchTimestamp: currentKeyDate)
                 synchronousQueue.sync {
                     switch result {
                     case let .failure(error):
@@ -107,10 +107,13 @@ class KnownCasesSynchronizer {
                         return
                     case let .success(knownCasesData):
                         do {
-                            if let result = knownCasesData {
-                                try self.matcher?.receivedNewKnownCaseData(result.data, keyDate: currentKeyDate)
-                                publishedAfterStore[currentKeyDate] = result.publishedUntil
+
+                            if let data = knownCasesData.data {
+                                try self.matcher?.receivedNewKnownCaseData(data, keyDate: currentKeyDate)
                             }
+
+                            publishedAfterStore[currentKeyDate] = knownCasesData.publishedUntil
+
                         } catch let error as DP3TNetworkingError {
                             self.log.error("matcher receive error: %@", error.localizedDescription)
 
@@ -139,24 +142,24 @@ class KnownCasesSynchronizer {
             }
 
             if let error = occuredError {
-                self.defaults.publishedAfterStore = publishedAfterStore
                 callback?(.failure(error))
             } else {
+                self.defaults.publishedAfterStore = publishedAfterStore
                 callback?(.success(()))
             }
         }
     }
 
-    internal static func getLastDesiredSyncTime(ts: Date = .init()) -> Date {
+    internal static func getLastDesiredSyncTime(ts: Date = .init(), defaults: DefaultStorage = Default.shared) -> Date {
         let calendar = Calendar.current
         let dateComponents = calendar.dateComponents([.hour, .day, .month, .year], from: ts)
-        if dateComponents.hour! < 6 {
+        if dateComponents.hour! < defaults.parameters.networking.syncHourMorning {
             let yesterday = calendar.date(byAdding: .day, value: -1, to: ts)!
-            return calendar.date(bySettingHour: 20, minute: 0, second: 0, of: yesterday)!
-        } else if dateComponents.hour! < 20 {
-            return calendar.date(bySettingHour: 6, minute: 0, second: 0, of: ts)!
+            return calendar.date(bySettingHour: defaults.parameters.networking.syncHourEvening, minute: 0, second: 0, of: yesterday)!
+        } else if dateComponents.hour! < defaults.parameters.networking.syncHourEvening {
+            return calendar.date(bySettingHour: defaults.parameters.networking.syncHourMorning, minute: 0, second: 0, of: ts)!
         } else {
-            return calendar.date(bySettingHour: 20, minute: 0, second: 0, of: ts)!
+            return calendar.date(bySettingHour: defaults.parameters.networking.syncHourEvening, minute: 0, second: 0, of: ts)!
         }
     }
 }
