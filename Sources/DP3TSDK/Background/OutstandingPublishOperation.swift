@@ -14,7 +14,7 @@ class OutstandingPublishOperation: Operation {
 
     private let log = Logger(OutstandingPublishOperation.self, category: "OutstandingPublishOperation")
 
-    let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
+    static let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
 
     init(keyProvider: SecretKeyProvider, serviceClient: ExposeeServiceClient) {
         self.keyProvider = keyProvider
@@ -22,7 +22,7 @@ class OutstandingPublishOperation: Operation {
     }
 
     override func main() {
-        serialQueue.sync {
+        Self.serialQueue.sync {
             log.trace()
             let operations = storage.get()
             guard operations.isEmpty == false else { return }
