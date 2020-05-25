@@ -162,7 +162,7 @@ class ParametersViewController: UIViewController {
         params.contactMatching.triggerThreshold = threshold
         DP3TTracing.parameters = params
 
-        [attenuationtriggerThreshold, attenuationLow, attenuationFactorLow, attenuationFactorHigh].forEach { $0.resignFirstResponder() }
+        [attenuationtriggerThreshold, attenuationLow, attenuationHigh, attenuationFactorLow, attenuationFactorHigh].forEach { $0.resignFirstResponder() }
     }
 }
 
