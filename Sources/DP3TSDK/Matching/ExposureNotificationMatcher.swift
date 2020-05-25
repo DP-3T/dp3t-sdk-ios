@@ -76,19 +76,18 @@ class ExposureNotificationMatcher: Matcher {
                 try urls.forEach(deleteDiagnosisKeyFile(at:))
 
                 if let summary = exposureSummary {
-                    let parameters = defaults.parameters.contactMatching
 
-                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[0]) * parameters.factorHigh) / TimeInterval.minute
+                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
+                    
+                    log.log("reiceived exposureSummary: %{PUBLIC}@ computed threshold: %{PUBLIC}.2f (low:%{PUBLIC}.2f, high: %{PUBLIC}.2f) required %{PUBLIC}d", summary.debugDescription, computedThreshold, defaults.parameters.contactMatching.factorLow, defaults.parameters.contactMatching.factorHigh, defaults.parameters.contactMatching.triggerThreshold)
 
-                    log.info("reiceived exposureSummary: %@ computed threshold: %d required %d", summary.debugDescription, computedThreshold, parameters.triggerThreshold)
-
-                    if computedThreshold >= Double(parameters.triggerThreshold) {
-                        log.info("exposureSummary meets requiremnts")
+                    if computedThreshold >= Double(defaults.parameters.contactMatching.triggerThreshold) {
+                        log.log("exposureSummary meets requiremnts")
                         let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: day, reportDate: Date(), isDeleted: false)
                         exposureDayStorage.add(day)
                         delegate?.didFindMatch()
                     } else {
-                         log.info("exposureSummary does not meet requirements")
+                         log.log("exposureSummary does not meet requirements")
                     }
                 }
             }
