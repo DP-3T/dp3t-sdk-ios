@@ -249,7 +249,6 @@ class DP3TSDK {
         Default.shared.reset()
         outstandingPublishesStorage.reset()
         exposureDayStorage.reset()
-        secretKeyProvider.reset()
         URLCache.shared.removeAllCachedResponses()
     }
 

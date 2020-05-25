@@ -11,8 +11,6 @@ protocol SecretKeyProvider: class {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
-
-    func reset()
 }
 
 private var logger = Logger(ENManager.self, category: "SecretKeyProvider")
@@ -75,8 +73,6 @@ extension ENManager: SecretKeyProvider {
         }
         return keys
     }
-
-    func reset() {}
 }
 
 extension CodableDiagnosisKey {
