@@ -71,7 +71,7 @@ class DP3TBackgroundTaskManager {
 
             completionGroup.enter()
             handlerOperation.completionBlock = { [weak self] in
-                self?.log.info("handlerOperation finished")
+                self?.log.log("handlerOperation finished")
                 completionGroup.leave()
             }
 
@@ -82,7 +82,7 @@ class DP3TBackgroundTaskManager {
 
         completionGroup.enter()
         syncOperation.completionBlock = { [weak self] in
-            self?.log.info("syncOperation finished")
+            self?.log.log("syncOperation finished")
             completionGroup.leave()
         }
 

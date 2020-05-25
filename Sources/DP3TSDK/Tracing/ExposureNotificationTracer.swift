@@ -20,7 +20,7 @@ class ExposureNotificationTracer: Tracer {
     private(set) var state: TrackingState {
         didSet {
             guard oldValue != state else { return }
-            log.info("state did change from %@ to %@", oldValue.debugDescription, state.debugDescription)
+            log.log("state did change from %@ to %@", oldValue.debugDescription, state.debugDescription)
             delegate?.stateDidChange()
         }
     }
@@ -30,7 +30,7 @@ class ExposureNotificationTracer: Tracer {
 
         state = .stopped
 
-        log.info("calling ENMananger.activate")
+        log.log("calling ENMananger.activate")
         manager.activate { [weak self] error in
             guard let self = self else { return }
             if let error = error {
@@ -64,7 +64,7 @@ class ExposureNotificationTracer: Tracer {
 
     func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?) {
 
-        log.info("calling ENMananger.setExposureNotificationEnabled %@", enabled ? "true" : "false")
+        log.log("calling ENMananger.setExposureNotificationEnabled %@", enabled ? "true" : "false")
 
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
             guard let self = self else { return }

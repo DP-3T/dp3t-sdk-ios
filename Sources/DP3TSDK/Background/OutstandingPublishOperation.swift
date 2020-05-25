@@ -28,7 +28,7 @@ class OutstandingPublishOperation: Operation {
             guard operations.isEmpty == false else { return }
             let today = DayDate().dayMin
             for op in operations where op.dayToPublish < today {
-                log.info("handling outstanding Publish %@", op.debugDescription)
+                log.log("handling outstanding Publish %@", op.debugDescription)
                 let group = DispatchGroup()
 
                 var key: CodableDiagnosisKey?

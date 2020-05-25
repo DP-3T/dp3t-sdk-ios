@@ -60,7 +60,7 @@ class ExposureNotificationMatcher: Matcher {
                 var exposureDetectionError: Error?
                 let configuration: ENExposureConfiguration = .configuration()
 
-                log.info("calling detectExposures for day %@ and config: %@", day.description, configuration.description)
+                log.log("calling detectExposures for day %@ and config: %@", day.description, configuration.description)
                 manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
                     exposureSummary = summary
                     exposureDetectionError = error

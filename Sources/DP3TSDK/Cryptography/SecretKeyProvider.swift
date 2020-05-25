@@ -26,7 +26,7 @@ extension ENManager: SecretKeyProvider {
                 logger.error("ENManager.getDiagnosisKeys error: %{PUBLIC}@", error.localizedDescription)
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
-                logger.info("received %d keys", keys.count)
+                logger.log("received %d keys", keys.count)
                 if let onsetDate = onsetDate {
                     var filteredKeys = keys.filter { $0.date > onsetDate }.map(CodableDiagnosisKey.init(key:))
                     filteredKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - filteredKeys.count))
@@ -46,16 +46,16 @@ extension ENManager: SecretKeyProvider {
 
         switch appDesc.mode {
         case .production:
-            logger.info("calling ENManager.getDiagnosisKeys")
+            logger.log("calling ENManager.getDiagnosisKeys")
             getDiagnosisKeys(completionHandler: handler)
         case .test:
-            logger.info("calling ENManager.getDiagnosisKeys")
+            logger.log("calling ENManager.getDiagnosisKeys")
             getTestDiagnosisKeys(completionHandler: handler)
         }
     }
 
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
-        logger.info("getFakeDiagnosisKeys")
+        logger.log("getFakeDiagnosisKeys")
         completionHandler(.success(getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit)))
     }
 
