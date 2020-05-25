@@ -23,7 +23,7 @@ extension ENManager: SecretKeyProvider {
         let handler: ENGetDiagnosisKeysHandler = { [weak self] keys, error in
             guard let self = self else { return }
             if let error = error {
-                logger.error("getDiagnosisKeys error: %@", error.localizedDescription)
+                logger.error("ENManager.getDiagnosisKeys error: %{PUBLIC}@", error.localizedDescription)
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
                 logger.info("received %d keys", keys.count)

@@ -69,7 +69,7 @@ class ExposureNotificationMatcher: Matcher {
                 semaphore.wait()
 
                 if let error = exposureDetectionError {
-                    log.error("exposureNotificationError %@", error.localizedDescription)
+                    log.error("ENManager.detectExposures failed error: %{PUBLIC}@", error.localizedDescription)
                     throw error
                 }
 

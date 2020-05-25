@@ -115,13 +115,13 @@ class KnownCasesSynchronizer {
                             publishedAfterStore[currentKeyDate] = knownCasesData.publishedUntil
 
                         } catch let error as DP3TNetworkingError {
-                            self.log.error("matcher receive error: %@", error.localizedDescription)
+                            self.log.error("matcher receive error: %{PUBLIC}@", error.localizedDescription)
 
                             occuredError = .networkingError(error: error)
 
                             return
                         } catch {
-                            self.log.error("matcher receive error: %@", error.localizedDescription)
+                            self.log.error("matcher receive error: %{PUBLIC}@", error.localizedDescription)
 
                             occuredError = .networkingError(error: .couldNotParseData(error: error, origin: 0))
                         }
@@ -137,7 +137,7 @@ class KnownCasesSynchronizer {
             do {
                 try self.matcher?.finalizeMatchingSession()
             } catch {
-                self.log.error("matcher finalize error: %@", error.localizedDescription)
+                self.log.error("matcher finalize error: %{PUBLIC}@", error.localizedDescription)
                 occuredError = .exposureNotificationError(error: error)
             }
 
