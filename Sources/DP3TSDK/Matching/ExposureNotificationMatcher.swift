@@ -77,8 +77,8 @@ class ExposureNotificationMatcher: Matcher {
 
                 if let summary = exposureSummary {
 
-                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
-                    
+                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[1]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
+
                     log.log("reiceived exposureSummary: %{PUBLIC}@ computed threshold: %{PUBLIC}.2f (low:%{PUBLIC}.2f, high: %{PUBLIC}.2f) required %{PUBLIC}d", summary.debugDescription, computedThreshold, defaults.parameters.contactMatching.factorLow, defaults.parameters.contactMatching.factorHigh, defaults.parameters.contactMatching.triggerThreshold)
 
                     if computedThreshold >= Double(defaults.parameters.contactMatching.triggerThreshold) {
