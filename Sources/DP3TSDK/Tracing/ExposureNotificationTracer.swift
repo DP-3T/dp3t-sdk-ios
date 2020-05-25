@@ -15,12 +15,12 @@ class ExposureNotificationTracer: Tracer {
 
     var delegate: TracerDelegate?
 
-    private let log = Logger(ExposureNotificationTracer.self, category: "exposureNotificationTracer")
+    private let logger = Logger(ExposureNotificationTracer.self, category: "exposureNotificationTracer")
 
     private(set) var state: TrackingState {
         didSet {
             guard oldValue != state else { return }
-            log.log("state did change from %@ to %@", oldValue.debugDescription, state.debugDescription)
+            logger.log("state did change from %@ to %@", oldValue.debugDescription, state.debugDescription)
             delegate?.stateDidChange()
         }
     }
@@ -30,11 +30,11 @@ class ExposureNotificationTracer: Tracer {
 
         state = .stopped
 
-        log.log("calling ENMananger.activate")
+        logger.log("calling ENMananger.activate")
         manager.activate { [weak self] error in
             guard let self = self else { return }
             if let error = error {
-                self.log.error("ENMananger.activate failed error: %{PUBLIC}@", error.localizedDescription)
+                self.logger.error("ENMananger.activate failed error: %{PUBLIC}@", error.localizedDescription)
             }
             self.initializeObservers()
         }
@@ -64,12 +64,12 @@ class ExposureNotificationTracer: Tracer {
 
     func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?) {
 
-        log.log("calling ENMananger.setExposureNotificationEnabled %@", enabled ? "true" : "false")
+        logger.log("calling ENMananger.setExposureNotificationEnabled %@", enabled ? "true" : "false")
 
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
             guard let self = self else { return }
             if let error = error {
-                self.log.error("ENMananger.setExposureNotificationEnabled failed error: %{PUBLIC}@", error.localizedDescription)
+                self.logger.error("ENMananger.setExposureNotificationEnabled failed error: %{PUBLIC}@", error.localizedDescription)
                 self.state = .inactive(error: .exposureNotificationError(error: error))
             }
             completionHandler?(error)

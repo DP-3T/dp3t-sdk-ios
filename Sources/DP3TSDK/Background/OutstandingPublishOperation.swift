@@ -12,7 +12,7 @@ class OutstandingPublishOperation: Operation {
 
     private let storage = OutstandingPublishStorage()
 
-    private let log = Logger(OutstandingPublishOperation.self, category: "OutstandingPublishOperation")
+    private let logger = Logger(OutstandingPublishOperation.self, category: "OutstandingPublishOperation")
 
     static let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
 
@@ -23,12 +23,12 @@ class OutstandingPublishOperation: Operation {
 
     override func main() {
         Self.serialQueue.sync {
-            log.trace()
+            logger.trace()
             let operations = storage.get()
             guard operations.isEmpty == false else { return }
             let today = DayDate().dayMin
             for op in operations where op.dayToPublish < today {
-                log.log("handling outstanding Publish %@", op.debugDescription)
+                logger.log("handling outstanding Publish %@", op.debugDescription)
                 let group = DispatchGroup()
 
                 var key: CodableDiagnosisKey?
