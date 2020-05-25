@@ -21,10 +21,6 @@ struct DayDate: Codable, Equatable, Hashable {
         return Date(timeIntervalSince1970: timestamp)
     }
 
-    var dayMax: Date {
-        return dayMin.addingTimeInterval(.day)
-    }
-
     var period: UInt32 {
         return UInt32(timestamp / (10 * .minute))
     }

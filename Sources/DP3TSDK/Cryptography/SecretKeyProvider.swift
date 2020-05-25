@@ -76,8 +76,6 @@ extension ENManager: SecretKeyProvider {
         return keys
     }
 
-    func reinitialize() {}
-
     func reset() {}
 }
 
