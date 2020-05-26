@@ -20,7 +20,7 @@ protocol ExposeeServiceClientProtocol: class {
     /// - Parameters:
     ///   - batchTimestamp: The batch timestamp
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date) -> Result<ExposeeSuccess, DP3TNetworkingError>
+    func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
 
     /// Adds an exposee
     /// - Parameters:
@@ -80,12 +80,12 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
     }
 
-    /// Get all exposee for a known day synchronously
+    /// Get all exposee for a known day
     /// - Parameters:
     ///   - batchTimestamp: The batch timestamp
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date) -> Result<ExposeeSuccess, DP3TNetworkingError> {
+    func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
         log.debug("getExposeeSynchronously for timestamp %@ -> %lld", batchTimestamp.description, batchTimestamp.millisecondsSince1970)
         let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
 
@@ -93,48 +93,53 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         request.setValue("application/zip", forHTTPHeaderField: "Accept")
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
 
-        let (data, response, error) = urlSession.synchronousDataTask(with: request)
-
-        guard error == nil else {
-            return .failure(.networkSessionError(error: error!))
-        }
-        guard let httpResponse = response as? HTTPURLResponse else {
-            return .failure(.notHTTPResponse)
-        }
-
-        var publishedUntil: Date?
-        if let publishedUntilHeader = httpResponse.value(forHTTPHeaderField: "x-published-until") {
-            publishedUntil = try? .init(milliseconds: Int64(value: publishedUntilHeader))
-        }
-
-        let httpStatus = httpResponse.statusCode
-        switch httpStatus {
-        case 200:
-            break
-        case 204:
-            // 204 response means there is no data for this day
-            return .success(.init(data: nil, publishedUntil: publishedUntil))
-        default:
-            return .failure(.HTTPFailureResponse(status: httpStatus))
-        }
-
-        guard let responseData = data else {
-            return .failure(.noDataReturned)
-        }
-
-        // Validate JWT
-        if #available(iOS 11.0, *), let verifier = jwtVerifier {
-            do {
-                try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
-            } catch let error as DP3TNetworkingError {
-                return .failure(error)
-            } catch {
-                return .failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)"))
+        let task = urlSession.dataTask(with: request) { [weak self] (data, response, error) in
+            guard let self = self else { return }
+            guard error == nil else {
+                completion(.failure(.networkSessionError(error: error!)))
+                return
             }
-        }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(.failure(.notHTTPResponse))
+                return
+            }
 
-        let result = ExposeeSuccess(data: responseData, publishedUntil: publishedUntil)
-        return .success(result)
+            var publishedUntil: Date?
+            if let publishedUntilHeader = httpResponse.value(forHTTPHeaderField: "x-published-until") {
+                publishedUntil = try? .init(milliseconds: Int64(value: publishedUntilHeader))
+            }
+
+            let httpStatus = httpResponse.statusCode
+            switch httpStatus {
+            case 200:
+                break
+            case 204:
+                // 204 response means there is no data for this day
+                completion(.success(.init(data: nil, publishedUntil: publishedUntil)))
+            default:
+                completion(.failure(.HTTPFailureResponse(status: httpStatus)))
+            }
+
+            guard let responseData = data else {
+                completion(.failure(.noDataReturned))
+                return
+            }
+
+            // Validate JWT
+            if #available(iOS 11.0, *), let verifier = self.jwtVerifier {
+                do {
+                    try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
+                } catch let error as DP3TNetworkingError {
+                    completion(.failure(error))
+                } catch {
+                    completion(.failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)")))
+                }
+            }
+
+            let result = ExposeeSuccess(data: responseData, publishedUntil: publishedUntil)
+                completion(.success(result))
+        }
+        return task
     }
 
     /// Adds an exposee delayed key

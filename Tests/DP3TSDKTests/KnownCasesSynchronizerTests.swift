@@ -26,18 +26,24 @@ private class MockMatcher: Matcher {
 
 private class MockService: ExposeeServiceClientProtocol {
     var requests: [Date] = []
+    let session = MockSession(data: "Data".data(using: .utf8), urlResponse: nil, error: nil)
     let queue = DispatchQueue(label: "synchronous")
     var error: DP3TNetworkingError?
     var publishedUntil: Date = .init()
     var data: Data? = "Data".data(using: .utf8)
-    func getExposeeSynchronously(batchTimestamp: Date) -> Result<ExposeeSuccess, DP3TNetworkingError> {
-        queue.sync {
-            self.requests.append(batchTimestamp)
+
+    func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
+
+        return session.dataTask(with: .init(url: URL(string: "http://www.google.com")!)) { (data, _, _) in
+            if let error = self.error {
+                completion(.failure(error))
+            } else {
+                self.queue.sync {
+                    self.requests.append(batchTimestamp)
+                }
+                completion(.success(.init(data: self.data, publishedUntil: .init())))
+            }
         }
-        if let error = error {
-            return .failure(error)
-        }
-        return .success(.init(data: data, publishedUntil: .init()))
     }
 
     func addExposeeList(_: ExposeeListModel, authentication _: ExposeeAuthMethod, completion _: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void) {}
@@ -238,6 +244,27 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         XCTAssertEqual(service.requests.count, 10)
         XCTAssertEqual(defaults.publishedAfterStore.count, 10)
+    }
+
+    func testCallingSyncMulithreadedWithCancel() {
+        let matcher = MockMatcher()
+        let service = MockService()
+        let defaults = MockDefaults()
+        let sync = KnownCasesSynchronizer(matcher: matcher,
+                                          service: service,
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+
+        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+            XCTFail()
+        }
+        sync.cancelSync()
+
+        let exp = expectation(description: "Test after 2 seconds")
+        _ = XCTWaiter.wait(for: [exp], timeout: 2.0)
+
+        XCTAssertNotEqual(service.requests.count, 10)
+        XCTAssertNotEqual(defaults.publishedAfterStore.count, 10)
     }
 
     func testLastDesiredSyncTimeNoon() {

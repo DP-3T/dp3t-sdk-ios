@@ -30,6 +30,12 @@ class KnownCasesSynchronizer {
 
     private var backgroundTask: UIBackgroundTaskIdentifier?
 
+    private var dataTasks: [URLSessionDataTask] = []
+
+    private var isCancelled: Bool = false
+
+    private let dispatchGroup = DispatchGroup()
+
     /// Create a known case synchronizer
     /// - Parameters:
     ///   - matcher: The matcher for DP3T resolution and checks
@@ -71,6 +77,9 @@ class KnownCasesSynchronizer {
 
             self.backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "org.dpppt.sync") { [weak self] in
                 guard let self = self else { return }
+
+                self.cancelSync()
+
                 UIApplication.shared.endBackgroundTask(self.backgroundTask!)
                 self.backgroundTask = .invalid
             }
@@ -87,8 +96,26 @@ class KnownCasesSynchronizer {
         }
     }
 
+    func cancelSync(){
+        queue.async { [weak self] in
+            guard let self = self else { return }
+            self.isCancelled = true
+
+            for task in self.dataTasks {
+                if task.state != .completed {
+                    task.cancel()
+                    self.dispatchGroup.leave()
+                }
+            }
+            self.dataTasks.removeAll()
+        }
+    }
+
     private func internalSync(now: Date = Date(), callback: Callback?) {
         log.trace()
+
+        self.isCancelled = false
+
         let todayDate = DayDate(date: now).dayMin
 
         let minimumDate = todayDate.addingTimeInterval(-.day * Double(defaults.parameters.networking.daysToCheck - 1))
@@ -108,8 +135,6 @@ class KnownCasesSynchronizer {
             }
         }
 
-        let dispatchGroup = DispatchGroup()
-        let queue = OperationQueue()
         let synchronousQueue = DispatchQueue(label: "org.dpppt.internalSync")
 
         var occuredError: DP3TTracingError?
@@ -129,18 +154,13 @@ class KnownCasesSynchronizer {
             }
 
             dispatchGroup.enter()
-
-            queue.addOperation { [weak self] in
-                guard let self = self else { return }
-                let result = self.service.getExposeeSynchronously(batchTimestamp: currentKeyDate)
+            let task = self.service.getExposee(batchTimestamp: currentKeyDate) { (result) in
                 synchronousQueue.sync {
                     switch result {
                     case let .failure(error):
                         occuredError = .networkingError(error: error)
-                        return
                     case let .success(knownCasesData):
                         do {
-
                             if let data = knownCasesData.data {
                                 try self.matcher?.receivedNewKnownCaseData(data, keyDate: currentKeyDate)
                             }
@@ -151,21 +171,28 @@ class KnownCasesSynchronizer {
                             self.log.error("matcher receive error: %{PUBLIC}@", error.localizedDescription)
 
                             occuredError = .networkingError(error: error)
-
-                            return
                         } catch {
                             self.log.error("matcher receive error: %{PUBLIC}@", error.localizedDescription)
 
                             occuredError = .networkingError(error: .couldNotParseData(error: error, origin: 0))
                         }
                     }
+                    self.dispatchGroup.leave()
                 }
-                dispatchGroup.leave()
             }
+            dataTasks.append(task)
         }
+
+        dataTasks.forEach { $0.resume() }
 
         dispatchGroup.notify(queue: .global(qos: .userInitiated)) { [weak self] in
             guard let self = self else { return }
+
+            self.dataTasks.removeAll()
+
+            guard self.isCancelled == false else {
+                return
+            }
 
             do {
                 try self.matcher?.finalizeMatchingSession()

@@ -11,6 +11,16 @@ class MockTask: URLSessionDataTask {
     private let urlResponse_: URLResponse?
     private let error_: Error?
 
+    var internalState: URLSessionTask.State = .suspended
+
+    override var state: URLSessionTask.State {
+        internalState
+    }
+
+    override func cancel() {
+        internalState = .canceling
+    }
+
     var completionHandler: ((Data?, URLResponse?, Error?) -> Void)?
 
     init(data: Data?, urlResponse: URLResponse?, error: Error?) {
@@ -20,7 +30,15 @@ class MockTask: URLSessionDataTask {
     }
 
     override func resume() {
-        completionHandler?(data_, urlResponse_, error_)
+        internalState = .running
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            guard let self = self else { return }
+            if self.internalState != .canceling {
+                self.internalState = .completed
+                self.completionHandler?(self.data_, self.urlResponse_, self.error_)
+            }
+        }
+
     }
 }
 
@@ -37,15 +55,21 @@ class MockUrlCache: URLCache {
 }
 
 class MockSession: URLSession {
-    let task: MockTask
+    let data: Data?
+    let urlResponse: URLResponse?
+    let error: Error?
+
     var requests: [URLRequest] = []
 
     init(data: Data?, urlResponse: URLResponse?, error: Error?) {
-        task = MockTask(data: data, urlResponse: urlResponse, error: error)
+        self.data = data
+        self.urlResponse = urlResponse
+        self.error = error
     }
 
     override func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
         requests.append(request)
+        let task = MockTask(data: data, urlResponse: urlResponse, error: error)
         task.completionHandler = completionHandler
         return task
     }
