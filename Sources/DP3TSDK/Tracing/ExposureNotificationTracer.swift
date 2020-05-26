@@ -35,8 +35,9 @@ class ExposureNotificationTracer: Tracer {
             guard let self = self else { return }
             if let error = error {
                 self.logger.error("ENMananger.activate failed error: %{PUBLIC}@", error.localizedDescription)
+            } else {
+                self.initializeObservers()
             }
-            self.initializeObservers()
         }
     }
 
