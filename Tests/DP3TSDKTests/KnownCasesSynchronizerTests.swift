@@ -33,8 +33,7 @@ private class MockService: ExposeeServiceClientProtocol {
     var data: Data? = "Data".data(using: .utf8)
 
     func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
-
-        return session.dataTask(with: .init(url: URL(string: "http://www.google.com")!)) { (data, _, _) in
+        return session.dataTask(with: .init(url: URL(string: "http://www.google.com")!)) { _, _, _ in
             if let error = self.error {
                 completion(.failure(error))
             } else {
@@ -52,7 +51,6 @@ private class MockService: ExposeeServiceClientProtocol {
 }
 
 final class KnownCasesSynchronizerTests: XCTestCase {
-
     func testInitialToday() {
         let matcher = MockMatcher()
         let service = MockService()
@@ -163,36 +161,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         XCTAssert(defaults.publishedAfterStore.isEmpty)
     }
 
-    func testNotRepeatingRequests(){
-        let matcher = MockMatcher()
-        let service = MockService()
-        let defaults = MockDefaults()
-        let sync = KnownCasesSynchronizer(matcher: matcher,
-                                          service: service,
-                                          defaults: defaults,
-                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
-        let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
-            expecation.fulfill()
-        }
-        waitForExpectations(timeout: 1)
-
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.publishedAfterStore.count, 10)
-
-        service.requests = []
-
-        let secondExpectation = expectation(description: "secondSyncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
-            secondExpectation.fulfill()
-        }
-        waitForExpectations(timeout: 1)
-
-        XCTAssertEqual(service.requests, [])
-        XCTAssertEqual(defaults.publishedAfterStore.count, 10)
-    }
-
-    func testRepeatingRequestsAfterDay(){
+    func testRepeatingRequestsAfterDay() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
@@ -234,7 +203,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let iterations = 50
         expecation.expectedFulfillmentCount = iterations
 
-        DispatchQueue.concurrentPerform(iterations: iterations) { (_) in
+        DispatchQueue.concurrentPerform(iterations: iterations) { _ in
             sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
                 expecation.fulfill()
             }
