@@ -88,11 +88,14 @@ class DP3TBackgroundTaskManager {
 
         queue.addOperation(syncOperation)
 
-        task.expirationHandler = {
+        task.expirationHandler = { [weak self] in
+            self?.logger.error("DP3TBackgroundTaskManager expiration handler called")
             queue.cancelAllOperations()
         }
 
-        completionGroup.notify(queue: .main) {
+        completionGroup.notify(queue: .main) { [weak self] in
+            self?.logger.log("DP3TBackgroundTaskManager task completed")
+
             let success = !queue.operations.map { $0.isCancelled }.contains(true)
             task.setTaskCompleted(success: success)
         }
