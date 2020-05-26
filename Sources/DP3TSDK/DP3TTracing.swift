@@ -99,6 +99,15 @@ public enum DP3TTracing {
         }
     }
 
+
+    /// Cancel any ongoing snyc
+    static func cancelSync() {
+        guard let instance = instance else {
+            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
+        }
+        instance.cancelSync()
+    }
+
     /// get the current status of the SDK
     /// - Parameter callback: callback
 

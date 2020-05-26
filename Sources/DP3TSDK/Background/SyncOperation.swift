@@ -17,4 +17,7 @@ class SyncOperation: Operation {
             }
         }
     }
+    override func cancel() {
+        DP3TTracing.cancelSync()
+    }
 }
