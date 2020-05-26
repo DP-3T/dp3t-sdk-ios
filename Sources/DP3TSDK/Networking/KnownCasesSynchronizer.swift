@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import UIKit.UIApplication
 
 /**
  Synchronizes data on known cases
@@ -24,6 +25,8 @@ class KnownCasesSynchronizer {
     private let log = Logger(KnownCasesSynchronizer.self, category: "knownCasesSynchronizer")
 
     private let queue = DispatchQueue(label: "org.dpppt.sync")
+
+    private var backgroundTask: UIBackgroundTaskIdentifier?
 
     /// Create a known case synchronizer
     /// - Parameters:
@@ -49,7 +52,16 @@ class KnownCasesSynchronizer {
         log.trace()
 
         queue.sync {
-            self.internalSync(now: now, callback: callback)
+            self.backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "org.dpppt.sync") {
+                UIApplication.shared.endBackgroundTask(self.backgroundTask!)
+                self.backgroundTask = .invalid
+            }
+            self.internalSync(now: now) { [weak self] (result) in
+                guard let self = self else { return }
+                UIApplication.shared.endBackgroundTask(self.backgroundTask!)
+                self.backgroundTask = .invalid
+                callback?(result)
+            }
         }
 
     }
