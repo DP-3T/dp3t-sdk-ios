@@ -14,10 +14,13 @@ class HandlerOperation: Operation {
     }
 
     override func main() {
+        let semaphore = DispatchSemaphore(value: 0)
         handler?.performBackgroundTasks(completionHandler: { success in
             if !success {
                 self.cancel()
             }
+            semaphore.signal()
         })
+        semaphore.wait()
     }
 }
