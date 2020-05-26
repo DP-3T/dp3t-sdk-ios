@@ -116,8 +116,10 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             case 204:
                 // 204 response means there is no data for this day
                 completion(.success(.init(data: nil, publishedUntil: publishedUntil)))
+                return
             default:
                 completion(.failure(.HTTPFailureResponse(status: httpStatus)))
+                return
             }
 
             guard let responseData = data else {
@@ -131,13 +133,15 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                     try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
                 } catch let error as DP3TNetworkingError {
                     completion(.failure(error))
+                    return
                 } catch {
                     completion(.failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)")))
+                    return
                 }
             }
 
             let result = ExposeeSuccess(data: responseData, publishedUntil: publishedUntil)
-                completion(.success(result))
+            completion(.success(result))
         }
         return task
     }
