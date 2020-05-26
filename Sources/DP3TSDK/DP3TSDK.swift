@@ -154,6 +154,12 @@ class DP3TSDK {
         }
     }
 
+    /// Cancel any ongoing snyc
+    func cancelSync(){
+        log.trace()
+        synchronizer.cancelSync()
+    }
+
     /// get the current status of the SDK
     /// - Parameter callback: callback
     func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
