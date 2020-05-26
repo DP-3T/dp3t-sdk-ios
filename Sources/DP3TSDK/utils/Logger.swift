@@ -67,8 +67,8 @@ class Logger {
             var string = message.withUTF8Buffer {
                 String(decoding: $0, as: UTF8.self)
             }
-            string = string.replacingOccurrences(of: "{public}", with: "")
-                .replacingOccurrences(of: "{private}", with: "")
+            string = string.replacingOccurrences(of: "{public}", with: "", options: .caseInsensitive)
+                .replacingOccurrences(of: "{private}", with: "", options: .caseInsensitive)
             delegate.log("[\(category)] \(String(format: string, arguments: a))", type: type)
         }
 
