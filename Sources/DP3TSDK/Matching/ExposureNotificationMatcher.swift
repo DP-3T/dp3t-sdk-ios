@@ -69,7 +69,7 @@ class ExposureNotificationMatcher: Matcher {
                 semaphore.wait()
 
                 if let error = exposureDetectionError {
-                    logger.error("ENManager.detectExposures failed error: %{PUBLIC}@", error.localizedDescription)
+                    logger.error("ENManager.detectExposures failed error: %{public}@", error.localizedDescription)
                     throw error
                 }
 
@@ -79,7 +79,7 @@ class ExposureNotificationMatcher: Matcher {
 
                     let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[1]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
 
-                    logger.log("reiceived exposureSummary: %{PUBLIC}@ computed threshold: %{PUBLIC}.2f (low:%{PUBLIC}.2f, high: %{PUBLIC}.2f) required %{PUBLIC}d", summary.debugDescription, computedThreshold, defaults.parameters.contactMatching.factorLow, defaults.parameters.contactMatching.factorHigh, defaults.parameters.contactMatching.triggerThreshold)
+                    logger.log("reiceived exposureSummary: %{public}@ computed threshold: %{public}.2f (low:%{public}.2f, high: %{public}.2f) required %{public}d", summary.debugDescription, computedThreshold, defaults.parameters.contactMatching.factorLow, defaults.parameters.contactMatching.factorHigh, defaults.parameters.contactMatching.triggerThreshold)
 
                     if computedThreshold >= Double(defaults.parameters.contactMatching.triggerThreshold) {
                         logger.log("exposureSummary meets requiremnts")

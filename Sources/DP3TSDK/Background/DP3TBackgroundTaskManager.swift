@@ -110,7 +110,7 @@ class DP3TBackgroundTaskManager {
         do {
             try BGTaskScheduler.shared.submit(taskRequest)
         } catch {
-            logger.error("background task schedule failed error: %{PUBLIC}@", error.localizedDescription)
+            logger.error("background task schedule failed error: %{public}@", error.localizedDescription)
         }
     }
 }

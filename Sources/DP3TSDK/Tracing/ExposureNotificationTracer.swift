@@ -34,7 +34,7 @@ class ExposureNotificationTracer: Tracer {
         manager.activate { [weak self] error in
             guard let self = self else { return }
             if let error = error {
-                self.logger.error("ENMananger.activate failed error: %{PUBLIC}@", error.localizedDescription)
+                self.logger.error("ENMananger.activate failed error: %{public}@", error.localizedDescription)
             } else {
                 self.initializeObservers()
             }
@@ -70,7 +70,7 @@ class ExposureNotificationTracer: Tracer {
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
             guard let self = self else { return }
             if let error = error {
-                self.logger.error("ENMananger.setExposureNotificationEnabled failed error: %{PUBLIC}@", error.localizedDescription)
+                self.logger.error("ENMananger.setExposureNotificationEnabled failed error: %{public}@", error.localizedDescription)
                 self.state = .inactive(error: .exposureNotificationError(error: error))
             }
             completionHandler?(error)
