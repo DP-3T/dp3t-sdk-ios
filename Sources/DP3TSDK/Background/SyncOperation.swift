@@ -20,6 +20,7 @@ class SyncOperation: Operation {
         }
         semaphore.wait()
     }
+
     override func cancel() {
         DP3TTracing.cancelSync()
     }

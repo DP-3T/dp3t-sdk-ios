@@ -54,7 +54,6 @@ class ExposureNotificationMatcher: Matcher {
             guard localURLs.isEmpty == false else { return }
 
             for (day, urls) in localURLs {
-
                 let semaphore = DispatchSemaphore(value: 0)
                 var exposureSummary: ENExposureDetectionSummary?
                 var exposureDetectionError: Error?
@@ -76,7 +75,6 @@ class ExposureNotificationMatcher: Matcher {
                 try urls.forEach(deleteDiagnosisKeyFile(at:))
 
                 if let summary = exposureSummary {
-
                     let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[1]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
 
                     logger.log("reiceived exposureSummary: %{public}@ computed threshold: %{public}.2f (low:%{public}.2f, high: %{public}.2f) required %{public}d", summary.debugDescription, computedThreshold, defaults.parameters.contactMatching.factorLow, defaults.parameters.contactMatching.factorHigh, defaults.parameters.contactMatching.triggerThreshold)
@@ -87,13 +85,12 @@ class ExposureNotificationMatcher: Matcher {
                         exposureDayStorage.add(day)
                         delegate?.didFindMatch()
                     } else {
-                         logger.log("exposureSummary does not meet requirements")
+                        logger.log("exposureSummary does not meet requirements")
                     }
                 }
             }
             localURLs.removeAll()
         }
-
     }
 
     func deleteDiagnosisKeyFile(at localURL: URL) throws {

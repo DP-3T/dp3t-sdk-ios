@@ -10,15 +10,16 @@ class OutstandingPublishOperation: Operation {
     weak var keyProvider: SecretKeyProvider!
     private let serviceClient: ExposeeServiceClient
 
-    private let storage = OutstandingPublishStorage()
+    private let storage: OutstandingPublishStorage
 
     private let logger = Logger(OutstandingPublishOperation.self, category: "OutstandingPublishOperation")
 
     static let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
 
-    init(keyProvider: SecretKeyProvider, serviceClient: ExposeeServiceClient) {
+    init(keyProvider: SecretKeyProvider, serviceClient: ExposeeServiceClient, storage: OutstandingPublishStorage = OutstandingPublishStorage()) {
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
+        self.storage = storage
     }
 
     override func main() {

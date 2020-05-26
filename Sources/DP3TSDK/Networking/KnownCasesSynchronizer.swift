@@ -84,7 +84,7 @@ class KnownCasesSynchronizer {
                 self.backgroundTask = .invalid
             }
 
-            self.internalSync(now: now) { [weak self] (result) in
+            self.internalSync(now: now) { [weak self] result in
                 guard let self = self else { return }
                 self.queue.async {
                     UIApplication.shared.endBackgroundTask(self.backgroundTask!)
@@ -96,7 +96,7 @@ class KnownCasesSynchronizer {
         }
     }
 
-    func cancelSync(){
+    func cancelSync() {
         queue.async { [weak self] in
             guard let self = self else { return }
             self.isCancelled = true
@@ -114,7 +114,7 @@ class KnownCasesSynchronizer {
     private func internalSync(now: Date = Date(), callback: Callback?) {
         log.trace()
 
-        self.isCancelled = false
+        isCancelled = false
 
         let todayDate = DayDate(date: now).dayMin
 
@@ -146,7 +146,7 @@ class KnownCasesSynchronizer {
 
             var publishedAfter: Date!
             synchronousQueue.sync {
-                 publishedAfter = publishedAfterStore[currentKeyDate]
+                publishedAfter = publishedAfterStore[currentKeyDate]
             }
 
             guard descriptor.mode == .test || publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime(ts: now) else {
@@ -154,7 +154,7 @@ class KnownCasesSynchronizer {
             }
 
             dispatchGroup.enter()
-            let task = self.service.getExposee(batchTimestamp: currentKeyDate) { (result) in
+            let task = service.getExposee(batchTimestamp: currentKeyDate) { result in
                 synchronousQueue.sync {
                     switch result {
                     case let .failure(error):
