@@ -21,7 +21,7 @@ class DP3TBackgroundTaskManager {
 
     weak var handler: DP3TBackgroundHandler?
 
-    private let log = Logger(DP3TBackgroundTaskManager.self, category: "backgroundTaskManager")
+    private let logger = Logger(DP3TBackgroundTaskManager.self, category: "backgroundTaskManager")
 
     private weak var keyProvider: SecretKeyProvider!
 
@@ -37,7 +37,7 @@ class DP3TBackgroundTaskManager {
 
     /// Register a background task
     func register() {
-        log.trace()
+        logger.trace()
         guard !didRegisterBackgroundTask else { return }
         didRegisterBackgroundTask = true
 
@@ -49,7 +49,7 @@ class DP3TBackgroundTaskManager {
     }
 
     private func handleBackgroundTask(_ task: BGTask) {
-        log.trace()
+        logger.trace()
 
         #if BACKGROUNDTASK_DEBUGGING
             let center = UNUserNotificationCenter.current()
@@ -71,7 +71,7 @@ class DP3TBackgroundTaskManager {
 
             completionGroup.enter()
             handlerOperation.completionBlock = { [weak self] in
-                self?.log.info("handlerOperation finished")
+                self?.logger.log("handlerOperation finished")
                 completionGroup.leave()
             }
 
@@ -82,7 +82,7 @@ class DP3TBackgroundTaskManager {
 
         completionGroup.enter()
         syncOperation.completionBlock = { [weak self] in
-            self?.log.info("syncOperation finished")
+            self?.logger.log("syncOperation finished")
             completionGroup.leave()
         }
 
@@ -101,13 +101,13 @@ class DP3TBackgroundTaskManager {
     }
 
     private func scheduleBackgroundTask() {
-        log.trace()
+        logger.trace()
         let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
         do {
             try BGTaskScheduler.shared.submit(taskRequest)
         } catch {
-            log.error("background task schedule failed %@", error.localizedDescription)
+            logger.error("background task schedule failed error: %{PUBLIC}@", error.localizedDescription)
         }
     }
 }

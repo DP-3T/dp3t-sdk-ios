@@ -15,7 +15,7 @@ class ExposureNotificationMatcher: Matcher {
 
     private let exposureDayStorage: ExposureDayStorage
 
-    private let log = Logger(ExposureNotificationMatcher.self, category: "matcher")
+    private let logger = Logger(ExposureNotificationMatcher.self, category: "matcher")
 
     private var localURLs: [Date: [URL]] = [:]
 
@@ -30,10 +30,10 @@ class ExposureNotificationMatcher: Matcher {
     }
 
     func receivedNewKnownCaseData(_ data: Data, keyDate: Date) throws {
-        log.trace()
+        logger.trace()
 
         if let archive = Archive(data: data, accessMode: .read) {
-            log.debug("unarchived archive")
+            logger.debug("unarchived archive")
             for entry in archive {
                 let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
                     .appendingPathComponent(UUID().uuidString).appendingPathComponent(entry.path)
@@ -41,7 +41,7 @@ class ExposureNotificationMatcher: Matcher {
                 _ = try archive.extract(entry, to: localURL)
 
                 synchronousQueue.sync {
-                    self.log.debug("found %@ item in archive", entry.path)
+                    self.logger.debug("found %@ item in archive", entry.path)
                     self.localURLs[keyDate, default: []].append(localURL)
                 }
             }
@@ -49,7 +49,7 @@ class ExposureNotificationMatcher: Matcher {
     }
 
     func finalizeMatchingSession() throws {
-        log.trace()
+        logger.trace()
         try synchronousQueue.sync {
             guard localURLs.isEmpty == false else { return }
 
@@ -60,7 +60,7 @@ class ExposureNotificationMatcher: Matcher {
                 var exposureDetectionError: Error?
                 let configuration: ENExposureConfiguration = .configuration()
 
-                log.info("calling detectExposures for day %@ and config: %@", day.description, configuration.description)
+                logger.log("calling detectExposures for day %@ and config: %@", day.description, configuration.description)
                 manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
                     exposureSummary = summary
                     exposureDetectionError = error
@@ -69,26 +69,25 @@ class ExposureNotificationMatcher: Matcher {
                 semaphore.wait()
 
                 if let error = exposureDetectionError {
-                    log.error("exposureNotificationError %@", error.localizedDescription)
+                    logger.error("ENManager.detectExposures failed error: %{PUBLIC}@", error.localizedDescription)
                     throw error
                 }
 
                 try urls.forEach(deleteDiagnosisKeyFile(at:))
 
                 if let summary = exposureSummary {
-                    let parameters = defaults.parameters.contactMatching
 
-                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[0]) * parameters.factorHigh) / TimeInterval.minute
+                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[1]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
 
-                    log.info("reiceived exposureSummary: %@ computed threshold: %d required %d", summary.debugDescription, computedThreshold, parameters.triggerThreshold)
+                    logger.log("reiceived exposureSummary: %{PUBLIC}@ computed threshold: %{PUBLIC}.2f (low:%{PUBLIC}.2f, high: %{PUBLIC}.2f) required %{PUBLIC}d", summary.debugDescription, computedThreshold, defaults.parameters.contactMatching.factorLow, defaults.parameters.contactMatching.factorHigh, defaults.parameters.contactMatching.triggerThreshold)
 
-                    if computedThreshold >= Double(parameters.triggerThreshold) {
-                        log.info("exposureSummary meets requiremnts")
+                    if computedThreshold >= Double(defaults.parameters.contactMatching.triggerThreshold) {
+                        logger.log("exposureSummary meets requiremnts")
                         let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: day, reportDate: Date(), isDeleted: false)
                         exposureDayStorage.add(day)
                         delegate?.didFindMatch()
                     } else {
-                         log.info("exposureSummary does not meet requirements")
+                         logger.log("exposureSummary does not meet requirements")
                     }
                 }
             }
@@ -98,7 +97,7 @@ class ExposureNotificationMatcher: Matcher {
     }
 
     func deleteDiagnosisKeyFile(at localURL: URL) throws {
-        log.trace()
+        logger.trace()
         try FileManager.default.removeItem(at: localURL)
     }
 }

@@ -111,4 +111,51 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         XCTAssert(mockmanager.data.contains(data))
         XCTAssertEqual(delegate.matchedFound, 1)
     }
+
+    func testDetectingMatchFirstBucketOnly(){
+        let mockmanager = MockManager()
+        let storage = ExposureDayStorage(keychain: keychain)
+        let defaults = MockDefaults()
+        let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
+        let delegate = MockMatcherDelegate()
+        matcher.delegate = delegate
+
+        let firstBucket = Double(defaults.parameters.contactMatching.triggerThreshold * 60) / defaults.parameters.contactMatching.factorLow
+        mockmanager.summary.attenuationDurations = [NSNumber(value: firstBucket) ,0,0]
+
+        let data = "Some string!".data(using: .utf8)!
+        guard let archive = Archive(accessMode: .create) else { return }
+        try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
+            return data.subdata(in: position..<position+size)
+        })
+        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
+        try! matcher.finalizeMatchingSession()
+        XCTAssert(mockmanager.detectExposuresWasCalled)
+        XCTAssert(mockmanager.data.contains(data))
+        XCTAssertEqual(delegate.matchedFound, 1)
+    }
+
+
+    func testDetectingMatchSecondBucketOnly(){
+        let mockmanager = MockManager()
+        let storage = ExposureDayStorage(keychain: keychain)
+        let defaults = MockDefaults()
+        let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
+        let delegate = MockMatcherDelegate()
+        matcher.delegate = delegate
+
+        let secondBucket = Double(defaults.parameters.contactMatching.triggerThreshold * 60) / defaults.parameters.contactMatching.factorHigh
+        mockmanager.summary.attenuationDurations = [0,NSNumber(value: secondBucket),0]
+
+        let data = "Some string!".data(using: .utf8)!
+        guard let archive = Archive(accessMode: .create) else { return }
+        try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
+            return data.subdata(in: position..<position+size)
+        })
+        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
+        try! matcher.finalizeMatchingSession()
+        XCTAssert(mockmanager.detectExposuresWasCalled)
+        XCTAssert(mockmanager.data.contains(data))
+        XCTAssertEqual(delegate.matchedFound, 1)
+    }
 }
