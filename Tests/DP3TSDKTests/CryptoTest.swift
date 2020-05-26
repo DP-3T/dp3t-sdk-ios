@@ -16,8 +16,8 @@ final class DP3TTracingCryptoTests: XCTestCase {
         XCTAssertEqual(hex, "wdvvalTpy3jExBEyO6iIHps+HUsrnwgCtMGpi86eq4c=")
     }
 
-    func testRandomKeyGeneration(){
-        DispatchQueue.concurrentPerform(iterations: 10) { (_) in
+    func testRandomKeyGeneration() {
+        DispatchQueue.concurrentPerform(iterations: 10) { _ in
             try! XCTAssertNotEqual(Crypto.generateRandomKey(), Crypto.generateRandomKey())
         }
     }

@@ -167,7 +167,7 @@ class DP3TSDK {
     }
 
     /// Cancel any ongoing snyc
-    func cancelSync(){
+    func cancelSync() {
         log.trace()
         synchronizer.cancelSync()
     }
@@ -234,7 +234,7 @@ class DP3TSDK {
                             }
 
                             let dayToPublish = DayDate(date: outstandingPublish.dayToPublish)
-                            if !keys.contains(where: { $0.rollingStartNumber ==  dayToPublish.period}) {
+                            if !keys.contains(where: { $0.rollingStartNumber == dayToPublish.period }) {
                                 self?.outstandingPublishesStorage.add(outstandingPublish)
                             }
 

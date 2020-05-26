@@ -38,7 +38,6 @@ class MockTask: URLSessionDataTask {
                 self.completionHandler?(self.data_, self.urlResponse_, self.error_)
             }
         }
-
     }
 }
 

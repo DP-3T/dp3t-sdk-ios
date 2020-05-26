@@ -99,7 +99,6 @@ public enum DP3TTracing {
         }
     }
 
-
     /// Cancel any ongoing snyc
     static func cancelSync() {
         guard let instance = instance else {

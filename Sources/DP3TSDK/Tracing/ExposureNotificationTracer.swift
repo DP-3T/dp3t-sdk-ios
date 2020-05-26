@@ -64,7 +64,6 @@ class ExposureNotificationTracer: Tracer {
     }
 
     func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?) {
-
         logger.log("calling ENMananger.setExposureNotificationEnabled %@", enabled ? "true" : "false")
 
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in

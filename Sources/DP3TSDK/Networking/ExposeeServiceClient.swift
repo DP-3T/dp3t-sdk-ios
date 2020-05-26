@@ -93,7 +93,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         request.setValue("application/zip", forHTTPHeaderField: "Accept")
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
 
-        let task = urlSession.dataTask(with: request) { [weak self] (data, response, error) in
+        let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
             guard let self = self else { return }
             guard error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))

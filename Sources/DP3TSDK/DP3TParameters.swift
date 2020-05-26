@@ -41,7 +41,6 @@ public struct DP3TParameters: Codable {
     }
 
     public struct ContactMatching: Codable {
-
         public var lowerThreshold: Int = 50
 
         public var higherThreshold: Int = 55
@@ -51,6 +50,5 @@ public struct DP3TParameters: Codable {
         public var factorHigh: Double = 0.5
 
         public var triggerThreshold: Int = 15
-        
     }
 }
