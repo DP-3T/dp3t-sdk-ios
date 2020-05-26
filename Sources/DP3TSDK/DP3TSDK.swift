@@ -133,23 +133,35 @@ class DP3TSDK {
     func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
         log.trace()
 
-        OperationQueue().addOperation(OutstandingPublishOperation(keyProvider: secretKeyProvider, serviceClient: service))
-
         if ENManager.authorizationStatus != .authorized {
             log.error("cant run sync before being authorized")
             callback?(.success(()))
             return
         }
 
-        synchronizer.sync { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    self?.state.lastSync = Date()
-                    callback?(.success(()))
-                case let .failure(error):
-                    callback?(.failure(error))
-                }
+        let group = DispatchGroup()
+
+        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: secretKeyProvider, serviceClient: service)
+        group.enter()
+        outstandingPublishOperation.completionBlock = {
+            group.leave()
+        }
+        OperationQueue().addOperation(outstandingPublishOperation)
+
+        group.enter()
+        var storedResult: Result<Void, DP3TTracingError>?
+        synchronizer.sync { result in
+            storedResult = result
+            group.leave()
+        }
+        group.notify(queue: .main) { [weak self] in
+            guard let self = self else { return }
+            switch storedResult! {
+            case .success:
+                self.state.lastSync = Date()
+                callback?(.success(()))
+            case let .failure(error):
+                callback?(.failure(error))
             }
         }
     }

@@ -8,6 +8,7 @@ import Foundation
 
 class SyncOperation: Operation {
     override func main() {
+        let semaphore = DispatchSemaphore(value: 0)
         DP3TTracing.sync { result in
             switch result {
             case .failure:
@@ -15,7 +16,9 @@ class SyncOperation: Operation {
             default:
                 break
             }
+            semaphore.signal()
         }
+        semaphore.wait()
     }
     override func cancel() {
         DP3TTracing.cancelSync()
