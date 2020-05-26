@@ -215,6 +215,31 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         XCTAssertEqual(defaults.publishedAfterStore.count, 10)
     }
 
+    func testCallingSyncMulithreaded() {
+        let matcher = MockMatcher()
+        let service = MockService()
+        let defaults = MockDefaults()
+        let sync = KnownCasesSynchronizer(matcher: matcher,
+                                          service: service,
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+
+        let expecation = expectation(description: "syncExpectation")
+        let iterations = 50
+        expecation.expectedFulfillmentCount = iterations
+
+        DispatchQueue.concurrentPerform(iterations: iterations) { (_) in
+            sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+                expecation.fulfill()
+            }
+        }
+
+        waitForExpectations(timeout: 1)
+
+        XCTAssertEqual(service.requests.count, 10)
+        XCTAssertEqual(defaults.publishedAfterStore.count, 10)
+    }
+
     func testLastDesiredSyncTimeNoon() {
         let defaults = MockDefaults()
         let input = Self.formatter.date(from: "19.05.2020 12:12")!

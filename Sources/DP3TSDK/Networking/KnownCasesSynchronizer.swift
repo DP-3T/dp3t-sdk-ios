@@ -26,6 +26,8 @@ class KnownCasesSynchronizer {
 
     private let queue = DispatchQueue(label: "org.dpppt.sync")
 
+    private var callbacks: [Callback] = []
+
     private var backgroundTask: UIBackgroundTaskIdentifier?
 
     /// Create a known case synchronizer
@@ -48,22 +50,41 @@ class KnownCasesSynchronizer {
     /// - Parameters:
     ///   - service: The service to use for synchronization
     ///   - callback: The callback once the task if finished
-    func sync(now: Date = Date(), callback: Callback?) {
+    func sync(now: Date = Date(), callback: @escaping Callback) {
         log.trace()
 
-        queue.sync {
-            self.backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "org.dpppt.sync") {
-                UIApplication.shared.endBackgroundTask(self.backgroundTask!)
+        queue.async { [weak self] in
+            guard let self = self else { return }
+
+            guard self.callbacks.isEmpty else {
+                self.callbacks.append(callback)
+                return
+            }
+
+            self.callbacks.append(callback)
+
+            // If we already have a background task we need to cancel it
+            if let backgroundTask = self.backgroundTask, backgroundTask != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTask)
                 self.backgroundTask = .invalid
             }
-            self.internalSync(now: now) { [weak self] (result) in
+
+            self.backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "org.dpppt.sync") { [weak self] in
                 guard let self = self else { return }
                 UIApplication.shared.endBackgroundTask(self.backgroundTask!)
                 self.backgroundTask = .invalid
-                callback?(result)
+            }
+
+            self.internalSync(now: now) { [weak self] (result) in
+                guard let self = self else { return }
+                self.queue.async {
+                    UIApplication.shared.endBackgroundTask(self.backgroundTask!)
+                    self.backgroundTask = .invalid
+                    self.callbacks.forEach { $0(result) }
+                    self.callbacks.removeAll()
+                }
             }
         }
-
     }
 
     private func internalSync(now: Date = Date(), callback: Callback?) {
