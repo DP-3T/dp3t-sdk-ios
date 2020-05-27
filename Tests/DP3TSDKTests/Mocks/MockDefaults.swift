@@ -8,7 +8,7 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
-    var publishedAfterStore: [Date: Date] = [:]
+    var lastSyncTimestamps: [Date: Date] = [:]
 
     var parameters: DP3TParameters = .init()
 
