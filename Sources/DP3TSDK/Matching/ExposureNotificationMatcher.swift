@@ -53,11 +53,12 @@ class ExposureNotificationMatcher: Matcher {
         try synchronousQueue.sync {
             guard localURLs.isEmpty == false else { return }
 
+            let configuration: ENExposureConfiguration = .configuration()
+
             for (day, urls) in localURLs {
                 let semaphore = DispatchSemaphore(value: 0)
                 var exposureSummary: ENExposureDetectionSummary?
                 var exposureDetectionError: Error?
-                let configuration: ENExposureConfiguration = .configuration()
 
                 logger.log("calling detectExposures for day %{public}@ and description: %{public}@", day.description, configuration.stringVal)
                 manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
