@@ -148,10 +148,13 @@ class KnownCasesSynchronizer {
                 continue
             }
 
-            guard let lastSync = lastSyncStore[currentKeyDate] ?? Calendar.current.date(bySettingHour: 5, minute: 59, second: 59, of: now) else {
+            // To avoid syncing more than 2 times a day, we set the value of last sync to the desired hour minus 1 millisecond
+            guard let preferredHour = Calendar.current.date(bySettingHour: defaults.parameters.networking.syncHourMorning, minute: 0, second: 0, of: now),
+                  let initialHour = Calendar.current.date(byAdding: .nanosecond, value: -1000, to: preferredHour) else {
                 fatalError()
             }
 
+            let lastSync = lastSyncStore[currentKeyDate] ?? initialHour
 
             guard descriptor.mode == .test || lastSync < lastDesiredSync else {
                 self.logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, lastSync.description, lastSync.description)
