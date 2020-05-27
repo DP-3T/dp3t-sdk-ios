@@ -107,13 +107,9 @@ extension ENExposureConfiguration {
         let configuration = ENExposureConfiguration()
         configuration.minimumRiskScore = 0
         configuration.attenuationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.attenuationWeight = 50
         configuration.daysSinceLastExposureLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.daysSinceLastExposureWeight = 50
         configuration.durationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.durationWeight = 50
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.transmissionRiskWeight = 50
         configuration.metadata = [Self.thresholdsKey : [parameters.contactMatching.lowerThreshold,
                                                                     parameters.contactMatching.higherThreshold]]
         return configuration
