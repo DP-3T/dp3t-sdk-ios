@@ -132,10 +132,10 @@ class KnownCasesSynchronizer {
 
         // cleanup old published after
 
-        var publishedAfterStore = defaults.publishedAfterStore
-        for date in publishedAfterStore.keys {
+        var lastSyncStore = defaults.lastSyncTimestamps
+        for date in lastSyncStore.keys {
             if date < minimumDate {
-                publishedAfterStore.removeValue(forKey: date)
+                lastSyncStore.removeValue(forKey: date)
             }
         }
 
@@ -148,10 +148,12 @@ class KnownCasesSynchronizer {
                 continue
             }
 
-            let publishedAfter: Date? = publishedAfterStore[currentKeyDate]
 
-            guard descriptor.mode == .test || publishedAfter == nil || publishedAfter! < lastDesiredSync else {
-                self.logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, publishedAfter?.description ?? "nil", lastDesiredSync.description)
+            let lastSync = lastSyncStore[currentKeyDate]
+
+
+            guard descriptor.mode == .test || lastSync == nil || lastSync! < lastDesiredSync else {
+                self.logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, lastSync?.description ?? "nil", lastSync?.description ?? "nil")
                 continue
             }
 
@@ -172,7 +174,7 @@ class KnownCasesSynchronizer {
                                 try self.matcher?.receivedNewKnownCaseData(data, keyDate: currentKeyDate)
                             }
 
-                            publishedAfterStore[currentKeyDate] = knownCasesData.publishedUntil
+                            lastSyncStore[currentKeyDate] = Date()
 
                         } catch let error as DP3TNetworkingError {
                             self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
@@ -215,7 +217,7 @@ class KnownCasesSynchronizer {
                 callback?(.failure(error))
             } else {
                 self.logger.log("finishing sync successful")
-                self.defaults.publishedAfterStore = publishedAfterStore
+                self.defaults.lastSyncTimestamps = lastSyncStore
                 callback?(.success(()))
             }
         }
