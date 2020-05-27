@@ -506,6 +506,8 @@ extension DP3TTracingError {
             return "userAlreadyMarkedAsInfected"
         case let .exposureNotificationError(error: error):
             return "exposureNotificationError \(error.localizedDescription)"
+        case .cancelled:
+            return "cancelled"
         }
     }
 }
