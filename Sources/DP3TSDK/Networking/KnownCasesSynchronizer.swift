@@ -148,12 +148,13 @@ class KnownCasesSynchronizer {
                 continue
             }
 
+            guard let lastSync = lastSyncStore[currentKeyDate] ?? Calendar.current.date(bySettingHour: 5, minute: 59, second: 59, of: now) else {
+                fatalError()
+            }
 
-            let lastSync = lastSyncStore[currentKeyDate]
 
-
-            guard descriptor.mode == .test || lastSync == nil || lastSync! < lastDesiredSync else {
-                self.logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, lastSync?.description ?? "nil", lastSync?.description ?? "nil")
+            guard descriptor.mode == .test || lastSync < lastDesiredSync else {
+                self.logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, lastSync.description, lastSync.description)
                 continue
             }
 
@@ -174,7 +175,7 @@ class KnownCasesSynchronizer {
                                 try self.matcher?.receivedNewKnownCaseData(data, keyDate: currentKeyDate)
                             }
 
-                            lastSyncStore[currentKeyDate] = Date()
+                            lastSyncStore[currentKeyDate] = now
 
                         } catch let error as DP3TNetworkingError {
                             self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
