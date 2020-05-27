@@ -59,7 +59,7 @@ class ExposureNotificationMatcher: Matcher {
                 var exposureDetectionError: Error?
                 let configuration: ENExposureConfiguration = .configuration()
 
-                logger.log("calling detectExposures for day %{public}@ and config: %{public}@", day.description, configuration.description)
+                logger.log("calling detectExposures for day %{public}@ and description: %{public}@", day.description, configuration.stringVal)
                 manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
                     exposureSummary = summary
                     exposureDetectionError = error
@@ -101,6 +101,8 @@ class ExposureNotificationMatcher: Matcher {
 }
 
 extension ENExposureConfiguration {
+    static var thresholdsKey: String = "attenuationDurationThresholds"
+
     static func configuration(parameters: DP3TParameters = Default.shared.parameters) -> ENExposureConfiguration {
         let configuration = ENExposureConfiguration()
         configuration.minimumRiskScore = 0
@@ -112,8 +114,15 @@ extension ENExposureConfiguration {
         configuration.durationWeight = 50
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.transmissionRiskWeight = 50
-        configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.lowerThreshold,
+        configuration.metadata = [Self.thresholdsKey : [parameters.contactMatching.lowerThreshold,
                                                                     parameters.contactMatching.higherThreshold]]
         return configuration
+    }
+
+    var stringVal: String {
+        if let thresholds = self.metadata?[Self.thresholdsKey] as? [Int] {
+            return "<ENExposureConfiguration attenuationDurationThresholds: [\(thresholds[0]),\(thresholds[1])]>"
+        }
+        return "<ENExposureConfiguration attenuationDurationThresholds: nil>"
     }
 }

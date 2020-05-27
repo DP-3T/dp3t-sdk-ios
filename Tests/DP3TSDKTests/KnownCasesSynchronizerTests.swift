@@ -224,8 +224,18 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
 
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
-            XCTFail()
+        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { result in
+            switch result {
+            case let .failure(error):
+                switch error {
+                case .cancelled:
+                    break
+                default:
+                    XCTFail()
+                }
+            default:
+                XCTFail()
+            }
         }
         sync.cancelSync()
 

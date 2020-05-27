@@ -47,15 +47,18 @@ public class DP3TLoggingStorage {
     }
 
     public func log(_ string: String, type: OSLogType) {
-        let timestamp = Date()
-        let insert = table.insert(
-            timestampColumn <- timestamp.millisecondsSince1970,
-            messageColumn <- string,
-            typeColumn <- Int(type.rawValue)
-        )
-        _ = try? database.run(insert)
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self else { return }
+            let timestamp = Date()
+            let insert = self.table.insert(
+                self.timestampColumn <- timestamp.millisecondsSince1970,
+                self.messageColumn <- string,
+                self.typeColumn <- Int(type.rawValue)
+            )
+            _ = try? self.database.run(insert)
 
-        NotificationCenter.default.post(name: .init("org.dpppt.didAddLog"), object: nil)
+            NotificationCenter.default.post(name: .init("org.dpppt.didAddLog"), object: nil)
+        }
     }
 
     /// Delete all entries

@@ -22,7 +22,7 @@ class KnownCasesSynchronizer {
     /// service client
     private weak var service: ExposeeServiceClientProtocol!
 
-    private let log = Logger(KnownCasesSynchronizer.self, category: "knownCasesSynchronizer")
+    private let logger = Logger(KnownCasesSynchronizer.self, category: "knownCasesSynchronizer")
 
     private let queue = DispatchQueue(label: "org.dpppt.sync")
 
@@ -33,6 +33,8 @@ class KnownCasesSynchronizer {
     private var dataTasks: [URLSessionDataTask] = []
 
     private var isCancelled: Bool = false
+
+    private var tasksRunning: Int = 0
 
     private let dispatchGroup = DispatchGroup()
 
@@ -57,7 +59,7 @@ class KnownCasesSynchronizer {
     ///   - service: The service to use for synchronization
     ///   - callback: The callback once the task if finished
     func sync(now: Date = Date(), callback: @escaping Callback) {
-        log.trace()
+        logger.trace()
 
         queue.async { [weak self] in
             guard let self = self else { return }
@@ -97,22 +99,24 @@ class KnownCasesSynchronizer {
     }
 
     func cancelSync() {
-        queue.async { [weak self] in
+        queue.sync { [weak self] in
             guard let self = self else { return }
             self.isCancelled = true
 
             for task in self.dataTasks {
-                if task.state != .completed {
-                    task.cancel()
-                    self.dispatchGroup.leave()
-                }
+                task.cancel()
             }
             self.dataTasks.removeAll()
+
+            for _ in 0..<self.tasksRunning {
+                self.dispatchGroup.leave()
+            }
+            self.tasksRunning = 0
         }
     }
 
     private func internalSync(now: Date = Date(), callback: Callback?) {
-        log.trace()
+        logger.trace()
 
         isCancelled = false
 
@@ -135,27 +139,30 @@ class KnownCasesSynchronizer {
             }
         }
 
-        let synchronousQueue = DispatchQueue(label: "org.dpppt.internalSync")
-
         var occuredError: DP3TTracingError?
+
+        let lastDesiredSync = Self.getLastDesiredSyncTime(ts: now)
 
         for day in 0 ... daysToFetch {
             guard let currentKeyDate = calendar.date(byAdding: .day, value: day, to: minimumDate) else {
                 continue
             }
 
-            var publishedAfter: Date!
-            synchronousQueue.sync {
-                publishedAfter = publishedAfterStore[currentKeyDate]
-            }
+            let publishedAfter: Date? = publishedAfterStore[currentKeyDate]
 
-            guard descriptor.mode == .test || publishedAfter == nil || publishedAfter! < Self.getLastDesiredSyncTime(ts: now) else {
+            guard descriptor.mode == .test || publishedAfter == nil || publishedAfter! < lastDesiredSync else {
+                self.logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, publishedAfter?.description ?? "nil", lastDesiredSync.description)
                 continue
             }
 
             dispatchGroup.enter()
-            let task = service.getExposee(batchTimestamp: currentKeyDate) { result in
-                synchronousQueue.sync {
+            tasksRunning += 1
+            let task = service.getExposee(batchTimestamp: currentKeyDate) { [weak self] result in
+                guard let self = self else { return }
+                self.queue.sync {
+                    guard self.isCancelled == false else {
+                        return
+                    }
                     switch result {
                     case let .failure(error):
                         occuredError = .networkingError(error: error)
@@ -168,16 +175,17 @@ class KnownCasesSynchronizer {
                             publishedAfterStore[currentKeyDate] = knownCasesData.publishedUntil
 
                         } catch let error as DP3TNetworkingError {
-                            self.log.error("matcher receive error: %{public}@", error.localizedDescription)
+                            self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
 
                             occuredError = .networkingError(error: error)
                         } catch {
-                            self.log.error("matcher receive error: %{public}@", error.localizedDescription)
+                            self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
 
                             occuredError = .networkingError(error: .couldNotParseData(error: error, origin: 0))
                         }
                     }
                     self.dispatchGroup.leave()
+                    self.tasksRunning -= 1
                 }
             }
             dataTasks.append(task)
@@ -191,19 +199,22 @@ class KnownCasesSynchronizer {
             self.dataTasks.removeAll()
 
             guard self.isCancelled == false else {
+                callback?(.failure(.cancelled))
                 return
             }
 
             do {
                 try self.matcher?.finalizeMatchingSession()
             } catch {
-                self.log.error("matcher finalize error: %{public}@", error.localizedDescription)
+                self.logger.error("matcher finalize error: %{public}@", error.localizedDescription)
                 occuredError = .exposureNotificationError(error: error)
             }
 
             if let error = occuredError {
+                self.logger.error("finishing sync with error: %{public}@", error.localizedDescription)
                 callback?(.failure(error))
             } else {
+                self.logger.log("finishing sync successful")
                 self.defaults.publishedAfterStore = publishedAfterStore
                 callback?(.success(()))
             }

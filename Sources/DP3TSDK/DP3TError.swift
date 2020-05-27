@@ -14,6 +14,9 @@ public enum DP3TTracingError: Error {
     /// Error happend during known case synchronization
     case caseSynchronizationError(errors: [Error])
 
+    /// The operation was cancelled
+    case cancelled
+
     /// Database Error
     case databaseError(error: Error?)
 
