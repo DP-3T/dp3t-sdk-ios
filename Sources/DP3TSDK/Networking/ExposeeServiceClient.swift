@@ -86,7 +86,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
     func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
-        log.debug("getExposeeSynchronously for timestamp %@ -> %lld", batchTimestamp.description, batchTimestamp.millisecondsSince1970)
+        log.log("getExposeeSynchronously for timestamp %{public}@ -> %lld", batchTimestamp.description, batchTimestamp.millisecondsSince1970)
         let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
