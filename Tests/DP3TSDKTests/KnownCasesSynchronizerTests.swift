@@ -15,7 +15,11 @@ private class MockMatcher: Matcher {
 
     var error: Error?
 
-    func receivedNewKnownCaseData(_: Data, keyDate _: Date) throws {}
+    var timesCalledNewKnownCaseDate: Int = 0
+
+    func receivedNewKnownCaseData(_: Data, keyDate _: Date) throws {
+        timesCalledNewKnownCaseDate += 1
+    }
 
     func finalizeMatchingSession() throws {
         if let error = error {
@@ -40,7 +44,7 @@ private class MockService: ExposeeServiceClientProtocol {
                 self.queue.sync {
                     self.requests.append(batchTimestamp)
                 }
-                completion(.success(.init(data: self.data, publishedUntil: .init())))
+                completion(.success(.init(data: self.data, publishedUntil: self.publishedUntil)))
             }
         }
     }
@@ -86,6 +90,49 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         XCTAssertEqual(service.requests.count, 10)
         XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+    }
+
+    func testOnlyCallingMatcherTwiceADay(){
+        let matcher = MockMatcher()
+        let service = MockService()
+        let defaults = MockDefaults()
+        let sync = KnownCasesSynchronizer(matcher: matcher,
+                                          service: service,
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+
+        let today = DayDate().dayMin
+        for i in 0..<24*4 {
+            let time = today.addingTimeInterval(Double(i) * TimeInterval.hour / 4)
+            let expecation = expectation(description: "syncExpectation")
+            sync.sync(now: time) { _ in
+                expecation.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+        }
+        XCTAssertEqual(matcher.timesCalledNewKnownCaseDate, 20)
+    }
+
+    func testOnlyCallingMatcherOverMultipleDays(){
+        let matcher = MockMatcher()
+        let service = MockService()
+        let defaults = MockDefaults()
+        let sync = KnownCasesSynchronizer(matcher: matcher,
+                                          service: service,
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+
+        let today = DayDate().dayMin
+        let days = 3
+        for i in 0..<24 * days {
+            let time = today.addingTimeInterval(Double(i) * TimeInterval.hour)
+            let expecation = expectation(description: "syncExpectation")
+            sync.sync(now: time) { _ in
+                expecation.fulfill()
+            }
+            waitForExpectations(timeout: 1)
+        }
+        XCTAssertEqual(matcher.timesCalledNewKnownCaseDate, days*20)
     }
 
     func testStoringLastSyncNoData() {
