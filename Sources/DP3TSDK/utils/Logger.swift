@@ -72,8 +72,9 @@ class Logger {
             delegate.log("[\(category)] \(String(format: string, arguments: a))", type: type)
         }
 
-        assert(a.count <= 5)
+        assert(a.count <= 6)
         switch a.count {
+        case 6: os_log(message, log: osLog, type: type, a[0], a[1], a[2], a[3], a[4], a[5])
         case 5: os_log(message, log: osLog, type: type, a[0], a[1], a[2], a[3], a[4])
         case 4: os_log(message, log: osLog, type: type, a[0], a[1], a[2], a[3])
         case 3: os_log(message, log: osLog, type: type, a[0], a[1], a[2])
