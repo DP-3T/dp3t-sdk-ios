@@ -8,28 +8,40 @@ import Foundation
 import SwiftJWT
 import UIKit
 
-protocol ExposeeServiceClientProtocol {
-    typealias ExposeeResult = Result<[KnownCaseModel]?, DP3TNetworkingError>
+struct ExposeeSuccess {
+    let data: Data?
+    let publishedUntil: Date?
+}
+
+protocol ExposeeServiceClientProtocol: class {
+    typealias ExposeeResult = Result<Data?, DP3TNetworkingError>
     typealias ExposeeCompletion = Result<Void, DP3TNetworkingError>
     /// Get all exposee for a known day synchronously
     /// - Parameters:
     ///   - batchTimestamp: The batch timestamp
-    ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date) -> ExposeeResult
+    func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
 
     /// Adds an exposee
     /// - Parameters:
-    ///   - exposee: The exposee to add
+    ///   - exposees: The exposee list to add
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
-    func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (ExposeeCompletion) -> Void)
+    func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void)
+
+    /// Adds an exposee delayed key
+    /// - Parameters:
+    ///   - exposees: The exposee list to add
+    ///   - token: authenticationToken
+    ///   - completion: The completion block
+    ///   - authentication: The authentication to use for the request
+    func addDelayedExposeeList(_ model: DelayedKeyModel, token: String?, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void)
 }
 
 /// The client for managing and fetching exposee
 class ExposeeServiceClient: ExposeeServiceClientProtocol {
     /// The descriptor to use for the fetch
-    private let descriptor: ApplicationDescriptor
+    let descriptor: ApplicationDescriptor
     /// The endpoint for getting exposee
     private let exposeeEndpoint: ExposeeEndpoint
     /// The endpoint for adding and removing exposee
@@ -41,13 +53,16 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     private let jwtVerifier: DP3TJWTVerifier?
 
+    private let log = Logger(ExposeeServiceClient.self, category: "exposeeServiceClient")
+
     /// The user agent to send with the requests
     private var userAgent: String {
         let appId = descriptor.appId
         let appVersion = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "0.0"
+        let buildNumber = (Bundle.main.infoDictionary?["CFBundleVersion"] as? String) ?? "0"
         let systemVersion = UIDevice.current.systemVersion
 
-        return [appId, appVersion, "iOS", systemVersion].joined(separator: ";")
+        return [appId, appVersion, buildNumber, "iOS", systemVersion].joined(separator: ";")
     }
 
     /// Initialize the client with a  descriptor
@@ -65,90 +80,130 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
     }
 
-    /// Get all exposee for a known day synchronously
+    /// Get all exposee for a known day
     /// - Parameters:
     ///   - batchTimestamp: The batch timestamp
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposeeSynchronously(batchTimestamp: Date) -> Result<[KnownCaseModel]?, DP3TNetworkingError> {
-        let url = exposeeEndpoint.getExposee(batchTimestamp: batchTimestamp)
+    func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
+        log.log("getExposeeSynchronously for timestamp %{public}@ -> %lld", batchTimestamp.description, batchTimestamp.millisecondsSince1970)
+        let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
+
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
-        request.setValue("application/x-protobuf", forHTTPHeaderField: "Accept")
+        request.setValue("application/zip", forHTTPHeaderField: "Accept")
+        request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
 
-        let (data, response, error) = urlSession.synchronousDataTask(with: request)
+        let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self else { return }
+            guard error == nil else {
+                completion(.failure(.networkSessionError(error: error!)))
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(.failure(.notHTTPResponse))
+                return
+            }
 
-        guard error == nil else {
-            return .failure(.networkSessionError(error: error!))
-        }
-        guard let httpResponse = response as? HTTPURLResponse else {
-            return .failure(.notHTTPResponse)
-        }
+            var publishedUntil: Date?
+            if let publishedUntilHeader = httpResponse.value(forHTTPHeaderField: "x-published-until") {
+                publishedUntil = try? .init(milliseconds: Int64(value: publishedUntilHeader))
+            }
 
-        /*if let date = httpResponse.date,
-            abs(Date().timeIntervalSince(date)) > Default.shared.parameters.networking.timeShiftThreshold {
-            return .failure(.timeInconsistency(shift: Date().timeIntervalSince(date)))
-        }*/
+            let httpStatus = httpResponse.statusCode
+            switch httpStatus {
+            case 200:
+                break
+            case 204:
+                // 204 response means there is no data for this day
+                completion(.success(.init(data: nil, publishedUntil: publishedUntil)))
+                return
+            default:
+                completion(.failure(.HTTPFailureResponse(status: httpStatus)))
+                return
+            }
 
-        let httpStatus = httpResponse.statusCode
-        switch httpStatus {
-        case 200:
-            break
-        case 404:
-            // 404 not found response means there is no data for this day
-            return .success([])
-        default:
-            return .failure(.HTTPFailureResponse(status: httpStatus))
-        }
+            guard let responseData = data else {
+                completion(.failure(.noDataReturned))
+                return
+            }
 
-        guard let responseData = data else {
-            return .failure(.noDataReturned)
-        }
-
-        // Validate JWT
-        if #available(iOS 11.0, *), let verifier = jwtVerifier {
-            do {
-                let claims = try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
-
-                // Verify the batch time
-                let batchReleaseTimeRaw = claims.batchReleaseTime
-                let calimBatchTimestamp = try Int(value: batchReleaseTimeRaw) / 1000
-                guard Int(batchTimestamp.timeIntervalSince1970) == calimBatchTimestamp else {
-                    return .failure(.jwtSignatureError(code: 3, debugDescription: "Batch release time missmatch"))
+            // Validate JWT
+            if #available(iOS 11.0, *), let verifier = self.jwtVerifier {
+                do {
+                    try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
+                } catch let error as DP3TNetworkingError {
+                    completion(.failure(error))
+                    return
+                } catch {
+                    completion(.failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)")))
+                    return
                 }
-
-            } catch let error as DP3TNetworkingError {
-                return .failure(error)
-            } catch {
-                return .failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)"))
             }
+
+            let result = ExposeeSuccess(data: responseData, publishedUntil: publishedUntil)
+            completion(.success(result))
         }
-
-        do {
-            let protoList = try ProtoExposedList(serializedData: responseData)
-
-            guard protoList.batchReleaseTime == batchTimestamp.millisecondsSince1970 else {
-                return .failure(.batchReleaseTimeMissmatch)
-            }
-
-            let transformed: [KnownCaseModel] = protoList.exposed.map {
-                KnownCaseModel(proto: $0, batchTimestamp: batchTimestamp)
-            }
-            return .success(transformed)
-        } catch {
-            return .failure(.couldNotParseData(error: error, origin: 1))
-        }
+        return task
     }
 
-    /// Adds an exposee
+    /// Adds an exposee delayed key
     /// - Parameters:
-    ///   - exposee: The exposee to add
+    ///   - exposees: The exposee list to add
+    ///   - token: authenticationToken
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
-    func addExposee(_ exposee: ExposeeModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
+    func addDelayedExposeeList(_ model: DelayedKeyModel, token: String?, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
+        log.trace()
         // addExposee endpoint
-        let url = managingExposeeEndpoint.addExposee()
+        let url = managingExposeeEndpoint.addExposedGaenNextDay()
 
-        guard let payload = try? JSONEncoder().encode(exposee) else {
+        guard let payload = try? JSONEncoder().encode(model) else {
+            completion(.failure(.couldNotEncodeBody))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue(String(payload.count), forHTTPHeaderField: "Content-Length")
+        request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
+        if let authentication = token {
+            request.addValue(authentication, forHTTPHeaderField: "Authorization")
+        }
+        request.httpBody = payload
+
+        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
+            guard error == nil else {
+                completion(.failure(.networkSessionError(error: error!)))
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(.failure(.notHTTPResponse))
+                return
+            }
+
+            let statusCode = httpResponse.statusCode
+            guard statusCode == 200 else {
+                completion(.failure(.HTTPFailureResponse(status: statusCode)))
+                return
+            }
+
+            completion(.success(()))
+        })
+        task.resume()
+    }
+
+    /// Adds an exposee list
+    /// - Parameters:
+    ///   - exposees: The exposees to add
+    ///   - completion: The completion block
+    ///   - authentication: The authentication to use for the request
+    func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void) {
+        log.trace()
+        // addExposee endpoint
+        let url = managingExposeeEndpoint.addExposedGaen()
+
+        guard let payload = try? JSONEncoder().encode(exposees) else {
             completion(.failure(.couldNotEncodeBody))
             return
         }
@@ -179,47 +234,11 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 return
             }
 
-            completion(.success(()))
-        })
-        task.resume()
-    }
+            let outstandingPublish = OutstandingPublish(authorizationHeader: httpResponse.value(forHTTPHeaderField: "Authorization"),
+                                                        dayToPublish: exposees.delayedKeyDate.dayMin,
+                                                        fake: exposees.fake)
 
-    /// Returns the list of all available application descriptors registered with the backend
-    /// - Parameters:
-    ///   - enviroment: The environment to use
-    ///   - completion: The completion block
-    static func getAvailableApplicationDescriptors(enviroment: Enviroment, urlSession: URLSession = .shared, completion: @escaping (Result<[ApplicationDescriptor], DP3TNetworkingError>) -> Void) {
-        let url = enviroment.discoveryEndpoint
-        let request = URLRequest(url: url)
-
-        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
-            guard error == nil else {
-                completion(.failure(.networkSessionError(error: error!)))
-                return
-            }
-            guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(.notHTTPResponse))
-                return
-            }
-
-            let statusCode = httpResponse.statusCode
-            guard statusCode == 200 else {
-                completion(.failure(.HTTPFailureResponse(status: statusCode)))
-                return
-            }
-
-            guard let responseData = data else {
-                completion(.failure(.noDataReturned))
-                return
-            }
-
-            do {
-                let discoveryResponse = try JSONDecoder().decode(DiscoveryServiceResponse.self, from: responseData)
-                return completion(.success(discoveryResponse.applications))
-            } catch {
-                completion(.failure(.couldNotParseData(error: error, origin: 2)))
-                return
-            }
+            completion(.success(outstandingPublish))
         })
         task.resume()
     }
@@ -252,12 +271,10 @@ private struct ExposeeClaims: DP3TClaims {
     let iat: Date
     let exp: Date
     let contentHash: String
-    let batchReleaseTime: String
     let hashAlg: String
 
     enum CodingKeys: String, CodingKey {
         case contentHash = "content-hash"
-        case batchReleaseTime = "batch-release-time"
         case hashAlg = "hash-alg"
         case iss, iat, exp
     }

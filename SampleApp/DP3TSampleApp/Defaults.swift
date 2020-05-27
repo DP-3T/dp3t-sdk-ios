@@ -4,7 +4,7 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import DP3TSDK_CALIBRATION
+import DP3TSDK
 import Foundation
 
 /// UserDefaults Storage Singleton
@@ -25,8 +25,6 @@ class Default {
     enum TracingMode: Int {
         case none = 0
         case active = 1
-        case activeReceiving = 2
-        case activeAdvertising = 3
     }
 
     var tracingMode: TracingMode {

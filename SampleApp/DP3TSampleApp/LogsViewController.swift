@@ -4,7 +4,8 @@
  * Copyright (c) 2020. All rights reserved.
  */
 
-import DP3TSDK_CALIBRATION
+import DP3TSDK
+import DP3TSDK_LOGGING_STORAGE
 import UIKit
 
 class LogCell: UITableViewCell {
@@ -28,8 +29,6 @@ class LogsViewController: UIViewController {
 
     var logs: [LogEntry] = []
 
-    var nextRequest: LogRequest?
-
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Logs"
@@ -38,6 +37,10 @@ class LogsViewController: UIViewController {
         }
         loadLogs()
         NotificationCenter.default.addObserver(self, selector: #selector(didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
+
+        NotificationCenter.default.addObserver(forName: .init("org.dpppt.didAddLog"), object: nil, queue: .main) { [weak self] _ in
+            self?.reloadLogs()
+        }
     }
 
     required init?(coder _: NSCoder) {
@@ -66,18 +69,13 @@ class LogsViewController: UIViewController {
         loadLogs()
     }
 
-    func loadLogs(request: LogRequest = LogRequest(sorting: .desc, offset: 0, limit: 200)) {
+    func loadLogs() {
         DispatchQueue.global(qos: .background).async {
-            if let resp = try? DP3TTracing.getLogs(request: request) {
-                self.nextRequest = resp.nextRequest
+            if let logs = try? loggingStorage?.getLogs() {
                 DispatchQueue.main.async {
                     self.refreshControl.endRefreshing()
-                    if request.offset == 0 {
-                        self.logs = resp.logs
-                    } else {
-                        self.logs.append(contentsOf: resp.logs)
-                        self.tableView.reloadData()
-                    }
+                    self.logs = logs
+                    self.tableView.reloadData()
                 }
             }
         }
@@ -94,21 +92,17 @@ extension LogsViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.row == (logs.count - 1),
-            let nextRequest = self.nextRequest {
-            loadLogs(request: nextRequest)
-        }
         let cell = tableView.dequeueReusableCell(withIdentifier: "logCell", for: indexPath) as! LogCell
         let log = logs[indexPath.row]
-        cell.textLabel?.text = "\(log.timestamp.stringVal) \(log.type.description)"
+        cell.textLabel?.text = "[\(log.type.string)] \(log.timestamp.stringVal)"
         cell.detailTextLabel?.text = log.message
         switch log.type {
-        case .sender:
-            cell.backgroundColor = UIColor(red: 1, green: 0, blue: 0, alpha: 0.1)
-        case .receiver:
-            cell.backgroundColor = UIColor(red: 0, green: 1, blue: 0, alpha: 0.1)
+        case .error:
+            cell.backgroundColor = UIColor.red.withAlphaComponent(0.5)
+        case .info:
+            cell.backgroundColor = UIColor.green.withAlphaComponent(0.05)
         default:
-            cell.backgroundColor = .clear
+            cell.backgroundColor = .systemBackground
         }
         return cell
     }
@@ -116,14 +110,6 @@ extension LogsViewController: UITableViewDataSource {
 
 extension LogsViewController: DP3TTracingDelegate {
     func DP3TTracingStateChanged(_: TracingState) {}
-
-    func didAddLog(_ entry: LogEntry) {
-        logs.insert(entry, at: 0)
-        if view.superview != nil {
-            tableView.reloadData()
-        }
-        nextRequest?.offset += 1
-    }
 }
 
 extension Date {
@@ -131,5 +117,24 @@ extension Date {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM HH:mm:ss "
         return dateFormatter.string(from: self)
+    }
+}
+
+private extension OSLogType {
+    var string: String {
+        switch self {
+        case .debug:
+            return "DEBUG"
+        case .default:
+            return "DEFAULT"
+        case .error:
+            return "ERROR"
+        case .fault:
+            return "FAULT"
+        case .info:
+            return "INFO"
+        default:
+            return ""
+        }
     }
 }

@@ -8,11 +8,15 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
+    var lastSyncTimestamps: [Date: Date] = [:]
+
+    var parameters: DP3TParameters = .init()
+
+    var outstandingPublishes: Set<OutstandingPublish> = []
+
     var isFirstLaunch: Bool = false
 
     var lastSync: Date?
-
-    var lastLoadedBatchReleaseTime: Date?
 
     var didMarkAsInfected: Bool = false
 }

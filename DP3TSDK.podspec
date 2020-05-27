@@ -2,7 +2,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "DP3TSDK"
-  spec.version      = "0.0.2"
+  spec.version      = "0.4.0"
   spec.summary      = "Open protocol for COVID-19 proximity tracing using Bluetooth Low Energy on mobile devices"
 
   spec.description  = <<-DESC
@@ -17,7 +17,7 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
 
   spec.author             = { "DP^3T" => "dp3t@ubique.ch" }
 
-  spec.platform     = :ios, "11.0"
+  spec.platform     = :ios, "13.5"
 
   spec.swift_versions = "5.2"
 
@@ -26,8 +26,7 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
   spec.source_files  = "Sources/DP3TSDK", "Sources/DP3TSDK/**/*.{h,m,swift}"
   spec.exclude_files = "Sources/DP3TSDK/Exclude"
 
-  spec.dependency "SQLite.swift", "~>0.12"
+  spec.dependency "ZIPFoundation", "~>0.9"
   spec.dependency 'SwiftProtobuf', '~> 1.6'
   spec.dependency 'SwiftJWT', '~> 3.5'
-
 end
