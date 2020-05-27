@@ -103,7 +103,7 @@ class DP3TBackgroundTaskManager {
         scheduleBackgroundTask()
     }
 
-    private func scheduleBackgroundTask() {
+    func scheduleBackgroundTask() {
         logger.trace()
         let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
