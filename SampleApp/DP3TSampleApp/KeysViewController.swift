@@ -127,7 +127,7 @@ extension KeysViewController: UITableViewDelegate {
                 var string = summary?.description ?? error.debugDescription
                 if let summary = summary {
                     let parameters = DP3TTracing.parameters.contactMatching
-                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[0]) * parameters.factorHigh) / 60
+                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[1]) * parameters.factorHigh) / 60
                     string.append("\n--------\n computed Threshold: \(computedThreshold)")
                     if computedThreshold > Double(parameters.triggerThreshold) {
                         string.append("\n meets requirement of \(parameters.triggerThreshold)")
