@@ -12,12 +12,12 @@ import UIKit.UIApplication
     import UserNotifications
 #endif
 
-/// Background task registration should only happen once per run
-/// If the SDK gets destroyed and initialized again this would cause a crash
-private var didRegisterBackgroundTask: Bool = false
-
 class DP3TBackgroundTaskManager {
     static let taskIdentifier: String = "org.dpppt.exposure-notification"
+
+    /// Background task registration should only happen once per run
+    /// If the SDK gets destroyed and initialized again this would cause a crash
+    private static var didRegisterBackgroundTask: Bool = false
 
     weak var handler: DP3TBackgroundHandler?
 
@@ -38,14 +38,15 @@ class DP3TBackgroundTaskManager {
     /// Register a background task
     func register() {
         logger.trace()
-        guard !didRegisterBackgroundTask else { return }
-        didRegisterBackgroundTask = true
+        defer {
+            scheduleBackgroundTask()
+        }
+        guard !Self.didRegisterBackgroundTask else { return }
+        Self.didRegisterBackgroundTask = true
 
         BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .main) { task in
             self.handleBackgroundTask(task)
         }
-
-        scheduleBackgroundTask()
     }
 
     private func handleBackgroundTask(_ task: BGTask) {
@@ -103,7 +104,7 @@ class DP3TBackgroundTaskManager {
         scheduleBackgroundTask()
     }
 
-    func scheduleBackgroundTask() {
+    private func scheduleBackgroundTask() {
         logger.trace()
         let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
