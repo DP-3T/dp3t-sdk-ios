@@ -127,7 +127,7 @@ extension KeysViewController: UITableViewDelegate {
                 var string = summary?.description ?? error.debugDescription
                 if let summary = summary {
                     let parameters = DP3TTracing.parameters.contactMatching
-                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[0]) * parameters.factorHigh) / 60
+                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[1]) * parameters.factorHigh) / 60
                     string.append("\n--------\n computed Threshold: \(computedThreshold)")
                     if computedThreshold > Double(parameters.triggerThreshold) {
                         string.append("\n meets requirement of \(parameters.triggerThreshold)")
@@ -154,13 +154,9 @@ extension ENExposureConfiguration {
         let configuration = ENExposureConfiguration()
         configuration.minimumRiskScore = 0
         configuration.attenuationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.attenuationWeight = 50
         configuration.daysSinceLastExposureLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.daysSinceLastExposureWeight = 50
         configuration.durationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.durationWeight = 50
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.transmissionRiskWeight = 50
         configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.lowerThreshold,
                                                                     parameters.contactMatching.higherThreshold]]
         return configuration

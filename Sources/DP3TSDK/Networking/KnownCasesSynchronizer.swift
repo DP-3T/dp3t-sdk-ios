@@ -175,7 +175,10 @@ class KnownCasesSynchronizer {
                     case let .success(knownCasesData):
                         do {
                             if let data = knownCasesData.data {
+                                self.logger.log("received data(%{public}d bytes) for %{public}@", data.count, currentKeyDate.description)
                                 try self.matcher?.receivedNewKnownCaseData(data, keyDate: currentKeyDate)
+                            } else {
+                                self.logger.log("received no data for %{public}@", currentKeyDate.description)
                             }
 
                             lastSyncStore[currentKeyDate] = now

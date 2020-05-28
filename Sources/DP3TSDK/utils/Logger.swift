@@ -56,7 +56,7 @@ class Logger {
         let file = URL(fileURLWithPath: String(describing: file)).deletingPathExtension().lastPathComponent
         var function = String(describing: function)
         function.removeSubrange(function.firstIndex(of: "(")! ... function.lastIndex(of: ")")!)
-        log("%{public}@.%{public}@():%ld", type: .debug, [file, function, line])
+        log("%{public}@.%{public}@():%ld", type: .default, [file, function, line])
     }
 
     @usableFromInline internal func log(_ message: StaticString, type: OSLogType, _ a: [CVarArg]) {

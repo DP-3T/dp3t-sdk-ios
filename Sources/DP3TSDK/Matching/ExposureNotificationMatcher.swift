@@ -51,13 +51,19 @@ class ExposureNotificationMatcher: Matcher {
     func finalizeMatchingSession() throws {
         logger.trace()
         try synchronousQueue.sync {
-            guard localURLs.isEmpty == false else { return }
+            guard localURLs.isEmpty == false else {
+                self.logger.log("finalizeMatchingSession with no data returning early")
+                return
+            }
+
+            self.logger.log("finalizeMatchingSession processing %{public}d urls", localURLs.count)
+
+            let configuration: ENExposureConfiguration = .configuration()
 
             for (day, urls) in localURLs {
                 let semaphore = DispatchSemaphore(value: 0)
                 var exposureSummary: ENExposureDetectionSummary?
                 var exposureDetectionError: Error?
-                let configuration: ENExposureConfiguration = .configuration()
 
                 logger.log("calling detectExposures for day %{public}@ and description: %{public}@", day.description, configuration.stringVal)
                 manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
@@ -107,13 +113,9 @@ extension ENExposureConfiguration {
         let configuration = ENExposureConfiguration()
         configuration.minimumRiskScore = 0
         configuration.attenuationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.attenuationWeight = 50
         configuration.daysSinceLastExposureLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.daysSinceLastExposureWeight = 50
         configuration.durationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.durationWeight = 50
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.transmissionRiskWeight = 50
         configuration.metadata = [Self.thresholdsKey : [parameters.contactMatching.lowerThreshold,
                                                                     parameters.contactMatching.higherThreshold]]
         return configuration
