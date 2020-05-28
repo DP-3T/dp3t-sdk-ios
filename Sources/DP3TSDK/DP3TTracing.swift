@@ -15,7 +15,7 @@ public protocol DP3TTracingDelegate: AnyObject {
 }
 
 public protocol DP3TBackgroundHandler: AnyObject {
-    func performBackgroundTasks(completionHandler: (_ success: Bool) -> Void)
+    func performBackgroundTasks(completionHandler: @escaping (_ success: Bool) -> Void)
 }
 
 private var instance: DP3TSDK!
