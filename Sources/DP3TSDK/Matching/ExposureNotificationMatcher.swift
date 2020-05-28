@@ -51,7 +51,12 @@ class ExposureNotificationMatcher: Matcher {
     func finalizeMatchingSession() throws {
         logger.trace()
         try synchronousQueue.sync {
-            guard localURLs.isEmpty == false else { return }
+            guard localURLs.isEmpty == false else {
+                self.logger.log("finalizeMatchingSession with no data returning early")
+                return
+            }
+
+            self.logger.log("finalizeMatchingSession processing %{public}d urls", localURLs.count)
 
             for (day, urls) in localURLs {
                 let semaphore = DispatchSemaphore(value: 0)
