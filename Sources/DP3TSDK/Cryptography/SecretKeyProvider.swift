@@ -13,7 +13,7 @@ protocol SecretKeyProvider: class {
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 }
 
-private var logger = Logger(ENManager.self, category: "SecretKeyProvider")
+private var logger = Logger(.main, category: "SecretKeyProvider")
 
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
