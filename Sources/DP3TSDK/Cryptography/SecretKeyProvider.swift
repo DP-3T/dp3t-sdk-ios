@@ -1,7 +1,11 @@
 /*
- * Created by Ubique Innovation AG
- * https://www.ubique.ch
- * Copyright (c) 2020. All rights reserved.
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 import ExposureNotification
@@ -34,7 +38,7 @@ extension ENManager: SecretKeyProvider {
 
                 var transformedKeys = filteredKeys.map(CodableDiagnosisKey.init(key:))
 
-                //always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
+                // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
                 transformedKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - transformedKeys.count))
 
                 transformedKeys.sort { (lhs, rhs) -> Bool in

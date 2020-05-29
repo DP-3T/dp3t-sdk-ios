@@ -1,7 +1,11 @@
 /*
- * Created by Ubique Innovation AG
- * https://www.ubique.ch
- * Copyright (c) 2020. All rights reserved.
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 import ExposureNotification
@@ -116,13 +120,13 @@ extension ENExposureConfiguration {
         configuration.daysSinceLastExposureLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.durationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.metadata = [Self.thresholdsKey : [parameters.contactMatching.lowerThreshold,
-                                                                    parameters.contactMatching.higherThreshold]]
+        configuration.metadata = [Self.thresholdsKey: [parameters.contactMatching.lowerThreshold,
+                                                       parameters.contactMatching.higherThreshold]]
         return configuration
     }
 
     var stringVal: String {
-        if let thresholds = self.metadata?[Self.thresholdsKey] as? [Int] {
+        if let thresholds = metadata?[Self.thresholdsKey] as? [Int] {
             return "<ENExposureConfiguration attenuationDurationThresholds: [\(thresholds[0]),\(thresholds[1])]>"
         }
         return "<ENExposureConfiguration attenuationDurationThresholds: nil>"

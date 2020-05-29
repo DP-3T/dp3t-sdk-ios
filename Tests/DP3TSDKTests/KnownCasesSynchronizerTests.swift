@@ -1,7 +1,11 @@
 /*
- * Created by Ubique Innovation AG
- * https://www.ubique.ch
- * Copyright (c) 2020. All rights reserved.
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 import Foundation
@@ -92,7 +96,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
     }
 
-    func testOnlyCallingMatcherTwiceADay(){
+    func testOnlyCallingMatcherTwiceADay() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
@@ -102,7 +106,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
 
         let today = DayDate().dayMin
-        for i in 0..<24*4 {
+        for i in 0 ..< 24 * 4 {
             let time = today.addingTimeInterval(Double(i) * TimeInterval.hour / 4)
             let expecation = expectation(description: "syncExpectation")
             sync.sync(now: time) { _ in
@@ -113,7 +117,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         XCTAssertEqual(matcher.timesCalledNewKnownCaseDate, 20)
     }
 
-    func testOnlyCallingMatcherOverMultipleDays(){
+    func testOnlyCallingMatcherOverMultipleDays() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
@@ -124,7 +128,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         let today = DayDate().dayMin
         let days = 3
-        for i in 0..<24 * days {
+        for i in 0 ..< 24 * days {
             let time = today.addingTimeInterval(Double(i) * TimeInterval.hour)
             let expecation = expectation(description: "syncExpectation")
             sync.sync(now: time) { _ in
@@ -132,7 +136,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             }
             waitForExpectations(timeout: 1)
         }
-        XCTAssertEqual(matcher.timesCalledNewKnownCaseDate, days*20)
+        XCTAssertEqual(matcher.timesCalledNewKnownCaseDate, days * 20)
     }
 
     func testStoringLastSyncNoData() {
