@@ -26,7 +26,7 @@ class OutstandingPublishStorage {
             case .notFound:
                 break
             default:
-                logger.error("could not access keychainn error: %{public}@", error.localizedDescription)
+                logger.error("could not access keychain error: %{public}@", error.localizedDescription)
             }
             return []
         }

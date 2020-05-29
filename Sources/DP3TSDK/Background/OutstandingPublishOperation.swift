@@ -67,7 +67,12 @@ class OutstandingPublishOperation: Operation {
 
                 if errorHappend != nil || key == nil {
                     if let error = errorHappend {
-                        logger.error("error happend while retrieving key: %{public}@", error.localizedDescription)
+                        switch error as? DP3TTracingError {
+                        case let .exposureNotificationError(error: error):
+                            logger.error("error happend while retrieving key: %{public}@", error.localizedDescription)
+                        default:
+                            logger.error("error happend while retrieving key: %{public}@", error.localizedDescription)
+                        }
                     } else {
                         logger.error("could not retrieve key")
                     }
