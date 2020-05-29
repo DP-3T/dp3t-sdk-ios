@@ -66,6 +66,9 @@ class OutstandingPublishOperation: Operation {
                 group.wait()
 
                 if errorHappend != nil || key == nil {
+                    if let error = errorHappend {
+                        logger.error("error happend while retriving key: %{public}@", error.localizedDescription)
+                    }
                     self.cancel()
                     return
                 }
@@ -85,6 +88,9 @@ class OutstandingPublishOperation: Operation {
 
                 group.wait()
                 if errorHappend != nil {
+                    if let error = errorHappend {
+                        logger.error("error happend while publishing key: %{public}@", error.localizedDescription)
+                    }
                     self.cancel()
                     return
                 }
