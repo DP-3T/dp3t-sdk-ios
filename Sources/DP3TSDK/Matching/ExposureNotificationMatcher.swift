@@ -120,13 +120,13 @@ extension ENExposureConfiguration {
         configuration.daysSinceLastExposureLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.durationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.metadata = [Self.thresholdsKey : [parameters.contactMatching.lowerThreshold,
-                                                                    parameters.contactMatching.higherThreshold]]
+        configuration.metadata = [Self.thresholdsKey: [parameters.contactMatching.lowerThreshold,
+                                                       parameters.contactMatching.higherThreshold]]
         return configuration
     }
 
     var stringVal: String {
-        if let thresholds = self.metadata?[Self.thresholdsKey] as? [Int] {
+        if let thresholds = metadata?[Self.thresholdsKey] as? [Int] {
             return "<ENExposureConfiguration attenuationDurationThresholds: [\(thresholds[0]),\(thresholds[1])]>"
         }
         return "<ENExposureConfiguration attenuationDurationThresholds: nil>"

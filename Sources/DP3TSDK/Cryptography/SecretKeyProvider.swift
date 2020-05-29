@@ -38,7 +38,7 @@ extension ENManager: SecretKeyProvider {
 
                 var transformedKeys = filteredKeys.map(CodableDiagnosisKey.init(key:))
 
-                //always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
+                // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
                 transformedKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - transformedKeys.count))
 
                 transformedKeys.sort { (lhs, rhs) -> Bool in

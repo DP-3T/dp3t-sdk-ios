@@ -274,7 +274,7 @@ class DP3TSDK {
     @objc func backgroundRefreshStatusDidChange() {
         let new = UIApplication.shared.backgroundRefreshStatus
         let old = state.backgroundRefreshState
-        if (old == .denied || old == .restricted) && old != new {
+        if old == .denied || old == .restricted, old != new {
             backgroundTaskManager.register()
         }
         state.backgroundRefreshState = UIApplication.shared.backgroundRefreshStatus
