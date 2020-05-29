@@ -25,18 +25,25 @@ extension ENManager: SecretKeyProvider {
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
                 logger.log("received %d keys", keys.count)
+                var filteredKeys = keys
+
+                // if a onsetDate was passed we filter the keys using it
                 if let onsetDate = onsetDate {
-                    var filteredKeys = keys.filter { $0.date > onsetDate }.map(CodableDiagnosisKey.init(key:))
-                    filteredKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - filteredKeys.count))
-                    filteredKeys.sort { (lhs, rhs) -> Bool in
-                        lhs.rollingStartNumber > rhs.rollingStartNumber
-                    }
-                    filteredKeys = Array(filteredKeys.prefix(Default.shared.parameters.crypto.numberOfKeysToSubmit))
-                    completionHandler(.success(filteredKeys))
-                } else {
-                    completionHandler(.success(keys.map(CodableDiagnosisKey.init(key:))))
+                    filteredKeys = filteredKeys.filter { $0.date > onsetDate }
                 }
 
+                var transformedKeys = filteredKeys.map(CodableDiagnosisKey.init(key:))
+
+                //always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
+                transformedKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - transformedKeys.count))
+
+                transformedKeys.sort { (lhs, rhs) -> Bool in
+                    lhs.rollingStartNumber > rhs.rollingStartNumber
+                }
+
+                transformedKeys = Array(transformedKeys.prefix(Default.shared.parameters.crypto.numberOfKeysToSubmit))
+
+                completionHandler(.success(transformedKeys))
             } else {
                 fatalError("getDiagnosisKeys returned neither an error nor a keys")
             }
@@ -47,7 +54,7 @@ extension ENManager: SecretKeyProvider {
             logger.log("calling ENManager.getDiagnosisKeys")
             getDiagnosisKeys(completionHandler: handler)
         case .test:
-            logger.log("calling ENManager.getDiagnosisKeys")
+            logger.log("calling ENManager.getTestDiagnosisKeys")
             getTestDiagnosisKeys(completionHandler: handler)
         }
     }

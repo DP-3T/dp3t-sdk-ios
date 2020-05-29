@@ -29,7 +29,7 @@ class OutstandingPublishOperation: Operation {
             guard operations.isEmpty == false else { return }
             logger.log("%{public}d operations in queue", operations.count)
             let today = DayDate().dayMin
-            for op in operations where op.dayToPublish < today {
+            for op in operations where op.dayToPublish <= today {
                 logger.log("handling outstanding Publish %@", op.debugDescription)
                 let group = DispatchGroup()
 
@@ -67,11 +67,14 @@ class OutstandingPublishOperation: Operation {
 
                 if errorHappend != nil || key == nil {
                     if let error = errorHappend {
-                        logger.error("error happend while retriving key: %{public}@", error.localizedDescription)
+                        logger.error("error happend while retrieving key: %{public}@", error.localizedDescription)
+                    } else {
+                        logger.error("could not retrieve key")
                     }
                     self.cancel()
                     return
                 }
+                logger.log("received keys for %@", op.debugDescription)
 
                 let model = DelayedKeyModel(delayedKey: key!, fake: op.fake)
 
@@ -89,11 +92,12 @@ class OutstandingPublishOperation: Operation {
                 group.wait()
                 if errorHappend != nil {
                     if let error = errorHappend {
-                        logger.error("error happend while publishing key: %{public}@", error.localizedDescription)
+                        logger.error("error happend while publishing key %{public}@: %{public}@", op.debugDescription, error.localizedDescription)
                     }
                     self.cancel()
                     return
                 }
+                logger.log("successfully published %{public}@ removing publish from storage", op.debugDescription)
                 storage.remove(publish: op)
             }
         }

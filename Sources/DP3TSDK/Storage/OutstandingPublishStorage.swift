@@ -22,7 +22,12 @@ class OutstandingPublishStorage {
         case let .success(publishes):
             return publishes
         case let .failure(error):
-            logger.error("could not access keychaing error: %{public}@", error.localizedDescription)
+            switch error {
+            case .notFound:
+                break
+            default:
+                logger.error("could not access keychainn error: %{public}@", error.localizedDescription)
+            }
             return []
         }
     }

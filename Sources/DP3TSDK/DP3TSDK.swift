@@ -233,10 +233,7 @@ class DP3TSDK {
                                 self?.state.infectionStatus = .infected
                             }
 
-                            let dayToPublish = DayDate(date: outstandingPublish.dayToPublish)
-                            if !keys.contains(where: { $0.rollingStartNumber == dayToPublish.period }) {
-                                self?.outstandingPublishesStorage.add(outstandingPublish)
-                            }
+                            self?.outstandingPublishesStorage.add(outstandingPublish)
 
                             callback(.success(()))
                         case let .failure(error):

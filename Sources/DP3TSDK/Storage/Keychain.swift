@@ -20,6 +20,23 @@ enum KeychainError: Error {
     case cannotAccess(_ status: OSStatus)
     /// a deletion error happend
     case cannotDelete(_ status: OSStatus)
+
+    var localizedDescription: String {
+        switch self {
+        case let .encodingError(error):
+            return "encodingError: \(error.localizedDescription)"
+        case let .decodingError(error):
+            return "decodingError: \(error.localizedDescription)"
+        case let .storingError(status):
+            return "storingError OSStatus: \(status)"
+        case .notFound:
+            return "notFound"
+        case let .cannotAccess(status):
+            return "cannotAccess OSStatus: \(status)"
+        case let .cannotDelete(status):
+            return "cannotDelete OSStatus: \(status)"
+        }
+    }
 }
 
 /// This is struct is needed to defer the type of a key when getting a object
