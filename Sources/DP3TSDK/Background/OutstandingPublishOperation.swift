@@ -29,7 +29,7 @@ class OutstandingPublishOperation: Operation {
             guard operations.isEmpty == false else { return }
             logger.log("%{public}d operations in queue", operations.count)
             let today = DayDate().dayMin
-            for op in operations where op.dayToPublish <= today {
+            for op in operations where op.dayToPublish < today {
                 logger.log("handling outstanding Publish %@", op.debugDescription)
                 let group = DispatchGroup()
 
