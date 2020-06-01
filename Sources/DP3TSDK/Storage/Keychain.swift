@@ -1,7 +1,11 @@
 /*
- * Created by Ubique Innovation AG
- * https://www.ubique.ch
- * Copyright (c) 2020. All rights reserved.
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 import Foundation
@@ -20,6 +24,23 @@ enum KeychainError: Error {
     case cannotAccess(_ status: OSStatus)
     /// a deletion error happend
     case cannotDelete(_ status: OSStatus)
+
+    var localizedDescription: String {
+        switch self {
+        case let .encodingError(error):
+            return "encodingError: \(error.localizedDescription)"
+        case let .decodingError(error):
+            return "decodingError: \(error.localizedDescription)"
+        case let .storingError(status):
+            return "storingError OSStatus: \(status)"
+        case .notFound:
+            return "notFound"
+        case let .cannotAccess(status):
+            return "cannotAccess OSStatus: \(status)"
+        case let .cannotDelete(status):
+            return "cannotDelete OSStatus: \(status)"
+        }
+    }
 }
 
 /// This is struct is needed to defer the type of a key when getting a object

@@ -1,5 +1,8 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 0.5.0 (29.05.2020)
+- fixed several issues regarding the background tasks
+
 ## Version 0.4.0 (21.05.2020)
 
 - switched to GAEN framework

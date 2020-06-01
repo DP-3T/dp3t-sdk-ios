@@ -1,7 +1,11 @@
 /*
- * Created by Ubique Innovation AG
- * https://www.ubique.ch
- * Copyright (c) 2020. All rights reserved.
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 import Foundation
@@ -27,6 +31,7 @@ class OutstandingPublishOperation: Operation {
             logger.trace()
             let operations = storage.get()
             guard operations.isEmpty == false else { return }
+            logger.log("%{public}d operations in queue", operations.count)
             let today = DayDate().dayMin
             for op in operations where op.dayToPublish < today {
                 logger.log("handling outstanding Publish %@", op.debugDescription)
@@ -65,9 +70,20 @@ class OutstandingPublishOperation: Operation {
                 group.wait()
 
                 if errorHappend != nil || key == nil {
+                    if let error = errorHappend {
+                        switch error as? DP3TTracingError {
+                        case let .exposureNotificationError(error: error):
+                            logger.error("error happend while retrieving key: %{public}@", error.localizedDescription)
+                        default:
+                            logger.error("error happend while retrieving key: %{public}@", error.localizedDescription)
+                        }
+                    } else {
+                        logger.error("could not retrieve key")
+                    }
                     self.cancel()
                     return
                 }
+                logger.log("received keys for %@", op.debugDescription)
 
                 let model = DelayedKeyModel(delayedKey: key!, fake: op.fake)
 
@@ -84,9 +100,13 @@ class OutstandingPublishOperation: Operation {
 
                 group.wait()
                 if errorHappend != nil {
+                    if let error = errorHappend {
+                        logger.error("error happend while publishing key %{public}@: %{public}@", op.debugDescription, error.localizedDescription)
+                    }
                     self.cancel()
                     return
                 }
+                logger.log("successfully published %{public}@ removing publish from storage", op.debugDescription)
                 storage.remove(publish: op)
             }
         }

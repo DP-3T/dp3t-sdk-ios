@@ -1,7 +1,11 @@
 /*
- * Created by Ubique Innovation AG
- * https://www.ubique.ch
- * Copyright (c) 2020. All rights reserved.
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 import ExposureNotification
@@ -233,10 +237,7 @@ class DP3TSDK {
                                 self?.state.infectionStatus = .infected
                             }
 
-                            let dayToPublish = DayDate(date: outstandingPublish.dayToPublish)
-                            if !keys.contains(where: { $0.rollingStartNumber == dayToPublish.period }) {
-                                self?.outstandingPublishesStorage.add(outstandingPublish)
-                            }
+                            self?.outstandingPublishesStorage.add(outstandingPublish)
 
                             callback(.success(()))
                         case let .failure(error):
@@ -273,7 +274,7 @@ class DP3TSDK {
     @objc func backgroundRefreshStatusDidChange() {
         let new = UIApplication.shared.backgroundRefreshStatus
         let old = state.backgroundRefreshState
-        if (old == .denied || old == .restricted) && old != new {
+        if old == .denied || old == .restricted, old != new {
             backgroundTaskManager.register()
         }
         state.backgroundRefreshState = UIApplication.shared.backgroundRefreshStatus

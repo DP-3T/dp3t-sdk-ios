@@ -1,7 +1,11 @@
 /*
- * Created by Ubique Innovation AG
- * https://www.ubique.ch
- * Copyright (c) 2020. All rights reserved.
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 import Foundation
@@ -19,6 +23,8 @@ public struct LogEntry: Identifiable {
 public class DP3TLoggingStorage {
     /// Database connection
     private let database: Connection
+
+    private let queue = DispatchQueue(label: "org.dpppt.logging")
 
     /// Name of the table
     let table = Table("logs")
@@ -47,7 +53,7 @@ public class DP3TLoggingStorage {
     }
 
     public func log(_ string: String, type: OSLogType) {
-        DispatchQueue.global(qos: .background).async { [weak self] in
+        queue.async { [weak self] in
             guard let self = self else { return }
             let timestamp = Date()
             let insert = self.table.insert(

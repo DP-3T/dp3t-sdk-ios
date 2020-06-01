@@ -1,7 +1,11 @@
 /*
- * Created by Ubique Innovation AG
- * https://www.ubique.ch
- * Copyright (c) 2020. All rights reserved.
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 import Foundation
@@ -108,7 +112,7 @@ class KnownCasesSynchronizer {
             }
             self.dataTasks.removeAll()
 
-            for _ in 0..<self.tasksRunning {
+            for _ in 0 ..< self.tasksRunning {
                 self.dispatchGroup.leave()
             }
             self.tasksRunning = 0
@@ -150,14 +154,14 @@ class KnownCasesSynchronizer {
 
             // To avoid syncing more than 2 times a day, we set the value of last sync to the desired hour minus 1 millisecond
             guard let preferredHour = Calendar.current.date(bySettingHour: defaults.parameters.networking.syncHourMorning, minute: 0, second: 0, of: now),
-                  let initialHour = Calendar.current.date(byAdding: .nanosecond, value: -1000, to: preferredHour) else {
+                let initialHour = Calendar.current.date(byAdding: .nanosecond, value: -1000, to: preferredHour) else {
                 fatalError()
             }
 
             let lastSync = lastSyncStore[currentKeyDate] ?? initialHour
 
             guard descriptor.mode == .test || lastSync < lastDesiredSync else {
-                self.logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, lastSync.description, lastSync.description)
+                logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, lastSync.description, lastSync.description)
                 continue
             }
 
