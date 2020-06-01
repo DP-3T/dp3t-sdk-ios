@@ -42,6 +42,8 @@ class KnownCasesSynchronizer {
 
     private let dispatchGroup = DispatchGroup()
 
+    private let timingManager: ExposureDetectionTimingManager
+
     /// Create a known case synchronizer
     /// - Parameters:
     ///   - matcher: The matcher for DP3T resolution and checks
@@ -53,6 +55,7 @@ class KnownCasesSynchronizer {
         self.defaults = defaults
         self.service = service
         self.descriptor = descriptor
+        timingManager = .init(storage: defaults)
     }
 
     /// A callback result of async operations
@@ -145,8 +148,6 @@ class KnownCasesSynchronizer {
 
         var occuredError: DP3TTracingError?
 
-        let lastDesiredSync = Self.getLastDesiredSyncTime(ts: now)
-
         for day in 0 ... daysToFetch {
             guard let currentKeyDate = calendar.date(byAdding: .day, value: day, to: minimumDate) else {
                 continue
@@ -160,7 +161,7 @@ class KnownCasesSynchronizer {
 
             let lastSync = lastSyncStore[currentKeyDate] ?? initialHour
 
-            guard descriptor.mode == .test || lastSync < lastDesiredSync else {
+            guard descriptor.mode == .test || timingManager.shouldDetect(lastDetection: lastSync) else {
                 logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, lastSync.description, lastSync.description)
                 continue
             }
@@ -231,19 +232,6 @@ class KnownCasesSynchronizer {
                 self.defaults.lastSyncTimestamps = lastSyncStore
                 callback?(.success(()))
             }
-        }
-    }
-
-    internal static func getLastDesiredSyncTime(ts: Date = .init(), defaults: DefaultStorage = Default.shared) -> Date {
-        let calendar = Calendar.current
-        let dateComponents = calendar.dateComponents([.hour, .day, .month, .year], from: ts)
-        if dateComponents.hour! < defaults.parameters.networking.syncHourMorning {
-            let yesterday = calendar.date(byAdding: .day, value: -1, to: ts)!
-            return calendar.date(bySettingHour: defaults.parameters.networking.syncHourEvening, minute: 0, second: 0, of: yesterday)!
-        } else if dateComponents.hour! < defaults.parameters.networking.syncHourEvening {
-            return calendar.date(bySettingHour: defaults.parameters.networking.syncHourMorning, minute: 0, second: 0, of: ts)!
-        } else {
-            return calendar.date(bySettingHour: defaults.parameters.networking.syncHourEvening, minute: 0, second: 0, of: ts)!
         }
     }
 }

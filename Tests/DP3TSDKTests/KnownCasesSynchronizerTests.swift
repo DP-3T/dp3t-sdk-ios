@@ -296,31 +296,4 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         XCTAssertNotEqual(service.requests.count, 10)
         XCTAssertNotEqual(defaults.lastSyncTimestamps.count, 10)
     }
-
-    func testLastDesiredSyncTimeNoon() {
-        let defaults = MockDefaults()
-        let input = Self.formatter.date(from: "19.05.2020 12:12")!
-        let output = Self.formatter.date(from: "19.05.2020 0\(defaults.parameters.networking.syncHourMorning):00")!
-        XCTAssertEqual(KnownCasesSynchronizer.getLastDesiredSyncTime(ts: input, defaults: defaults), output)
-    }
-
-    func testLastDesiredSyncTimeYesterday() {
-        let defaults = MockDefaults()
-        let input = Self.formatter.date(from: "19.05.2020 05:55")!
-        let output = Self.formatter.date(from: "18.05.2020 \(defaults.parameters.networking.syncHourEvening):00")!
-        XCTAssertEqual(KnownCasesSynchronizer.getLastDesiredSyncTime(ts: input), output)
-    }
-
-    func testLastDesiredSyncTimeNight() {
-        let defaults = MockDefaults()
-        let input = Self.formatter.date(from: "19.05.2020 23:55")!
-        let output = Self.formatter.date(from: "19.05.2020 \(defaults.parameters.networking.syncHourEvening):00")!
-        XCTAssertEqual(KnownCasesSynchronizer.getLastDesiredSyncTime(ts: input), output)
-    }
-
-    static var formatter: DateFormatter = {
-        let df = DateFormatter()
-        df.dateFormat = "dd.MM.yyyy HH:mm"
-        return df
-    }()
 }

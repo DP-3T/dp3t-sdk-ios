@@ -24,6 +24,10 @@ protocol DefaultStorage {
 
     /// Parameters to configure the SDK
     var parameters: DP3TParameters { get set }
+
+    var firstExposureDetection: Date? { get set }
+
+    var exposureDetectionDates: [Date] { get set }
 }
 
 /// UserDefaults Storage Singleton
@@ -45,6 +49,12 @@ class Default: DefaultStorage {
     /// Current infection status
     @KeychainPersisted(key: "org.dpppt.didMarkAsInfected", defaultValue: false)
     var didMarkAsInfected: Bool
+
+    @Persisted(userDefaultsKey: "org.dpppt.firstExposureDetection", defaultValue: nil)
+    var firstExposureDetection: Date?
+
+    @Persisted(userDefaultsKey: "org.dpppt.exposureDetectionDates", defaultValue: [])
+    var exposureDetectionDates: [Date]
 
     /// Parameters
     private func saveParameters(_ parameters: DP3TParameters) {
