@@ -163,7 +163,7 @@ class KnownCasesSynchronizer {
             let lastSync = lastSyncStore[currentKeyDate] ?? initialHour
 
             guard descriptor.mode == .test || timingManager.shouldDetect(lastDetection: lastSync, now: now) else {
-                logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, lastSync.description, lastSync.description)
+                logger.log("skipping %{public}@ since shouldDetect returned false", currentKeyDate.description)
                 continue
             }
 

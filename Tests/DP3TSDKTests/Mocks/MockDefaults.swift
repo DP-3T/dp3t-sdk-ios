@@ -12,8 +12,6 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
-    var firstExposureDetection: Date?
-
     var exposureDetectionDates: [Date] = []
 
     var lastSyncTimestamps: [Date: Date] = [:]

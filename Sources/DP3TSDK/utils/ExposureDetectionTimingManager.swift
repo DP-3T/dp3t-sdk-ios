@@ -25,22 +25,16 @@ class ExposureDetectionTimingManager {
 
     func addDetection(timestamp: Date = .init()) {
         storage.exposureDetectionDates.append(timestamp)
-        if storage.firstExposureDetection == nil {
-            storage.firstExposureDetection = timestamp
-        }
     }
 
     func getRemainingDetections(now: Date = .init()) -> Int {
-        guard let first = storage.firstExposureDetection else { return Self.maxDetections }
-
         defer {
-            storage.exposureDetectionDates = storage.exposureDetectionDates.filter { abs($0.timeIntervalSince(now)) < (2 * .day) }
+            storage.exposureDetectionDates = storage.exposureDetectionDates.filter {
+                abs($0.timeIntervalSince(now)) < .day
+            }
         }
 
-        var beginningOfCurrentWindow: Date = first
-        while (beginningOfCurrentWindow + .day) < now {
-            beginningOfCurrentWindow += .day
-        }
+        let beginningOfCurrentWindow: Date = now - .day
 
         let allDetections = storage.exposureDetectionDates
 

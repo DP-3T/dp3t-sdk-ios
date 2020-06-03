@@ -68,7 +68,7 @@ class ExposureDetectionTimingManagerTests: XCTestCase {
         let now = Date(timeIntervalSinceNow: 2 * .day)
         _ = manager.getRemainingDetections(now: now)
 
-        for i in 0 ... 20 {
+        for i in 0 ... 19 {
             manager.addDetection(timestamp: .init(timeInterval: -.day - Double(20 - i) * .hour, since: now))
         }
         XCTAssertEqual(manager.getRemainingDetections(now: now), ExposureDetectionTimingManager.maxDetections)
