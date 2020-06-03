@@ -79,7 +79,7 @@ public class DP3TJWTVerifier {
 
             return jwt.claims
 
-        } catch {
+        } catch let error as JWTError {
             throw DP3TNetworkingError.jwtSignatureError(code: 5, debugDescription: "Generic JWC framework error \(error.localizedDescription)")
         }
     }
