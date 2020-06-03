@@ -77,13 +77,14 @@ class ExposureNotificationMatcher: Matcher {
                     exposureDetectionError = error
                     semaphore.signal()
                 }
-                timingManager?.addDetection(timestamp: now)
                 semaphore.wait()
 
                 if let error = exposureDetectionError {
                     logger.error("ENManager.detectExposures failed error: %{public}@", error.localizedDescription)
                     throw error
                 }
+
+                timingManager?.addDetection(timestamp: now)
 
                 try urls.forEach(deleteDiagnosisKeyFile(at:))
 
