@@ -56,6 +56,7 @@ class KnownCasesSynchronizer {
         self.service = service
         self.descriptor = descriptor
         timingManager = .init(storage: defaults)
+        matcher.timingManager = timingManager
     }
 
     /// A callback result of async operations
@@ -161,7 +162,7 @@ class KnownCasesSynchronizer {
 
             let lastSync = lastSyncStore[currentKeyDate] ?? initialHour
 
-            guard descriptor.mode == .test || timingManager.shouldDetect(lastDetection: lastSync) else {
+            guard descriptor.mode == .test || timingManager.shouldDetect(lastDetection: lastSync, now: now) else {
                 logger.log("skipping %{public}@ since the last check was at %{public}@ next sync allowed after: %{public}@", currentKeyDate.description, lastSync.description, lastSync.description)
                 continue
             }
@@ -218,7 +219,7 @@ class KnownCasesSynchronizer {
             }
 
             do {
-                try self.matcher?.finalizeMatchingSession()
+                try self.matcher?.finalizeMatchingSession(now: now)
             } catch {
                 self.logger.error("matcher finalize error: %{public}@", error.localizedDescription)
                 occuredError = .exposureNotificationError(error: error)

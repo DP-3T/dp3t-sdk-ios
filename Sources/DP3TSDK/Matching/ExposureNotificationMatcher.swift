@@ -13,6 +13,8 @@ import Foundation
 import ZIPFoundation
 
 class ExposureNotificationMatcher: Matcher {
+    weak var timingManager: ExposureDetectionTimingManager?
+
     weak var delegate: MatcherDelegate?
 
     private let manager: ENManager
@@ -52,7 +54,7 @@ class ExposureNotificationMatcher: Matcher {
         }
     }
 
-    func finalizeMatchingSession() throws {
+    func finalizeMatchingSession(now: Date = .init()) throws {
         logger.trace()
         try synchronousQueue.sync {
             guard localURLs.isEmpty == false else {
@@ -75,6 +77,7 @@ class ExposureNotificationMatcher: Matcher {
                     exposureDetectionError = error
                     semaphore.signal()
                 }
+                timingManager?.addDetection(timestamp: now)
                 semaphore.wait()
 
                 if let error = exposureDetectionError {

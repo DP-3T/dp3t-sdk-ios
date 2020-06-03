@@ -15,14 +15,12 @@ class ExposureDetectionTimingManager {
 
     static let maxDetections = 20
 
-    var now: Date { .init() }
-
     init(storage: DefaultStorage = Default.shared) {
         self.storage = storage
     }
 
-    func shouldDetect(lastDetection: Date) -> Bool {
-        return remainingDetections != 0 && lastDetection < lastDesiredSyncTime
+    func shouldDetect(lastDetection: Date, now: Date = .init()) -> Bool {
+        return getRemainingDetections(now: now) != 0 && lastDetection < getLastDesiredSyncTime(now: now)
     }
 
     func addDetection(timestamp: Date = .init()) {
@@ -32,7 +30,7 @@ class ExposureDetectionTimingManager {
         }
     }
 
-    var remainingDetections: Int {
+    func getRemainingDetections(now: Date = .init()) -> Int {
         guard let first = storage.firstExposureDetection else { return Self.maxDetections }
 
         defer {
@@ -51,7 +49,8 @@ class ExposureDetectionTimingManager {
         return max(Self.maxDetections - inCurrentWindow.count, 0)
     }
 
-    var lastDesiredSyncTime: Date {
+
+    func getLastDesiredSyncTime(now: Date = .init()) -> Date {
         let calendar = Calendar.current
         let dateComponents = calendar.dateComponents([.hour, .day, .month, .year], from: now)
         if dateComponents.hour! < storage.parameters.networking.syncHourMorning {
