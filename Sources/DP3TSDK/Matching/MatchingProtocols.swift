@@ -17,10 +17,11 @@ protocol MatcherDelegate: class {
 }
 
 protocol Matcher: class {
-    /// Delegate to notify on DP3T events
+    var timingManager: ExposureDetectionTimingManager? { get set }
+
     var delegate: MatcherDelegate? { get set }
 
     func receivedNewKnownCaseData(_ data: Data, keyDate: Date) throws
 
-    func finalizeMatchingSession() throws
+    func finalizeMatchingSession(now: Date) throws
 }
