@@ -3,8 +3,6 @@ name: distribute
 on:
    push:		
      branches: [ master, master-alpha ]
-   pull_request:
-    branches: [ master, develop ]
 jobs:
   appcenter:
     runs-on: macOS-latest
