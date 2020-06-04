@@ -12,7 +12,7 @@ platform :ios do
   )
 
   match(
-    type: "enterprise",
+    type: "development",
     readonly: is_ci,
     keychain_name: "githubactionci",
     keychain_password: "githubkeychain"
@@ -21,8 +21,8 @@ platform :ios do
   update_code_signing_settings(
     use_automatic_signing: false,
     path: ENV["XCODE_PROJ"],
-    profile_name: ENV["sigh_"+ENV["APP_IDENTIFIER"] +"_enterprise_profile-name"],
-    code_sign_identity: "iPhone Distribution",
+    profile_name: ENV["sigh_"+ENV["APP_IDENTIFIER"] +"_development_profile-name"],
+    code_sign_identity: "iPhone Developer",
     bundle_identifier: ENV["APP_IDENTIFIER"] 
   )
 
@@ -32,6 +32,7 @@ platform :ios do
 
   build_app(
     scheme: "Release",
+    export_method: "development"
   )
 
   appcenter_upload(

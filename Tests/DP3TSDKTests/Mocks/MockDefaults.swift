@@ -12,6 +12,8 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
+    var exposureDetectionDates: [Date] = []
+
     var lastSyncTimestamps: [Date: Date] = [:]
 
     var parameters: DP3TParameters = .init()

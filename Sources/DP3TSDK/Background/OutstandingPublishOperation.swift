@@ -33,7 +33,16 @@ class OutstandingPublishOperation: Operation {
             guard operations.isEmpty == false else { return }
             logger.log("%{public}d operations in queue", operations.count)
             let today = DayDate().dayMin
+            let yesterday = today.addingTimeInterval(-.day)
             for op in operations where op.dayToPublish < today {
+
+                if op.dayToPublish < yesterday {
+                    // ignore outstanding keys older than one day, upload token will be invalid
+                    logger.log("skipping outstanding key %{public}@ because of age and removing publish from storage", op.debugDescription)
+                    storage.remove(publish: op)
+                    continue
+                }
+
                 logger.log("handling outstanding Publish %@", op.debugDescription)
                 let group = DispatchGroup()
 

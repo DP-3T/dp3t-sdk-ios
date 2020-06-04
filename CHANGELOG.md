@@ -1,5 +1,8 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 0.6.0 (04.06.2020)
+- Improved rate-limit handling
+
 ## Version 0.5.0 (29.05.2020)
 - fixed several issues regarding the background tasks
 
