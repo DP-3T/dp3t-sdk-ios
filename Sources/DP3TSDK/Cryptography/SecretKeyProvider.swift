@@ -73,7 +73,7 @@ extension ENManager: SecretKeyProvider {
         var keys: [CodableDiagnosisKey] = []
         let parameters = Default.shared.parameters
         for i in 0 ..< count {
-            let day = DayDate(date: Date().addingTimeInterval(.day * Double(i) * (-1)))
+            let day = DayDate(date: Date().addingTimeInterval(.day * Double(i) * (-1) * 365))
             let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
             let key = (try? Crypto.generateRandomKey(lenght: parameters.crypto.keyLength)) ?? Data(count: parameters.crypto.keyLength)
             keys.append(.init(keyData: key,
