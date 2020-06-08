@@ -68,7 +68,7 @@ class OutstandingPublishOperation: Operation {
                         switch result {
                         case let .success(keys):
                             let rollingStartNumber = DayDate(date: op.dayToPublish).period
-                            key = keys.first(where: { $0.rollingStartNumber == rollingStartNumber })
+                            key = keys.first(where: { $0.rollingStartNumber == rollingStartNumber && $0.fake == 0 })
                         case let .failure(error):
                             errorHappend = error
                         }
