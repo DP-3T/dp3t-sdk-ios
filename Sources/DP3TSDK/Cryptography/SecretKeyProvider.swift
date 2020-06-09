@@ -14,6 +14,8 @@ import Foundation
 protocol SecretKeyProvider: class {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 
+    func getFakeKeys(count: Int) -> [CodableDiagnosisKey] 
+
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 }
 
@@ -22,8 +24,7 @@ private var logger = Logger(.main, category: "SecretKeyProvider")
 extension ENManager: SecretKeyProvider {
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.trace()
-        let handler: ENGetDiagnosisKeysHandler = { [weak self] keys, error in
-            guard let self = self else { return }
+        let handler: ENGetDiagnosisKeysHandler = { keys, error in
             if let error = error {
                 logger.error("ENManager.getDiagnosisKeys error: %{public}@", error.localizedDescription)
                 completionHandler(.failure(.exposureNotificationError(error: error)))
@@ -38,13 +39,11 @@ extension ENManager: SecretKeyProvider {
 
                 var transformedKeys = filteredKeys.map(CodableDiagnosisKey.init(key:))
 
-                // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
-                transformedKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - transformedKeys.count))
-
                 transformedKeys.sort { (lhs, rhs) -> Bool in
                     lhs.rollingStartNumber > rhs.rollingStartNumber
                 }
 
+                // never return more than numberOfKeysToSubmit
                 transformedKeys = Array(transformedKeys.prefix(Default.shared.parameters.crypto.numberOfKeysToSubmit))
 
                 completionHandler(.success(transformedKeys))
@@ -68,7 +67,7 @@ extension ENManager: SecretKeyProvider {
         completionHandler(.success(getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit)))
     }
 
-    private func getFakeKeys(count: Int) -> [CodableDiagnosisKey] {
+    func getFakeKeys(count: Int) -> [CodableDiagnosisKey] {
         guard count > 0 else { return [] }
         var keys: [CodableDiagnosisKey] = []
         let parameters = Default.shared.parameters

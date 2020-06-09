@@ -219,11 +219,16 @@ class DP3TSDK {
             }
         }
 
-        group.notify(queue: .main) {
+        group.notify(queue: .main) { [weak self] in
+            guard let self = self else { return }
             switch secretKeyResult {
             case let .failure(error):
                 callback(.failure(error))
             case let .success(keys):
+
+                var mutableKeys = keys
+                // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
+                mutableKeys.append(contentsOf: self.secretKeyProvider.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count))
 
                 let model = ExposeeListModel(gaenKeys: keys,
                                              fake: isFakeRequest,
