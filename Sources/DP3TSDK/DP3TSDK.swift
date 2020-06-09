@@ -27,7 +27,7 @@ class DP3TSDK {
 
     private let matcher: Matcher
 
-    private let secretKeyProvider: SecretKeyProvider
+    private let diagnosisKeysProvider: DiagnosisKeysProvider
 
     private let service: ExposeeServiceClient
 
@@ -83,7 +83,7 @@ class DP3TSDK {
         let manager = ENManager()
         tracer = ExposureNotificationTracer(manager: manager)
         matcher = ExposureNotificationMatcher(manager: manager, exposureDayStorage: exposureDayStorage)
-        secretKeyProvider = manager
+        diagnosisKeysProvider = manager
 
         let service_ = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession)
 
@@ -145,7 +145,7 @@ class DP3TSDK {
 
         let group = DispatchGroup()
 
-        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: secretKeyProvider, serviceClient: service)
+        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider, serviceClient: service)
         group.enter()
         outstandingPublishOperation.completionBlock = {
             group.leave()
@@ -184,7 +184,7 @@ class DP3TSDK {
     }
 
     /// tell the SDK that the user was exposed
-    /// This will stop tracing and reset the secret key
+    /// This will stop tracing
     /// - Parameters:
     ///   - onset: Start date of the exposure
     ///   - authString: Authentication string for the exposure change
@@ -203,27 +203,32 @@ class DP3TSDK {
 
         let group = DispatchGroup()
 
-        var secretKeyResult: Result<[CodableDiagnosisKey], DP3TTracingError> = .success([])
+        var diagnosisKeysResult: Result<[CodableDiagnosisKey], DP3TTracingError> = .success([])
 
         if isFakeRequest {
             group.enter()
-            secretKeyProvider.getFakeDiagnosisKeys { result in
-                secretKeyResult = result
+            diagnosisKeysProvider.getFakeDiagnosisKeys { result in
+                diagnosisKeysResult = result
                 group.leave()
             }
         } else {
             group.enter()
-            secretKeyProvider.getDiagnosisKeys(onsetDate: onset, appDesc: applicationDescriptor) { result in
-                secretKeyResult = result
+            diagnosisKeysProvider.getDiagnosisKeys(onsetDate: onset, appDesc: applicationDescriptor) { result in
+                diagnosisKeysResult = result
                 group.leave()
             }
         }
 
-        group.notify(queue: .main) {
-            switch secretKeyResult {
+        group.notify(queue: .main) { [weak self] in
+            guard let self = self else { return }
+            switch diagnosisKeysResult {
             case let .failure(error):
                 callback(.failure(error))
             case let .success(keys):
+
+                var mutableKeys = keys
+                // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
+                mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count))
 
                 let model = ExposeeListModel(gaenKeys: keys,
                                              fake: isFakeRequest,

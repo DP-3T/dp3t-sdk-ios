@@ -27,12 +27,12 @@ class DP3TBackgroundTaskManager {
 
     private let logger = Logger(DP3TBackgroundTaskManager.self, category: "backgroundTaskManager")
 
-    private weak var keyProvider: SecretKeyProvider!
+    private weak var keyProvider: DiagnosisKeysProvider!
 
     private let serviceClient: ExposeeServiceClient
 
     init(handler: DP3TBackgroundHandler?,
-         keyProvider: SecretKeyProvider,
+         keyProvider: DiagnosisKeysProvider,
          serviceClient: ExposeeServiceClient) {
         self.handler = handler
         self.keyProvider = keyProvider
