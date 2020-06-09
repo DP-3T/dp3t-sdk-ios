@@ -230,7 +230,7 @@ class DP3TSDK {
                 // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
                 mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count))
 
-                let model = ExposeeListModel(gaenKeys: keys,
+                let model = ExposeeListModel(gaenKeys: mutableKeys,
                                              fake: isFakeRequest,
                                              delayedKeyDate: DayDate())
 
