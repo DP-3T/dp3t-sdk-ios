@@ -21,7 +21,7 @@ private extension CodableDiagnosisKey {
     }
 }
 
-private class MockManager: SecretKeyProvider {
+private class MockManager: DiagnosisKeysProvider {
     var fakeAccessedCount: Int = 0
     var realAccessedCount: Int = 0
 
@@ -44,6 +44,10 @@ private class MockManager: SecretKeyProvider {
         } else {
             completionHandler(.success(keys))
         }
+    }
+
+    func getFakeKeys(count: Int) -> [CodableDiagnosisKey] {
+        return []
     }
 }
 
@@ -160,7 +164,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(mockManager.realAccessedCount, 2)
     }
 
-    func testPublishingSecretKeyProviderError() {
+    func testPublishingDiagnosisKeyProviderError() {
         let mockManager = MockManager()
         mockManager.error = DP3TTracingError.permissonError
 

@@ -11,7 +11,7 @@
 import ExposureNotification
 import Foundation
 
-protocol SecretKeyProvider: class {
+protocol DiagnosisKeysProvider: class {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 
     func getFakeKeys(count: Int) -> [CodableDiagnosisKey] 
@@ -19,9 +19,9 @@ protocol SecretKeyProvider: class {
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 }
 
-private var logger = Logger(.main, category: "SecretKeyProvider")
+fileprivate var logger = Logger(.main, category: "DiagnosisKeysProvider")
 
-extension ENManager: SecretKeyProvider {
+extension ENManager: DiagnosisKeysProvider {
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.trace()
         let handler: ENGetDiagnosisKeysHandler = { keys, error in
