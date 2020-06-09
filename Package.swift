@@ -24,8 +24,7 @@ let package = Package(
     targets: [
         .target(
             name: "DP3TSDK",
-            dependencies: ["SwiftJWT", "ZIPFoundation"],
-            swiftSettings: [.define("BACKGROUNDTASK_DEBUGGING", .when(platforms: [.iOS], configuration: .debug))]
+            dependencies: ["SwiftJWT", "ZIPFoundation"]
         ),
         .target(
             name: "DP3TSDK_LOGGING_STORAGE",

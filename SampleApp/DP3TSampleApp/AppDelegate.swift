@@ -12,10 +12,6 @@ import DP3TSDK
 import DP3TSDK_LOGGING_STORAGE
 import os
 import UIKit
-#if DEBUG
-    import UserNotifications
-#endif
-
 var loggingStorage: DP3TLoggingStorage?
 
 var baseUrl: URL = URL(string: "https://demo.dpppt.org/")!
@@ -35,9 +31,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        #if DEBUG
-            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
-        #endif
 
         initializeSDK()
 
