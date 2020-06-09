@@ -10,6 +10,7 @@
 
 import ExposureNotification
 import Foundation
+import UIKit.UIApplication
 
 class ExposureNotificationTracer: Tracer {
     private let manager: ENManager
@@ -43,10 +44,19 @@ class ExposureNotificationTracer: Tracer {
                 self.initializeObservers()
             }
         }
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(willEnterForeground),
+                                               name: UIApplication.willEnterForegroundNotification,
+                                               object: nil)
     }
 
     deinit {
         manager.invalidate()
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc func willEnterForeground(){
+        updateState()
     }
 
     func initializeObservers() {
@@ -76,6 +86,7 @@ class ExposureNotificationTracer: Tracer {
                 self.logger.error("ENMananger.setExposureNotificationEnabled failed error: %{public}@", error.localizedDescription)
                 self.state = .inactive(error: .exposureNotificationError(error: error))
             }
+            self.updateState()
             completionHandler?(error)
         }
     }
