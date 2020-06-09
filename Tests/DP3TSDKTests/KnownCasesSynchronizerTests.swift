@@ -77,14 +77,15 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           service: service,
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+        let now = Self.formatter.date(from: "19.05.2020 09:00")!
         let expecation = expectation(description: "syncExpectation")
-        sync.sync { _ in
+        sync.sync(now: now) { _ in
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 10)
-        XCTAssert(service.requests.contains(DayDate().dayMin))
+        XCTAssert(service.requests.contains(DayDate(date: now).dayMin))
         XCTAssert(!defaults.lastSyncTimestamps.isEmpty)
     }
 
@@ -97,7 +98,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -159,7 +160,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -177,7 +178,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .day * 15)) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!.addingTimeInterval(.day * 15)) { _ in
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -231,7 +232,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -242,7 +243,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         service.requests = []
 
         let secondExpectation = expectation(description: "secondSyncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .hour + .day)) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!.addingTimeInterval(.hour + .day)) { _ in
             secondExpectation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -265,7 +266,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         expecation.expectedFulfillmentCount = iterations
 
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-            sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+            sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
                 expecation.fulfill()
             }
         }
@@ -285,7 +286,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
 
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { result in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { result in
             switch result {
             case let .failure(error):
                 switch error {
@@ -306,4 +307,10 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         XCTAssertNotEqual(service.requests.count, 10)
         XCTAssertNotEqual(defaults.lastSyncTimestamps.count, 10)
     }
+
+    static var formatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "dd.MM.yyyy HH:mm"
+        return df
+    }()
 }
