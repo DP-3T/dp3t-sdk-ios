@@ -81,12 +81,15 @@ class ExposureNotificationMatcher: Matcher {
 
                 if let error = exposureDetectionError {
                     logger.error("ENManager.detectExposures failed error: %{public}@", error.localizedDescription)
+                    // if a error occured we want do delete all files since they could be invalid
+                    localURLs.values.forEach { try? $0.forEach(deleteDiagnosisKeyFile(at:)) }
+                    localURLs.removeAll()
                     throw error
                 }
 
                 timingManager?.addDetection(timestamp: now)
 
-                try urls.forEach(deleteDiagnosisKeyFile(at:))
+                try? urls.forEach(deleteDiagnosisKeyFile(at:))
 
                 if let summary = exposureSummary {
                     let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[1]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
