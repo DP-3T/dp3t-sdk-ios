@@ -18,6 +18,10 @@ class OutstandingPublishOperation: Operation {
 
     private let logger = Logger(OutstandingPublishOperation.self, category: "OutstandingPublishOperation")
 
+    var now: Date {
+        .init()
+    }
+
     static let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
 
     init(keyProvider: DiagnosisKeysProvider, serviceClient: ExposeeServiceClient, storage: OutstandingPublishStorage = OutstandingPublishStorage()) {
@@ -32,7 +36,7 @@ class OutstandingPublishOperation: Operation {
             let operations = storage.get()
             guard operations.isEmpty == false else { return }
             logger.log("%{public}d operations in queue", operations.count)
-            let today = DayDate().dayMin
+            let today = DayDate(date: now).dayMin
             let yesterday = today.addingTimeInterval(-.day)
             for op in operations where op.dayToPublish < today {
 
