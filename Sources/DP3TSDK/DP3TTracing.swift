@@ -20,6 +20,7 @@ public protocol DP3TTracingDelegate: AnyObject {
 
 public protocol DP3TBackgroundHandler: AnyObject {
     func performBackgroundTasks(completionHandler: @escaping (_ success: Bool) -> Void)
+    func didScheduleBackgrounTask()
 }
 
 private var instance: DP3TSDK!
@@ -175,4 +176,6 @@ public enum DP3TTracing {
         }
         get { nil }
     }
+
+    public static weak var activityDelegate: ActivityDelegate?
 }
