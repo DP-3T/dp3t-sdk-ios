@@ -46,7 +46,7 @@ private class MockManager: DiagnosisKeysProvider {
         }
     }
 
-    func getFakeKeys(count: Int) -> [CodableDiagnosisKey] {
+    func getFakeKeys(count: Int, startingFrom: Date) -> [CodableDiagnosisKey] {
         return []
     }
 }

@@ -14,7 +14,7 @@ import Foundation
 protocol DiagnosisKeysProvider: class {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 
-    func getFakeKeys(count: Int) -> [CodableDiagnosisKey] 
+    func getFakeKeys(count: Int, startingFrom: Date) -> [CodableDiagnosisKey]
 
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 }
@@ -64,15 +64,15 @@ extension ENManager: DiagnosisKeysProvider {
 
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.log("getFakeDiagnosisKeys")
-        completionHandler(.success(getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit)))
+        completionHandler(.success(getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit, startingFrom: .init(timeIntervalSinceNow: -.day))))
     }
 
-    func getFakeKeys(count: Int) -> [CodableDiagnosisKey] {
+    func getFakeKeys(count: Int, startingFrom: Date) -> [CodableDiagnosisKey] {
         guard count > 0 else { return [] }
         var keys: [CodableDiagnosisKey] = []
         let parameters = Default.shared.parameters
         for i in 0 ..< count {
-            let day = DayDate(date: Date().addingTimeInterval(.day * Double(i) * (-1)))
+            let day = DayDate(date: startingFrom.addingTimeInterval(.day * Double(i) * (-1)))
             let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
             let key = (try? Crypto.generateRandomKey(lenght: parameters.crypto.keyLength)) ?? Data(count: parameters.crypto.keyLength)
             keys.append(.init(keyData: key,

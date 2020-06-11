@@ -228,7 +228,13 @@ class DP3TSDK {
 
                 var mutableKeys = keys
                 // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
-                mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count))
+                let fakeKeyCount = Default.shared.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count
+
+                let newestRollingStartNumber = keys.max { (a, b) -> Bool in a.rollingStartNumber < b.rollingStartNumber }?.rollingStartNumber ?? DayDate(date: .init(timeIntervalSinceNow: -.day)).period
+
+                let startingFrom = Date(timeIntervalSince1970: Double(newestRollingStartNumber) *  10 * .minute)
+
+                mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: fakeKeyCount, startingFrom: startingFrom))
 
                 let model = ExposeeListModel(gaenKeys: mutableKeys,
                                              fake: isFakeRequest,
