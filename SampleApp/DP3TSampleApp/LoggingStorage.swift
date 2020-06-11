@@ -20,7 +20,7 @@ public struct LogEntry: Identifiable {
 }
 
 /// Storage used to persist Logs
-public class DP3TLoggingStorage {
+public class LoggingStorage {
     /// Database connection
     private let database: Connection
 
@@ -37,7 +37,7 @@ public class DP3TLoggingStorage {
 
     /// Initializer
     public init() throws {
-        let filePath = DP3TLoggingStorage.getDatabasePath()
+        let filePath = LoggingStorage.getDatabasePath()
         database = try Connection(filePath.absoluteString, readonly: false)
         try createTable()
     }

@@ -9,14 +9,13 @@
  */
 
 import DP3TSDK
-import DP3TSDK_LOGGING_STORAGE
 import os
 import UIKit
-var loggingStorage: DP3TLoggingStorage?
+var loggingStorage: LoggingStorage?
 
 var baseUrl: URL = URL(string: "https://demo.dpppt.org/")!
 
-extension DP3TLoggingStorage: LoggingDelegate {}
+extension LoggingStorage: LoggingDelegate {}
 
 func initializeSDK() {
     if loggingStorage == nil {
