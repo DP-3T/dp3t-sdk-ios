@@ -42,35 +42,6 @@ private class MockMatcher: Matcher {
     }
 }
 
-private class MockService: ExposeeServiceClientProtocol {
-
-    var descriptor: ApplicationDescriptor = .init(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
-
-    var requests: [Date] = []
-    let session = MockSession(data: "Data".data(using: .utf8), urlResponse: nil, error: nil)
-    let queue = DispatchQueue(label: "synchronous")
-    var error: DP3TNetworkingError?
-    var publishedUntil: Date = .init()
-    var data: Data? = "Data".data(using: .utf8)
-
-    func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
-        return session.dataTask(with: .init(url: URL(string: "http://www.google.com")!)) { _, _, _ in
-            if let error = self.error {
-                completion(.failure(error))
-            } else {
-                self.queue.sync {
-                    self.requests.append(batchTimestamp)
-                }
-                completion(.success(.init(data: self.data, publishedUntil: self.publishedUntil)))
-            }
-        }
-    }
-
-    func addExposeeList(_: ExposeeListModel, authentication _: ExposeeAuthMethod, completion _: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void) {}
-
-    func addDelayedExposeeList(_: DelayedKeyModel, token _: String?, completion _: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {}
-}
-
 final class KnownCasesSynchronizerTests: XCTestCase {
     func testInitialToday() {
         let matcher = MockMatcher()
