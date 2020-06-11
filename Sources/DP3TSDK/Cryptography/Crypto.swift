@@ -13,6 +13,19 @@ import Foundation
 
 /// class which handles all cryptographic operations fot the sdk
 internal class Crypto {
+    /// generates 32 bytes of random data
+    /// - Throws: throws if a error happens
+    /// - Returns: random data
+    internal static func generateRandomKey(lenght: Int = Int(CC_SHA256_DIGEST_LENGTH)) throws -> Data {
+        var keyData = Data(count: lenght)
+        let result = keyData.withUnsafeMutableBytes {
+            SecRandomCopyBytes(kSecRandomDefault, lenght, $0.baseAddress!)
+        }
+        guard result == errSecSuccess else {
+            throw KeychainError.cannotAccess(result)
+        }
+        return keyData
+    }
 
     /// Perform the SHA256 hashing algorithm
     /// - Parameter data: input data
