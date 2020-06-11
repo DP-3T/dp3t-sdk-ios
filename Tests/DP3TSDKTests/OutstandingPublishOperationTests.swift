@@ -84,6 +84,11 @@ private class OutstandingPublishStorageMock: OutstandingPublishStorage {
     }
 }
 
+private class MockOutstandingPublishOperation: OutstandingPublishOperation {
+    var mockDate: Date = .init()
+    override var now: Date { mockDate }
+}
+
 final class OutstandingPublishOperationTests: XCTestCase {
     func testNoOperations() {
         let mockManager = MockManager()
@@ -106,6 +111,61 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
     }
+
+    func testPublishBeforeMidnight(){
+        let mockManager = MockManager()
+        let dateToPublish = DayDate(date: Self.formatter.date(from: "19.05.2020 00:00")!).dayMin
+        mockManager.keys = []
+
+        let keychain = MockKeychain()
+        let storage = OutstandingPublishStorageMock(keychain: keychain)
+
+        storage.add(OutstandingPublish(authorizationHeader: "ABCD", dayToPublish: dateToPublish, fake: false))
+
+        let service = ExposeeServiceClientMock()
+
+        let operationQueue = OperationQueue()
+        let operationToTest = MockOutstandingPublishOperation(keyProvider: mockManager,
+                                                          serviceClient: service,
+                                                          storage: storage)
+        operationToTest.mockDate = dateToPublish.addingTimeInterval(22 * .hour + 30 * .minute)
+
+        operationQueue.addOperations([operationToTest], waitUntilFinished: true)
+
+        XCTAssertEqual(storage.removeCallCount, 0)
+        XCTAssertEqual(service.addedExposeeListCount, 0)
+        XCTAssertEqual(mockManager.fakeAccessedCount, 0)
+        XCTAssertEqual(mockManager.realAccessedCount, 0)
+    }
+
+
+    func testPublishAfterMidnight(){
+        let mockManager = MockManager()
+        let dayToPublish = DayDate(date: Self.formatter.date(from: "19.05.2020 00:00")!)
+        let dateToPublish = dayToPublish.dayMin
+        mockManager.keys = [.mock(fake: false, rollingStartNumber: dayToPublish.period)]
+
+        let keychain = MockKeychain()
+        let storage = OutstandingPublishStorageMock(keychain: keychain)
+
+        storage.add(OutstandingPublish(authorizationHeader: "ABCD", dayToPublish: dateToPublish, fake: false))
+
+        let service = ExposeeServiceClientMock()
+
+        let operationQueue = OperationQueue()
+        let operationToTest = MockOutstandingPublishOperation(keyProvider: mockManager,
+                                                          serviceClient: service,
+                                                          storage: storage)
+        operationToTest.mockDate = dateToPublish.addingTimeInterval(.day + 1)
+
+        operationQueue.addOperations([operationToTest], waitUntilFinished: true)
+
+        XCTAssertEqual(storage.removeCallCount, 1)
+        XCTAssertEqual(service.addedExposeeListCount, 1)
+        XCTAssertEqual(mockManager.fakeAccessedCount, 0)
+        XCTAssertEqual(mockManager.realAccessedCount, 1)
+    }
+
 
     func testPublishingFake() {
         let mockManager = MockManager()
@@ -212,4 +272,11 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(mockManager.fakeAccessedCount, 1)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
     }
+
+    static var formatter: DateFormatter = {
+        let df = DateFormatter()
+        df.timeZone = MockDefaults().parameters.crypto.timeZone
+        df.dateFormat = "dd.MM.yyyy HH:mm"
+        return df
+    }()
 }
