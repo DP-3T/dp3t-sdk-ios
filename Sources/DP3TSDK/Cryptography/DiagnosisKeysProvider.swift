@@ -71,10 +71,13 @@ extension ENManager: DiagnosisKeysProvider {
         guard count > 0 else { return [] }
         var keys: [CodableDiagnosisKey] = []
         let parameters = Default.shared.parameters
-        for _ in 0 ..< count {
-            keys.append(.init(keyData: Data(count: parameters.crypto.keyLength),
-                              rollingPeriod: 0,
-                              rollingStartNumber: DayDate().period,
+        for i in 0 ..< count {
+            let day = DayDate(date: Date().addingTimeInterval(.day * Double(i) * (-1) * 365))
+            let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
+            let key = (try? Crypto.generateRandomKey(lenght: parameters.crypto.keyLength)) ?? Data(count: parameters.crypto.keyLength)
+            keys.append(.init(keyData: key,
+                              rollingPeriod: rollingPeriod,
+                              rollingStartNumber: day.period,
                               transmissionRiskLevel: .zero,
                               fake: 1))
         }
