@@ -241,8 +241,8 @@ class KnownCasesSynchronizer {
                 self.logger.log("finishing sync successful")
                 self.defaults.lastSyncTimestamps = lastSyncStore
                 callback?(.success(()))
-                DP3TTracing.activityDelegate?.syncCompleted(totalRequest: totalNumberOfRequests, errors: occuredErrors)
             }
+            DP3TTracing.activityDelegate?.syncCompleted(totalRequest: totalNumberOfRequests, errors: occuredErrors)
         }
     }
 }
