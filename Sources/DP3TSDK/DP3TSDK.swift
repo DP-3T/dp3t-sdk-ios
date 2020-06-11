@@ -230,9 +230,9 @@ class DP3TSDK {
                 // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
                 let fakeKeyCount = Default.shared.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count
 
-                let newestRollingStartNumber = keys.max { (a, b) -> Bool in a.rollingStartNumber < b.rollingStartNumber }?.rollingStartNumber ?? DayDate(date: .init(timeIntervalSinceNow: -.day)).period
+                let oldestRollingStartNumber = keys.min { (a, b) -> Bool in a.rollingStartNumber < b.rollingStartNumber }?.rollingStartNumber ?? DayDate(date: .init(timeIntervalSinceNow: -.day)).period
 
-                let startingFrom = Date(timeIntervalSince1970: Double(newestRollingStartNumber) *  10 * .minute)
+                let startingFrom = Date(timeIntervalSince1970: Double(oldestRollingStartNumber) *  10 * .minute - .day)
 
                 mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: fakeKeyCount, startingFrom: startingFrom))
 
