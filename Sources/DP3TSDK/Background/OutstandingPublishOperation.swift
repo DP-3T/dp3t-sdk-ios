@@ -12,7 +12,7 @@ import Foundation
 
 class OutstandingPublishOperation: Operation {
     weak var keyProvider: DiagnosisKeysProvider!
-    private let serviceClient: ExposeeServiceClient
+    private let serviceClient: ExposeeServiceClientProtocol
 
     private let storage: OutstandingPublishStorage
 
@@ -24,7 +24,7 @@ class OutstandingPublishOperation: Operation {
 
     static let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
 
-    init(keyProvider: DiagnosisKeysProvider, serviceClient: ExposeeServiceClient, storage: OutstandingPublishStorage = OutstandingPublishStorage()) {
+    init(keyProvider: DiagnosisKeysProvider, serviceClient: ExposeeServiceClientProtocol, storage: OutstandingPublishStorage = OutstandingPublishStorage()) {
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
         self.storage = storage

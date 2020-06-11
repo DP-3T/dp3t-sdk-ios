@@ -43,6 +43,9 @@ private class MockMatcher: Matcher {
 }
 
 private class MockService: ExposeeServiceClientProtocol {
+
+    var descriptor: ApplicationDescriptor = .init(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
+
     var requests: [Date] = []
     let session = MockSession(data: "Data".data(using: .utf8), urlResponse: nil, error: nil)
     let queue = DispatchQueue(label: "synchronous")
