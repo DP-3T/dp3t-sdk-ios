@@ -51,11 +51,11 @@ class DP3TSDK {
         didSet {
             switch state.infectionStatus {
             case .infected:
-                Default.shared.didMarkAsInfected = true
+                defaults.didMarkAsInfected = true
             default:
-                Default.shared.didMarkAsInfected = false
+                defaults.didMarkAsInfected = false
             }
-            Default.shared.lastSync = state.lastSync
+            defaults.lastSync = state.lastSync
             DispatchQueue.main.async {
                 self.delegate?.DP3TTracingStateChanged(self.state)
             }
@@ -132,7 +132,7 @@ class DP3TSDK {
         self.defaults = defaults
 
         self.state = TracingState(trackingState: .stopped,
-                                  lastSync: Default.shared.lastSync,
+                                  lastSync: defaults.lastSync,
                                   infectionStatus: InfectionStatus.getInfectionState(from: exposureDayStorage),
                                   backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
@@ -266,8 +266,8 @@ class DP3TSDK {
             case let .success(keys):
 
                 var mutableKeys = keys
-                // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
-                let fakeKeyCount = Default.shared.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count
+                // always make sure we fill up the keys to defaults.parameters.crypto.numberOfKeysToSubmit
+                let fakeKeyCount = self.defaults.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count
 
                 let oldestRollingStartNumber = keys.min { (a, b) -> Bool in a.rollingStartNumber < b.rollingStartNumber }?.rollingStartNumber ?? DayDate(date: .init(timeIntervalSinceNow: -.day)).period
 
@@ -315,7 +315,7 @@ class DP3TSDK {
         state.infectionStatus = .healthy
         log.trace()
         stopTracing()
-        Default.shared.reset()
+        defaults.reset()
         outstandingPublishesStorage.reset()
         exposureDayStorage.reset()
         URLCache.shared.removeAllCachedResponses()
