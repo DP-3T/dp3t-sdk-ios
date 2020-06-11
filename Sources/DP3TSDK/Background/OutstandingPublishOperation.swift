@@ -104,9 +104,18 @@ class OutstandingPublishOperation: Operation {
                 serviceClient.addDelayedExposeeList(model, token: op.authorizationHeader) { result in
                     switch result {
                     case .success():
-                        break
+                        if op.fake {
+                            DP3TTracing.activityDelegate?.fakeRequestCompleted(result: .success(200))
+                        } else {
+                            DP3TTracing.activityDelegate?.outstandingKeyUploadCompleted(result: .success(200))
+                        }
                     case let .failure(error):
                         errorHappend = error
+                        if op.fake {
+                            DP3TTracing.activityDelegate?.fakeRequestCompleted(result: .failure(error))
+                        } else {
+                            DP3TTracing.activityDelegate?.outstandingKeyUploadCompleted(result: .failure(error))
+                        }
                     }
                     group.leave()
                 }

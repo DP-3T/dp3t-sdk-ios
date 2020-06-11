@@ -147,7 +147,8 @@ class KnownCasesSynchronizer {
             }
         }
 
-        var occuredError: DP3TTracingError?
+        var occuredErrors: [DP3TNetworkingError] = []
+        var totalNumberOfRequests: Int = 0
 
         for day in 0 ... daysToFetch {
             guard let currentKeyDate = calendar.date(byAdding: .day, value: day, to: minimumDate) else {
@@ -167,6 +168,7 @@ class KnownCasesSynchronizer {
                 continue
             }
 
+            totalNumberOfRequests += 1
             dispatchGroup.enter()
             tasksRunning += 1
             let task = service.getExposee(batchTimestamp: currentKeyDate) { [weak self] result in
@@ -177,7 +179,7 @@ class KnownCasesSynchronizer {
                     }
                     switch result {
                     case let .failure(error):
-                        occuredError = .networkingError(error: error)
+                        occuredErrors.append(error)
                     case let .success(knownCasesData):
                         do {
                             if let data = knownCasesData.data {
@@ -192,11 +194,11 @@ class KnownCasesSynchronizer {
                         } catch let error as DP3TNetworkingError {
                             self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
 
-                            occuredError = .networkingError(error: error)
+                            occuredErrors.append(error)
                         } catch {
                             self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
 
-                            occuredError = .networkingError(error: .couldNotParseData(error: error, origin: 0))
+                            occuredErrors.append(.couldNotParseData(error: error, origin: 0))
                         }
                     }
                     self.dispatchGroup.leave()
@@ -218,20 +220,28 @@ class KnownCasesSynchronizer {
                 return
             }
 
+            var matchingError: DP3TTracingError?
             do {
                 try self.matcher?.finalizeMatchingSession(now: now)
             } catch {
                 self.logger.error("matcher finalize error: %{public}@", error.localizedDescription)
-                occuredError = .exposureNotificationError(error: error)
+                matchingError = .exposureNotificationError(error: error)
             }
 
-            if let error = occuredError {
+            if occuredErrors.isEmpty == false || matchingError != nil {
+                var error: DP3TTracingError
+                if let networkError = occuredErrors.first {
+                    error = .networkingError(error: networkError)
+                } else {
+                    error = matchingError!
+                }
                 self.logger.error("finishing sync with error: %{public}@", error.localizedDescription)
                 callback?(.failure(error))
             } else {
                 self.logger.log("finishing sync successful")
                 self.defaults.lastSyncTimestamps = lastSyncStore
                 callback?(.success(()))
+                DP3TTracing.activityDelegate?.syncCompleted(totalRequest: totalNumberOfRequests, errors: occuredErrors)
             }
         }
     }

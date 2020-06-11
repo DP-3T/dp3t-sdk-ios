@@ -98,6 +98,7 @@ class DP3TBackgroundTaskManager {
         let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
         do {
+            handler?.didScheduleBackgrounTask()
             try BGTaskScheduler.shared.submit(taskRequest)
         } catch {
             logger.error("background task schedule failed error: %{public}@", error.localizedDescription)
