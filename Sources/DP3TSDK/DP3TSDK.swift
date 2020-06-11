@@ -29,7 +29,7 @@ class DP3TSDK {
 
     private let diagnosisKeysProvider: DiagnosisKeysProvider
 
-    private let service: ExposeeServiceClient
+    private let service: ExposeeServiceClientProtocol
 
     /// Synchronizes data on known cases
     private let synchronizer: KnownCasesSynchronizer
@@ -44,16 +44,18 @@ class DP3TSDK {
 
     private let log = Logger(DP3TSDK.self, category: "DP3TSDK")
 
+    private var defaults: DefaultStorage
+
     /// keeps track of  SDK state
     private var state: TracingState {
         didSet {
             switch state.infectionStatus {
             case .infected:
-                Default.shared.didMarkAsInfected = true
+                defaults.didMarkAsInfected = true
             default:
-                Default.shared.didMarkAsInfected = false
+                defaults.didMarkAsInfected = false
             }
-            Default.shared.lastSync = state.lastSync
+            defaults.lastSync = state.lastSync
             DispatchQueue.main.async {
                 self.delegate?.DP3TTracingStateChanged(self.state)
             }
@@ -64,43 +66,79 @@ class DP3TSDK {
     /// - Parameters:
     ///   - applicationDescriptor: information about the backend to use
     ///   - urlSession: the url session to use for networking (app can set it to enable certificate pinning)
-    init(applicationDescriptor: ApplicationDescriptor, urlSession: URLSession, backgroundHandler: DP3TBackgroundHandler?) throws {
+    ///   - backgroundHandler: handler which gets called on background execution
+    convenience init(applicationDescriptor: ApplicationDescriptor,
+                     urlSession: URLSession,
+                     backgroundHandler: DP3TBackgroundHandler?) throws {
         // reset keychain on first launch
-        if Default.shared.isFirstLaunch {
-            Default.shared.isFirstLaunch = false
+        let defaults = Default.shared
+        if defaults.isFirstLaunch {
+            defaults.isFirstLaunch = false
             let keychain = Keychain()
             keychain.delete(for: ExposureDayStorage.key)
             keychain.delete(for: OutstandingPublishStorage.key)
-            Default.shared.reset()
+            defaults.reset()
         }
+
+        let exposureDayStorage = ExposureDayStorage()
+
+        let manager = ENManager()
+        let tracer = ExposureNotificationTracer(manager: manager)
+        let matcher = ExposureNotificationMatcher(manager: manager, exposureDayStorage: exposureDayStorage)
+        let diagnosisKeysProvider: DiagnosisKeysProvider = manager
+
+        let service = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession)
+
+        let synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service, descriptor: applicationDescriptor)
+
+        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service)
+
+        self.init(applicationDescriptor: applicationDescriptor,
+                  urlSession: urlSession,
+                  tracer: tracer,
+                  matcher: matcher,
+                  diagnosisKeysProvider: diagnosisKeysProvider,
+                  exposureDayStorage: exposureDayStorage,
+                  outstandingPublishesStorage: OutstandingPublishStorage(),
+                  service: service,
+                  synchronizer: synchronizer,
+                  backgroundTaskManager: backgroundTaskManager,
+                  defaults: defaults)
+    }
+
+
+    init(applicationDescriptor: ApplicationDescriptor,
+         urlSession: URLSession,
+         tracer: Tracer,
+         matcher: Matcher,
+         diagnosisKeysProvider: DiagnosisKeysProvider,
+         exposureDayStorage: ExposureDayStorage,
+         outstandingPublishesStorage: OutstandingPublishStorage,
+         service: ExposeeServiceClientProtocol,
+         synchronizer: KnownCasesSynchronizer,
+         backgroundTaskManager: DP3TBackgroundTaskManager,
+         defaults: DefaultStorage) {
 
         self.applicationDescriptor = applicationDescriptor
         self.urlSession = urlSession
+        self.tracer = tracer
+        self.matcher = matcher
+        self.diagnosisKeysProvider = diagnosisKeysProvider
+        self.exposureDayStorage = exposureDayStorage
+        self.outstandingPublishesStorage = outstandingPublishesStorage
+        self.service = service
+        self.synchronizer = synchronizer
+        self.backgroundTaskManager = backgroundTaskManager
+        self.defaults = defaults
 
-        exposureDayStorage = ExposureDayStorage()
-        outstandingPublishesStorage = OutstandingPublishStorage()
+        self.state = TracingState(trackingState: .stopped,
+                                  lastSync: defaults.lastSync,
+                                  infectionStatus: InfectionStatus.getInfectionState(from: exposureDayStorage),
+                                  backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
-        let manager = ENManager()
-        tracer = ExposureNotificationTracer(manager: manager)
-        matcher = ExposureNotificationMatcher(manager: manager, exposureDayStorage: exposureDayStorage)
-        diagnosisKeysProvider = manager
-
-        let service_ = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession)
-
-        service = service_
-        synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service_, descriptor: applicationDescriptor)
-
-        backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service_)
-
-        state = TracingState(trackingState: .stopped,
-                             lastSync: Default.shared.lastSync,
-                             infectionStatus: InfectionStatus.getInfectionState(from: exposureDayStorage),
-                             backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
-
-        backgroundTaskManager.register()
-
-        tracer.delegate = self
-        matcher.delegate = self
+        self.tracer.delegate = self
+        self.matcher.delegate = self
+        self.backgroundTaskManager.register()
 
         log.trace()
 
@@ -108,6 +146,7 @@ class DP3TSDK {
                                                selector: #selector(backgroundRefreshStatusDidChange),
                                                name: UIApplication.backgroundRefreshStatusDidChangeNotification,
                                                object: nil)
+
     }
 
     deinit {
@@ -227,8 +266,14 @@ class DP3TSDK {
             case let .success(keys):
 
                 var mutableKeys = keys
-                // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
-                mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count))
+                // always make sure we fill up the keys to defaults.parameters.crypto.numberOfKeysToSubmit
+                let fakeKeyCount = self.defaults.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count
+
+                let oldestRollingStartNumber = keys.min { (a, b) -> Bool in a.rollingStartNumber < b.rollingStartNumber }?.rollingStartNumber ?? DayDate(date: .init(timeIntervalSinceNow: -.day)).period
+
+                let startingFrom = Date(timeIntervalSince1970: Double(oldestRollingStartNumber) *  10 * .minute - .day)
+
+                mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: fakeKeyCount, startingFrom: startingFrom))
 
                 let model = ExposeeListModel(gaenKeys: mutableKeys,
                                              fake: isFakeRequest,
@@ -270,7 +315,7 @@ class DP3TSDK {
         state.infectionStatus = .healthy
         log.trace()
         stopTracing()
-        Default.shared.reset()
+        defaults.reset()
         outstandingPublishesStorage.reset()
         exposureDayStorage.reset()
         URLCache.shared.removeAllCachedResponses()

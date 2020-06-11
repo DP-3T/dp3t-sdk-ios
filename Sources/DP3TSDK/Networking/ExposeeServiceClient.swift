@@ -20,6 +20,9 @@ struct ExposeeSuccess {
 protocol ExposeeServiceClientProtocol: class {
     typealias ExposeeResult = Result<Data?, DP3TNetworkingError>
     typealias ExposeeCompletion = Result<Void, DP3TNetworkingError>
+
+    var descriptor: ApplicationDescriptor { get }
+
     /// Get all exposee for a known day synchronously
     /// - Parameters:
     ///   - batchTimestamp: The batch timestamp

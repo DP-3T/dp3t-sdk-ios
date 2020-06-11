@@ -25,4 +25,14 @@ class MockDefaults: DefaultStorage {
     var lastSync: Date?
 
     var didMarkAsInfected: Bool = false
+
+    func reset() {
+        exposureDetectionDates = []
+        lastSyncTimestamps = [:]
+        parameters = .init()
+        outstandingPublishes = []
+        isFirstLaunch = false
+        lastSync = nil
+        didMarkAsInfected = false
+    }
 }
