@@ -48,7 +48,7 @@ class OutstandingPublishOperation: Operation {
                     continue
                 }
 
-                if !op.fake && UIApplication.shared.applicationState != .active {
+                if UIApplication.shared.applicationState != .active {
                     // skip publish if we are not in foreground since apple does not allow calles to EN.getDiagnosisKeys in background
                     continue
                 }
