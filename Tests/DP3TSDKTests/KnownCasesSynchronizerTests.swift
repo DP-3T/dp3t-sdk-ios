@@ -14,24 +14,6 @@ import Foundation
 import Foundation
 import XCTest
 
-private class MockMatcher: Matcher {
-    var timingManager: ExposureDetectionTimingManager?
-
-    var delegate: MatcherDelegate?
-
-    var error: Error?
-
-    var timesCalledReceivedNewData: Int = 0
-
-    func receivedNewData(_ data: Data, keyDate: Date, now: Date) throws {
-        timesCalledReceivedNewData += 1
-        timingManager?.addDetection(timestamp: now)
-        if let error = error {
-            throw error
-        }
-    }
-}
-
 final class KnownCasesSynchronizerTests: XCTestCase {
     func testInitialToday() {
         let matcher = MockMatcher()
