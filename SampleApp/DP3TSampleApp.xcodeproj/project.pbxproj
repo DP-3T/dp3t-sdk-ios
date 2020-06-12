@@ -8,12 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = DF07D0A52451E59200CFD431 /* Alamofire */; };
-		F80AEB3B246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE in Frameworks */ = {isa = PBXBuildFile; productRef = F80AEB3A246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE */; };
 		F812AC56243DF459005F26AE /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC55243DF459005F26AE /* RootViewController.swift */; };
 		F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC58243E02A1005F26AE /* ControlViewController.swift */; };
 		F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC5A243E02AF005F26AE /* ParametersViewController.swift */; };
 		F8287D15246A78570022CFD9 /* DP3TSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F8287D14246A78570022CFD9 /* DP3TSDK */; };
 		F8287D19246ADCA00022CFD9 /* LogsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8287D18246ADCA00022CFD9 /* LogsViewController.swift */; };
+		F830799324929039005D3C65 /* LoggingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F830799224929039005D3C65 /* LoggingStorage.swift */; };
+		F83079972492909A005D3C65 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = F83079962492909A005D3C65 /* SQLite */; };
 		F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83BE139242DDC450043FA1E /* AppDelegate.swift */; };
 		F83BE143242DDC460043FA1E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F83BE142242DDC460043FA1E /* Assets.xcassets */; };
 		F83BE146242DDC460043FA1E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F83BE144242DDC460043FA1E /* LaunchScreen.storyboard */; };
@@ -30,6 +31,7 @@
 		F812AC5A243E02AF005F26AE /* ParametersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParametersViewController.swift; sourceTree = "<group>"; };
 		F8287D18246ADCA00022CFD9 /* LogsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogsViewController.swift; sourceTree = "<group>"; };
 		F82F4BEB2462F5E100F7F9FA /* Entitlements.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = Entitlements.entitlements; sourceTree = "<group>"; };
+		F830799224929039005D3C65 /* LoggingStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingStorage.swift; sourceTree = "<group>"; };
 		F83BE136242DDC450043FA1E /* DP3TSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DP3TSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83BE139242DDC450043FA1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F83BE142242DDC460043FA1E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -47,9 +49,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F83079972492909A005D3C65 /* SQLite in Frameworks */,
 				F8287D15246A78570022CFD9 /* DP3TSDK in Frameworks */,
 				DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */,
-				F80AEB3B246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE in Frameworks */,
 				F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -84,6 +86,7 @@
 				F812AC55243DF459005F26AE /* RootViewController.swift */,
 				F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */,
 				F812AC58243E02A1005F26AE /* ControlViewController.swift */,
+				F830799224929039005D3C65 /* LoggingStorage.swift */,
 				F89B452324731DD40011AD07 /* KeysViewController.swift */,
 				F812AC5A243E02AF005F26AE /* ParametersViewController.swift */,
 				F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */,
@@ -122,7 +125,7 @@
 				F83BE14F242DDFF60043FA1E /* SnapKit */,
 				DF07D0A52451E59200CFD431 /* Alamofire */,
 				F8287D14246A78570022CFD9 /* DP3TSDK */,
-				F80AEB3A246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE */,
+				F83079962492909A005D3C65 /* SQLite */,
 			);
 			productName = CovidTracingTestApp;
 			productReference = F83BE136242DDC450043FA1E /* DP3TSampleApp.app */;
@@ -155,6 +158,7 @@
 			packageReferences = (
 				F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */,
 				DF07D0A42451E59200CFD431 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				F83079952492909A005D3C65 /* XCRemoteSwiftPackageReference "SQLite" */,
 			);
 			productRefGroup = F83BE137242DDC450043FA1E /* Products */;
 			projectDirPath = "";
@@ -187,6 +191,7 @@
 				F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */,
 				F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */,
 				F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */,
+				F830799324929039005D3C65 /* LoggingStorage.swift in Sources */,
 				F85D4F42243F0D8B00529168 /* StackView+Spacing.swift in Sources */,
 				F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */,
 				F812AC56243DF459005F26AE /* RootViewController.swift in Sources */,
@@ -406,6 +411,14 @@
 				minimumVersion = 5.1.0;
 			};
 		};
+		F83079952492909A005D3C65 /* XCRemoteSwiftPackageReference "SQLite" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stephencelis/SQLite.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.12.2;
+			};
+		};
 		F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit";
@@ -422,13 +435,14 @@
 			package = DF07D0A42451E59200CFD431 /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
 		};
-		F80AEB3A246DA7A2008E4117 /* DP3TSDK_LOGGING_STORAGE */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = DP3TSDK_LOGGING_STORAGE;
-		};
 		F8287D14246A78570022CFD9 /* DP3TSDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DP3TSDK;
+		};
+		F83079962492909A005D3C65 /* SQLite */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F83079952492909A005D3C65 /* XCRemoteSwiftPackageReference "SQLite" */;
+			productName = SQLite;
 		};
 		F83BE14F242DDFF60043FA1E /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;

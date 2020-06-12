@@ -20,7 +20,7 @@ struct CodableDiagnosisKey: Codable, Equatable {
 
 /// Model of the exposed person
 struct ExposeeListModel: Encodable {
-    /// Secret keys
+    /// Diagnosis keys
     let gaenKeys: [CodableDiagnosisKey]
 
     let fake: Bool

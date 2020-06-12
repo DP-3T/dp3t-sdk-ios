@@ -9,18 +9,23 @@
  */
 
 import Foundation
+import UIKit.UIApplication
 
 class OutstandingPublishOperation: Operation {
-    weak var keyProvider: SecretKeyProvider!
-    private let serviceClient: ExposeeServiceClient
+    weak var keyProvider: DiagnosisKeysProvider!
+    private let serviceClient: ExposeeServiceClientProtocol
 
     private let storage: OutstandingPublishStorage
 
     private let logger = Logger(OutstandingPublishOperation.self, category: "OutstandingPublishOperation")
 
+    var now: Date {
+        .init()
+    }
+
     static let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
 
-    init(keyProvider: SecretKeyProvider, serviceClient: ExposeeServiceClient, storage: OutstandingPublishStorage = OutstandingPublishStorage()) {
+    init(keyProvider: DiagnosisKeysProvider, serviceClient: ExposeeServiceClientProtocol, storage: OutstandingPublishStorage = OutstandingPublishStorage()) {
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
         self.storage = storage
@@ -32,7 +37,7 @@ class OutstandingPublishOperation: Operation {
             let operations = storage.get()
             guard operations.isEmpty == false else { return }
             logger.log("%{public}d operations in queue", operations.count)
-            let today = DayDate().dayMin
+            let today = DayDate(date: now).dayMin
             let yesterday = today.addingTimeInterval(-.day)
             for op in operations where op.dayToPublish < today {
 
@@ -40,6 +45,11 @@ class OutstandingPublishOperation: Operation {
                     // ignore outstanding keys older than one day, upload token will be invalid
                     logger.log("skipping outstanding key %{public}@ because of age and removing publish from storage", op.debugDescription)
                     storage.remove(publish: op)
+                    continue
+                }
+
+                if UIApplication.shared.applicationState != .active {
+                    // skip publish if we are not in foreground since apple does not allow calles to EN.getDiagnosisKeys in background
                     continue
                 }
 
@@ -68,7 +78,7 @@ class OutstandingPublishOperation: Operation {
                         switch result {
                         case let .success(keys):
                             let rollingStartNumber = DayDate(date: op.dayToPublish).period
-                            key = keys.first(where: { $0.rollingStartNumber == rollingStartNumber })
+                            key = keys.first(where: { $0.rollingStartNumber == rollingStartNumber && $0.fake == 0 })
                         case let .failure(error):
                             errorHappend = error
                         }
@@ -100,9 +110,18 @@ class OutstandingPublishOperation: Operation {
                 serviceClient.addDelayedExposeeList(model, token: op.authorizationHeader) { result in
                     switch result {
                     case .success():
-                        break
+                        if op.fake {
+                            DP3TTracing.activityDelegate?.fakeRequestCompleted(result: .success(200))
+                        } else {
+                            DP3TTracing.activityDelegate?.outstandingKeyUploadCompleted(result: .success(200))
+                        }
                     case let .failure(error):
                         errorHappend = error
+                        if op.fake {
+                            DP3TTracing.activityDelegate?.fakeRequestCompleted(result: .failure(error))
+                        } else {
+                            DP3TTracing.activityDelegate?.outstandingKeyUploadCompleted(result: .failure(error))
+                        }
                     }
                     group.leave()
                 }

@@ -11,6 +11,12 @@
 import Foundation
 import UIKit.UIApplication
 
+/// A delegate used to respond on DP3T events
+protocol KnownCasesSynchronizerDelegate: class {
+    /// We found a match
+    func didFindMatch()
+}
+
 /**
  Synchronizes data on known cases
  */
@@ -20,6 +26,8 @@ class KnownCasesSynchronizer {
 
     /// A DP3T matcher
     private weak var matcher: Matcher?
+
+    weak var delegate: KnownCasesSynchronizerDelegate?
 
     private let descriptor: ApplicationDescriptor
 
@@ -147,7 +155,10 @@ class KnownCasesSynchronizer {
             }
         }
 
-        var occuredError: DP3TTracingError?
+        var occuredErrors: [DP3TTracingError] = []
+        var totalNumberOfRequests: Int = 0
+
+        var matchfound: Bool = false
 
         for day in 0 ... daysToFetch {
             guard let currentKeyDate = calendar.date(byAdding: .day, value: day, to: minimumDate) else {
@@ -167,6 +178,7 @@ class KnownCasesSynchronizer {
                 continue
             }
 
+            totalNumberOfRequests += 1
             dispatchGroup.enter()
             tasksRunning += 1
             let task = service.getExposee(batchTimestamp: currentKeyDate) { [weak self] result in
@@ -177,12 +189,17 @@ class KnownCasesSynchronizer {
                     }
                     switch result {
                     case let .failure(error):
-                        occuredError = .networkingError(error: error)
+                        occuredErrors.append(.networkingError(error: error))
                     case let .success(knownCasesData):
                         do {
                             if let data = knownCasesData.data {
-                                self.logger.log("received data(%{public}d bytes) for %{public}@", data.count, currentKeyDate.description)
-                                try self.matcher?.receivedNewKnownCaseData(data, keyDate: currentKeyDate)
+                                if let matcher = self.matcher {
+                                    self.logger.log("received data(%{public}d bytes) for %{public}@", data.count, currentKeyDate.description)
+                                    let foundNewMatch = try matcher.receivedNewData(data, keyDate: currentKeyDate, now: now)
+                                    matchfound = matchfound || foundNewMatch
+                                }else {
+                                    self.logger.error("matcher not present")
+                                }
                             } else {
                                 self.logger.log("received no data for %{public}@", currentKeyDate.description)
                             }
@@ -191,12 +208,13 @@ class KnownCasesSynchronizer {
 
                         } catch let error as DP3TNetworkingError {
                             self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
-
-                            occuredError = .networkingError(error: error)
+                            occuredErrors.append(.networkingError(error: error))
+                        } catch let error as DP3TTracingError {
+                            self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
+                            occuredErrors.append(error)
                         } catch {
                             self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
-
-                            occuredError = .networkingError(error: .couldNotParseData(error: error, origin: 0))
+                            occuredErrors.append(.caseSynchronizationError(errors: [error]))
                         }
                     }
                     self.dispatchGroup.leave()
@@ -213,26 +231,25 @@ class KnownCasesSynchronizer {
 
             self.dataTasks.removeAll()
 
+            if matchfound {
+                self.delegate?.didFindMatch()
+            }
+
             guard self.isCancelled == false else {
                 callback?(.failure(.cancelled))
                 return
             }
 
-            do {
-                try self.matcher?.finalizeMatchingSession(now: now)
-            } catch {
-                self.logger.error("matcher finalize error: %{public}@", error.localizedDescription)
-                occuredError = .exposureNotificationError(error: error)
-            }
-
-            if let error = occuredError {
-                self.logger.error("finishing sync with error: %{public}@", error.localizedDescription)
-                callback?(.failure(error))
+            if let lastError = occuredErrors.last {
+                self.logger.error("finishing sync with error: %{public}@", lastError.localizedDescription)
+                callback?(.failure(lastError))
             } else {
                 self.logger.log("finishing sync successful")
                 self.defaults.lastSyncTimestamps = lastSyncStore
                 callback?(.success(()))
             }
+            
+            DP3TTracing.activityDelegate?.syncCompleted(totalRequest: totalNumberOfRequests, errors: occuredErrors)
         }
     }
 }

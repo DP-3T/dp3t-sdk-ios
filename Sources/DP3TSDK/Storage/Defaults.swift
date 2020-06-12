@@ -26,6 +26,8 @@ protocol DefaultStorage {
     var parameters: DP3TParameters { get set }
 
     var exposureDetectionDates: [Date] { get set }
+
+    func reset()
 }
 
 /// UserDefaults Storage Singleton

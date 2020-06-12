@@ -20,6 +20,7 @@ public protocol DP3TTracingDelegate: AnyObject {
 
 public protocol DP3TBackgroundHandler: AnyObject {
     func performBackgroundTasks(completionHandler: @escaping (_ success: Bool) -> Void)
+    func didScheduleBackgrounTask()
 }
 
 private var instance: DP3TSDK!
@@ -27,7 +28,7 @@ private var instance: DP3TSDK!
 /// DP3TTracing
 public enum DP3TTracing {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "0.6.0"
+    public static let frameworkVersion: String = "0.7.0"
 
     /// sets global parameter values which are used throughout the sdk
     public static var parameters: DP3TParameters {
@@ -175,4 +176,6 @@ public enum DP3TTracing {
         }
         get { nil }
     }
+
+    public static weak var activityDelegate: ActivityDelegate?
 }

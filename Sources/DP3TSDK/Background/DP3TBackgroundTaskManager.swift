@@ -12,10 +12,6 @@ import BackgroundTasks
 import Foundation
 import UIKit.UIApplication
 
-#if BACKGROUNDTASK_DEBUGGING
-    import UserNotifications
-#endif
-
 class DP3TBackgroundTaskManager {
     static let taskIdentifier: String = "org.dpppt.exposure-notification"
 
@@ -27,13 +23,13 @@ class DP3TBackgroundTaskManager {
 
     private let logger = Logger(DP3TBackgroundTaskManager.self, category: "backgroundTaskManager")
 
-    private weak var keyProvider: SecretKeyProvider!
+    private weak var keyProvider: DiagnosisKeysProvider!
 
-    private let serviceClient: ExposeeServiceClient
+    private let serviceClient: ExposeeServiceClientProtocol
 
     init(handler: DP3TBackgroundHandler?,
-         keyProvider: SecretKeyProvider,
-         serviceClient: ExposeeServiceClient) {
+         keyProvider: DiagnosisKeysProvider,
+         serviceClient: ExposeeServiceClientProtocol) {
         self.handler = handler
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
@@ -55,17 +51,6 @@ class DP3TBackgroundTaskManager {
 
     private func handleBackgroundTask(_ task: BGTask) {
         logger.trace()
-
-        #if BACKGROUNDTASK_DEBUGGING
-            let center = UNUserNotificationCenter.current()
-            let content = UNMutableNotificationContent()
-            content.title = DP3TBackgroundTaskManager.taskIdentifier
-            content.body = "Task got triggered at \(Date().description)"
-            content.sound = UNNotificationSound.default
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-            center.add(request)
-        #endif
 
         let queue = OperationQueue()
 
@@ -113,6 +98,7 @@ class DP3TBackgroundTaskManager {
         let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
         do {
+            handler?.didScheduleBackgrounTask()
             try BGTaskScheduler.shared.submit(taskRequest)
         } catch {
             logger.error("background task schedule failed error: %{public}@", error.localizedDescription)

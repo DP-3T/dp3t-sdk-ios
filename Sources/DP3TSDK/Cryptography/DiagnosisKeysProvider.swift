@@ -11,19 +11,39 @@
 import ExposureNotification
 import Foundation
 
-protocol SecretKeyProvider: class {
+protocol DiagnosisKeysProvider: class {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
+
+    func getFakeKeys(count: Int, startingFrom: Date) -> [CodableDiagnosisKey]
 
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 }
 
-private var logger = Logger(.main, category: "SecretKeyProvider")
+extension DiagnosisKeysProvider {
+    func getFakeKeys(count: Int, startingFrom: Date) -> [CodableDiagnosisKey] {
+        guard count > 0 else { return [] }
+        var keys: [CodableDiagnosisKey] = []
+        let parameters = Default.shared.parameters
+        for i in 0 ..< count {
+            let day = DayDate(date: startingFrom.addingTimeInterval(.day * Double(i) * (-1)))
+            let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
+            let key = (try? Crypto.generateRandomKey(lenght: parameters.crypto.keyLength)) ?? Data(count: parameters.crypto.keyLength)
+            keys.append(.init(keyData: key,
+                              rollingPeriod: rollingPeriod,
+                              rollingStartNumber: day.period,
+                              transmissionRiskLevel: .zero,
+                              fake: 1))
+        }
+        return keys
+    }
+}
 
-extension ENManager: SecretKeyProvider {
+fileprivate var logger = Logger(.main, category: "DiagnosisKeysProvider")
+
+extension ENManager: DiagnosisKeysProvider {
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.trace()
-        let handler: ENGetDiagnosisKeysHandler = { [weak self] keys, error in
-            guard let self = self else { return }
+        let handler: ENGetDiagnosisKeysHandler = { keys, error in
             if let error = error {
                 logger.error("ENManager.getDiagnosisKeys error: %{public}@", error.localizedDescription)
                 completionHandler(.failure(.exposureNotificationError(error: error)))
@@ -38,13 +58,11 @@ extension ENManager: SecretKeyProvider {
 
                 var transformedKeys = filteredKeys.map(CodableDiagnosisKey.init(key:))
 
-                // always make sure we fill up the keys to Default.shared.parameters.crypto.numberOfKeysToSubmit
-                transformedKeys.append(contentsOf: self.getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit - transformedKeys.count))
-
                 transformedKeys.sort { (lhs, rhs) -> Bool in
                     lhs.rollingStartNumber > rhs.rollingStartNumber
                 }
 
+                // never return more than numberOfKeysToSubmit
                 transformedKeys = Array(transformedKeys.prefix(Default.shared.parameters.crypto.numberOfKeysToSubmit))
 
                 completionHandler(.success(transformedKeys))
@@ -65,24 +83,7 @@ extension ENManager: SecretKeyProvider {
 
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.log("getFakeDiagnosisKeys")
-        completionHandler(.success(getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit)))
-    }
-
-    private func getFakeKeys(count: Int) -> [CodableDiagnosisKey] {
-        guard count > 0 else { return [] }
-        var keys: [CodableDiagnosisKey] = []
-        let parameters = Default.shared.parameters
-        for i in 0 ..< count {
-            let day = DayDate(date: Date().addingTimeInterval(.day * Double(i) * (-1)))
-            let rollingPeriod = UInt32(TimeInterval.day / (.minute * 10))
-            let key = (try? Crypto.generateRandomKey(lenght: parameters.crypto.keyLength)) ?? Data(count: parameters.crypto.keyLength)
-            keys.append(.init(keyData: key,
-                              rollingPeriod: rollingPeriod,
-                              rollingStartNumber: day.period,
-                              transmissionRiskLevel: .zero,
-                              fake: 1))
-        }
-        return keys
+        completionHandler(.success(getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit, startingFrom: .init(timeIntervalSinceNow: -.day))))
     }
 }
 

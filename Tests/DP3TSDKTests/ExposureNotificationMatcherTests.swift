@@ -47,13 +47,6 @@ private class MockManager: ENManager {
     }
 }
 
-private class MockMatcherDelegate: MatcherDelegate {
-    var matchedFound: Int = 0
-    func didFindMatch() {
-        matchedFound += 1
-    }
-}
-
 final class ExposureNotificationMatcherTests: XCTestCase {
     var keychain = MockKeychain()
 
@@ -71,8 +64,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
             data.subdata(in: position ..< position + size)
         })
-        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
-        try! matcher.finalizeMatchingSession()
+        _ = try! matcher.receivedNewData(archive.data!, keyDate: Date())
         XCTAssert(mockmanager.detectExposuresWasCalled)
         XCTAssert(mockmanager.data.contains(data))
     }
@@ -88,9 +80,8 @@ final class ExposureNotificationMatcherTests: XCTestCase {
             try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
                 data.subdata(in: position ..< position + size)
             })
-            try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
+            _ = try! matcher.receivedNewData(archive.data!, keyDate: Date())
         }
-        try! matcher.finalizeMatchingSession()
     }
 
     func testDetectingMatch() {
@@ -98,8 +89,6 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         let storage = ExposureDayStorage(keychain: keychain)
         let defaults = MockDefaults()
         let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
-        let delegate = MockMatcherDelegate()
-        matcher.delegate = delegate
 
         mockmanager.summary.attenuationDurations = [1800, 1800, 1800]
 
@@ -108,11 +97,10 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
             data.subdata(in: position ..< position + size)
         })
-        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
-        try! matcher.finalizeMatchingSession()
+        let foundMatch = try! matcher.receivedNewData(archive.data!, keyDate: Date())
         XCTAssert(mockmanager.detectExposuresWasCalled)
         XCTAssert(mockmanager.data.contains(data))
-        XCTAssertEqual(delegate.matchedFound, 1)
+        XCTAssertEqual(foundMatch, true)
     }
 
     func testDetectingMatchFirstBucketOnly() {
@@ -120,8 +108,6 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         let storage = ExposureDayStorage(keychain: keychain)
         let defaults = MockDefaults()
         let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
-        let delegate = MockMatcherDelegate()
-        matcher.delegate = delegate
 
         let firstBucket = Double(defaults.parameters.contactMatching.triggerThreshold * 60) / defaults.parameters.contactMatching.factorLow
         mockmanager.summary.attenuationDurations = [NSNumber(value: firstBucket), 0, 0]
@@ -131,11 +117,10 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
             data.subdata(in: position ..< position + size)
         })
-        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
-        try! matcher.finalizeMatchingSession()
+        let foundMatch = try! matcher.receivedNewData(archive.data!, keyDate: Date())
         XCTAssert(mockmanager.detectExposuresWasCalled)
         XCTAssert(mockmanager.data.contains(data))
-        XCTAssertEqual(delegate.matchedFound, 1)
+        XCTAssertEqual(foundMatch, true)
     }
 
     func testDetectingMatchSecondBucketOnly() {
@@ -143,8 +128,6 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         let storage = ExposureDayStorage(keychain: keychain)
         let defaults = MockDefaults()
         let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
-        let delegate = MockMatcherDelegate()
-        matcher.delegate = delegate
 
         let secondBucket = Double(defaults.parameters.contactMatching.triggerThreshold * 60) / defaults.parameters.contactMatching.factorHigh
         mockmanager.summary.attenuationDurations = [0, NSNumber(value: secondBucket), 0]
@@ -154,10 +137,9 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
             data.subdata(in: position ..< position + size)
         })
-        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
-        try! matcher.finalizeMatchingSession()
+        let foundMatch = try! matcher.receivedNewData(archive.data!, keyDate: Date())
         XCTAssert(mockmanager.detectExposuresWasCalled)
         XCTAssert(mockmanager.data.contains(data))
-        XCTAssertEqual(delegate.matchedFound, 1)
+        XCTAssertEqual(foundMatch, true)
     }
 }

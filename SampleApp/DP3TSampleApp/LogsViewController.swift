@@ -9,7 +9,6 @@
  */
 
 import DP3TSDK
-import DP3TSDK_LOGGING_STORAGE
 import UIKit
 
 class LogCell: UITableViewCell {
