@@ -14,17 +14,18 @@ import Foundation
 class MockMatcher: Matcher {
     var timingManager: ExposureDetectionTimingManager?
 
-    var delegate: MatcherDelegate?
-
     var error: Error?
 
     var timesCalledReceivedNewData: Int = 0
 
-    func receivedNewData(_ data: Data, keyDate: Date, now: Date) throws {
+    var findsMatch: Bool = false
+
+    func receivedNewData(_ data: Data, keyDate: Date, now: Date) throws -> Bool {
         timesCalledReceivedNewData += 1
         timingManager?.addDetection(timestamp: now)
         if let error = error {
             throw error
         }
+        return findsMatch
     }
 }
