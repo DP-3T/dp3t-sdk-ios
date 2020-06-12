@@ -15,8 +15,6 @@ import ZIPFoundation
 class ExposureNotificationMatcher: Matcher {
     weak var timingManager: ExposureDetectionTimingManager?
 
-    weak var delegate: MatcherDelegate?
-
     private let manager: ENManager
 
     private let exposureDayStorage: ExposureDayStorage
@@ -33,9 +31,9 @@ class ExposureNotificationMatcher: Matcher {
         self.defaults = defaults
     }
 
-    func receivedNewData(_ data: Data, keyDate: Date, now: Date = .init()) throws {
+    func receivedNewData(_ data: Data, keyDate: Date, now: Date = .init()) throws -> Bool {
         logger.trace()
-        try synchronousQueue.sync {
+        return try synchronousQueue.sync {
             var urls: [URL] = []
             if let archive = Archive(data: data, accessMode: .read) {
                 logger.debug("unarchived archive")
@@ -52,7 +50,7 @@ class ExposureNotificationMatcher: Matcher {
                 }
             }
 
-            guard urls.isEmpty == false else { return }
+            guard urls.isEmpty == false else { return false }
 
             let configuration: ENExposureConfiguration = .configuration()
 
@@ -88,11 +86,12 @@ class ExposureNotificationMatcher: Matcher {
                     logger.log("exposureSummary meets requiremnts")
                     let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: keyDate, reportDate: Date(), isDeleted: false)
                     exposureDayStorage.add(day)
-                    delegate?.didFindMatch()
+                    return true
                 } else {
                     logger.log("exposureSummary does not meet requirements")
                 }
             }
+            return false
         }
     }
 

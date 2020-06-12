@@ -137,7 +137,7 @@ class DP3TSDK {
                                   backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
 
         self.tracer.delegate = self
-        self.matcher.delegate = self
+        self.synchronizer.delegate = self
         self.backgroundTaskManager.register()
 
         log.trace()
@@ -339,7 +339,7 @@ extension DP3TSDK: TracerDelegate {
     }
 }
 
-extension DP3TSDK: MatcherDelegate {
+extension DP3TSDK: KnownCasesSynchronizerDelegate {
     func didFindMatch() {
         state.infectionStatus = InfectionStatus.getInfectionState(from: exposureDayStorage)
     }

@@ -11,6 +11,12 @@
 import Foundation
 import UIKit.UIApplication
 
+/// A delegate used to respond on DP3T events
+protocol KnownCasesSynchronizerDelegate: class {
+    /// We found a match
+    func didFindMatch()
+}
+
 /**
  Synchronizes data on known cases
  */
@@ -20,6 +26,8 @@ class KnownCasesSynchronizer {
 
     /// A DP3T matcher
     private weak var matcher: Matcher?
+
+    weak var delegate: KnownCasesSynchronizerDelegate?
 
     private let descriptor: ApplicationDescriptor
 
@@ -150,6 +158,8 @@ class KnownCasesSynchronizer {
         var occuredErrors: [DP3TTracingError] = []
         var totalNumberOfRequests: Int = 0
 
+        var matchfound: Bool = false
+
         for day in 0 ... daysToFetch {
             guard let currentKeyDate = calendar.date(byAdding: .day, value: day, to: minimumDate) else {
                 continue
@@ -183,8 +193,13 @@ class KnownCasesSynchronizer {
                     case let .success(knownCasesData):
                         do {
                             if let data = knownCasesData.data {
-                                self.logger.log("received data(%{public}d bytes) for %{public}@", data.count, currentKeyDate.description)
-                                try self.matcher?.receivedNewData(data, keyDate: currentKeyDate, now: now)
+                                if let matcher = self.matcher {
+                                    self.logger.log("received data(%{public}d bytes) for %{public}@", data.count, currentKeyDate.description)
+                                    let foundNewMatch = try matcher.receivedNewData(data, keyDate: currentKeyDate, now: now)
+                                    matchfound = matchfound || foundNewMatch
+                                }else {
+                                    self.logger.error("matcher not present")
+                                }
                             } else {
                                 self.logger.log("received no data for %{public}@", currentKeyDate.description)
                             }
@@ -215,6 +230,10 @@ class KnownCasesSynchronizer {
             guard let self = self else { return }
 
             self.dataTasks.removeAll()
+
+            if matchfound {
+                self.delegate?.didFindMatch()
+            }
 
             guard self.isCancelled == false else {
                 callback?(.failure(.cancelled))

@@ -43,6 +43,7 @@ class ExposureDayStorage {
     func getDays(filtered: Bool = true) -> [ExposureDay] {
         switch keychain.get(for: Self.key) {
         case let .success(days):
+            var days = days.sorted { (a, b) -> Bool in a.exposedDate > b.exposedDate }
             if filtered {
                 return days.filter { $0.isDeleted == false }
             } else {

@@ -18,6 +18,20 @@ class InfectionStatusTests: XCTestCase {
         keychain.reset()
     }
 
+    func testStorageSorting(){
+        let storage = ExposureDayStorage(keychain: keychain)
+        let day1 = Self.formatter.date(from: "19.01.2020 17:23")!
+        let day2 = Self.formatter.date(from: "20.01.2020 17:23")!
+        let day3 = Self.formatter.date(from: "21.01.2020 17:23")!
+        storage.add(.init(identifier: UUID(), exposedDate: day1, reportDate: .init(), isDeleted: false))
+        storage.add(.init(identifier: UUID(), exposedDate: day2, reportDate: .init(), isDeleted: false))
+        storage.add(.init(identifier: UUID(), exposedDate: day3, reportDate: .init(), isDeleted: false))
+        let days = storage.getDays()
+        XCTAssertEqual(DayDate(date: days[0].exposedDate), DayDate(date: day3))
+        XCTAssertEqual(DayDate(date: days[1].exposedDate), DayDate(date: day2))
+        XCTAssertEqual(DayDate(date: days[2].exposedDate), DayDate(date: day1))
+    }
+
     func testHealthy() {
         let storage = ExposureDayStorage(keychain: keychain)
         let mockDefaults = MockDefaults()
@@ -58,6 +72,26 @@ class InfectionStatusTests: XCTestCase {
         }
     }
 
+    func testExposedReturnNewestDay() {
+        let storage = ExposureDayStorage(keychain: keychain)
+        let day1 = Self.formatter.date(from: "19.01.2020 17:23")!
+        let day2 = Self.formatter.date(from: "20.01.2020 17:23")!
+        let day3 = Self.formatter.date(from: "21.01.2020 17:23")!
+        storage.add(.init(identifier: UUID(), exposedDate: day1, reportDate: .init(), isDeleted: false))
+        storage.add(.init(identifier: UUID(), exposedDate: day2, reportDate: .init(), isDeleted: false))
+        storage.add(.init(identifier: UUID(), exposedDate: day3, reportDate: .init(), isDeleted: false))
+        let mockDefaults = MockDefaults()
+        mockDefaults.didMarkAsInfected = false
+        let state = InfectionStatus.getInfectionState(from: storage, defaults: mockDefaults)
+        switch state {
+        case let .exposed(days):
+            XCTAssertEqual(days.count, 1)
+            XCTAssertEqual(DayDate(date: days.first!.exposedDate), DayDate(date: day3))
+        default:
+            XCTFail()
+        }
+    }
+
     func testHelthyDeletedExposed() {
         let storage = ExposureDayStorage(keychain: keychain)
         storage.add(.init(identifier: UUID(), exposedDate: .init(), reportDate: .init(), isDeleted: true))
@@ -71,4 +105,10 @@ class InfectionStatusTests: XCTestCase {
             XCTFail()
         }
     }
+
+    static var formatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "dd.MM.yyyy HH:mm"
+        return df
+    }()
 }

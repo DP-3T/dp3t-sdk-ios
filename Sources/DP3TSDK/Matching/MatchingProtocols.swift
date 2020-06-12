@@ -10,16 +10,10 @@
 
 import Foundation
 
-/// A delegate used to respond on DP3T events
-protocol MatcherDelegate: class {
-    /// We found a match
-    func didFindMatch()
-}
 
 protocol Matcher: class {
     var timingManager: ExposureDetectionTimingManager? { get set }
-
-    var delegate: MatcherDelegate? { get set }
-
-    func receivedNewData(_ data: Data, keyDate: Date, now: Date) throws
+    
+    /// returns true if we found a match
+    func receivedNewData(_ data: Data, keyDate: Date, now: Date) throws -> Bool 
 }
