@@ -26,16 +26,6 @@ private class MockTracer: Tracer {
     }
 }
 
-private class MockMatcher: Matcher {
-    var timingManager: ExposureDetectionTimingManager?
-
-    var delegate: MatcherDelegate?
-
-    func receivedNewKnownCaseData(_ data: Data, keyDate: Date) throws {}
-
-    func finalizeMatchingSession(now: Date) throws {}
-}
-
 private class MockKeyProvider: DiagnosisKeysProvider {
     var keys = [CodableDiagnosisKey]()
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {

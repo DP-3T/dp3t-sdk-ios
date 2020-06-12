@@ -21,7 +21,5 @@ protocol Matcher: class {
 
     var delegate: MatcherDelegate? { get set }
 
-    func receivedNewKnownCaseData(_ data: Data, keyDate: Date) throws
-
-    func finalizeMatchingSession(now: Date) throws
+    func receivedNewData(_ data: Data, keyDate: Date, now: Date) throws
 }

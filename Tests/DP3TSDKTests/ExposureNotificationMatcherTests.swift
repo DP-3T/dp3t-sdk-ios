@@ -71,8 +71,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
             data.subdata(in: position ..< position + size)
         })
-        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
-        try! matcher.finalizeMatchingSession()
+        try! matcher.receivedNewData(archive.data!, keyDate: Date())
         XCTAssert(mockmanager.detectExposuresWasCalled)
         XCTAssert(mockmanager.data.contains(data))
     }
@@ -88,9 +87,8 @@ final class ExposureNotificationMatcherTests: XCTestCase {
             try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
                 data.subdata(in: position ..< position + size)
             })
-            try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
+            try! matcher.receivedNewData(archive.data!, keyDate: Date())
         }
-        try! matcher.finalizeMatchingSession()
     }
 
     func testDetectingMatch() {
@@ -108,8 +106,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
             data.subdata(in: position ..< position + size)
         })
-        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
-        try! matcher.finalizeMatchingSession()
+        try! matcher.receivedNewData(archive.data!, keyDate: Date())
         XCTAssert(mockmanager.detectExposuresWasCalled)
         XCTAssert(mockmanager.data.contains(data))
         XCTAssertEqual(delegate.matchedFound, 1)
@@ -131,8 +128,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
             data.subdata(in: position ..< position + size)
         })
-        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
-        try! matcher.finalizeMatchingSession()
+        try! matcher.receivedNewData(archive.data!, keyDate: Date())
         XCTAssert(mockmanager.detectExposuresWasCalled)
         XCTAssert(mockmanager.data.contains(data))
         XCTAssertEqual(delegate.matchedFound, 1)
@@ -154,8 +150,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
             data.subdata(in: position ..< position + size)
         })
-        try! matcher.receivedNewKnownCaseData(archive.data!, keyDate: Date())
-        try! matcher.finalizeMatchingSession()
+        try! matcher.receivedNewData(archive.data!, keyDate: Date())
         XCTAssert(mockmanager.detectExposuresWasCalled)
         XCTAssert(mockmanager.data.contains(data))
         XCTAssertEqual(delegate.matchedFound, 1)
