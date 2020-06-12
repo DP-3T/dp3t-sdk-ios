@@ -1,5 +1,13 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 0.7.0 (12.06.2020)
+- Do not try to call getDiagnosisKeys() in background as iOS 13.5 does not allow delayed retrieval of last key in background
+- Re-introduce time drift detection (of 10min)
+- Do not sync when tracing is stopped 
+- Do not abort sync when individual days fail
+- Fixes key dates of fake keys 
+- Fixes ENError code 2 (realpath) by not keeping references to already deleted files
+
 ## Version 0.6.0 (04.06.2020)
 - Improved rate-limit handling
 
