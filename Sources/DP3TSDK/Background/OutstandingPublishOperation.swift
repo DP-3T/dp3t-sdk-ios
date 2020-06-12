@@ -9,6 +9,7 @@
  */
 
 import Foundation
+import UIKit.UIApplication
 
 class OutstandingPublishOperation: Operation {
     weak var keyProvider: DiagnosisKeysProvider!
@@ -44,6 +45,11 @@ class OutstandingPublishOperation: Operation {
                     // ignore outstanding keys older than one day, upload token will be invalid
                     logger.log("skipping outstanding key %{public}@ because of age and removing publish from storage", op.debugDescription)
                     storage.remove(publish: op)
+                    continue
+                }
+
+                if !op.fake && UIApplication.shared.applicationState != .active {
+                    // skip publish if we are not in foreground since apple does not allow calles to EN.getDiagnosisKeys in background
                     continue
                 }
 
