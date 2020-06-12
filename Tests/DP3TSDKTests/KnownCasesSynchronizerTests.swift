@@ -21,24 +21,14 @@ private class MockMatcher: Matcher {
 
     var error: Error?
 
-    var timesCalledNewKnownCaseDate: Int = 0
+    var timesCalledReceivedNewData: Int = 0
 
-    var timesToAddDetection: Int = 0
-
-    func receivedNewKnownCaseData(_: Data, keyDate _: Date) throws {
-        timesCalledNewKnownCaseDate += 1
-        timesToAddDetection += 1
-    }
-
-    func finalizeMatchingSession(now: Date) throws {
+    func receivedNewData(_ data: Data, keyDate: Date, now: Date) throws {
+        timesCalledReceivedNewData += 1
+        timingManager?.addDetection(timestamp: now)
         if let error = error {
             throw error
-        } else {
-            for _ in 0..<timesToAddDetection {
-                timingManager?.addDetection(timestamp: now)
-            }
         }
-        timesToAddDetection = 0
     }
 }
 
@@ -99,7 +89,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             }
             waitForExpectations(timeout: 1)
         }
-        XCTAssertEqual(matcher.timesCalledNewKnownCaseDate, 20)
+        XCTAssertEqual(matcher.timesCalledReceivedNewData, 20)
     }
 
     func testOnlyCallingMatcherOverMultipleDays() {
@@ -121,7 +111,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             }
             waitForExpectations(timeout: 1)
         }
-        XCTAssertEqual(matcher.timesCalledNewKnownCaseDate, days * 20)
+        XCTAssertEqual(matcher.timesCalledReceivedNewData, days * 20)
     }
 
     func testStoringLastSyncNoData() {

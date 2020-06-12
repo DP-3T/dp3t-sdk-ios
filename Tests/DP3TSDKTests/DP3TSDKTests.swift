@@ -31,9 +31,7 @@ private class MockMatcher: Matcher {
 
     var delegate: MatcherDelegate?
 
-    func receivedNewKnownCaseData(_ data: Data, keyDate: Date) throws {}
-
-    func finalizeMatchingSession(now: Date) throws {}
+    func receivedNewData(_ data: Data, keyDate: Date, now: Date) throws {}
 }
 
 private class MockKeyProvider: DiagnosisKeysProvider {
