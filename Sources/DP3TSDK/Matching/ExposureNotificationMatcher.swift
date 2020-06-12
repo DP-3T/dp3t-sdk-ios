@@ -42,8 +42,11 @@ class ExposureNotificationMatcher: Matcher {
                 for entry in archive {
                     let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
                         .appendingPathComponent(UUID().uuidString).appendingPathComponent(entry.path)
-
-                    _ = try archive.extract(entry, to: localURL)
+                    do {
+                        _ = try archive.extract(entry, to: localURL)
+                    } catch {
+                        throw DP3TNetworkingError.couldNotParseData(error: error, origin: 1)
+                    }
                     self.logger.debug("found %@ item in archive", entry.path)
                     urls.append(localURL)
                 }
@@ -68,7 +71,7 @@ class ExposureNotificationMatcher: Matcher {
             if let error = exposureDetectionError {
                 logger.error("ENManager.detectExposures failed error: %{public}@", error.localizedDescription)
                 try? urls.forEach(deleteDiagnosisKeyFile(at:))
-                throw error
+                throw DP3TTracingError.exposureNotificationError(error: error)
             }
 
             timingManager?.addDetection(timestamp: now)

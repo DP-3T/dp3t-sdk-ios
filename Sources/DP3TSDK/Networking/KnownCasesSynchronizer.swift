@@ -199,7 +199,7 @@ class KnownCasesSynchronizer {
                             occuredErrors.append(error)
                         } catch {
                             self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
-                            occuredErrors.append(.networkingError(error: .couldNotParseData(error: error, origin: 0)))
+                            occuredErrors.append(.caseSynchronizationError(errors: [error]))
                         }
                     }
                     self.dispatchGroup.leave()
