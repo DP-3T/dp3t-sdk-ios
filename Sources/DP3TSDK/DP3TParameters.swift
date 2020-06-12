@@ -12,7 +12,7 @@ import CoreBluetooth
 import Foundation
 
 public struct DP3TParameters: Codable {
-    static let parameterVersion: Int = 11
+    static let parameterVersion: Int = 12
 
     let version: Int
 
@@ -42,6 +42,8 @@ public struct DP3TParameters: Codable {
         public var syncHourMorning: Int = 6
 
         public var syncHourEvening: Int = 18
+
+        public var allowedServerTimeDiff: TimeInterval = .minute * 10
     }
 
     public struct ContactMatching: Codable {

@@ -86,6 +86,22 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             jwtVerifier = nil
         }
     }
+    func detectTimeshift(response: HTTPURLResponse) -> DP3TNetworkingError? {
+        guard let date = response.date else { return nil }
+
+        let adjustedDate = date.addingTimeInterval(response.age)
+
+        let timeShift = Date().timeIntervalSince(adjustedDate)
+
+        log.log("detected timeshift is %{public}.2f", timeShift)
+
+        if timeShift > Default.shared.parameters.networking.allowedServerTimeDiff {
+            log.error("detected timeshift exceeds threshold %(public).2f", timeShift)
+            return .timeInconsistency(shift: timeShift)
+        }
+
+        return nil
+    }
 
     /// Get all exposee for a known day
     /// - Parameters:
@@ -108,6 +124,11 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             }
             guard let httpResponse = response as? HTTPURLResponse else {
                 completion(.failure(.notHTTPResponse))
+                return
+            }
+
+            if let timeShiftError = self.detectTimeshift(response: httpResponse) {
+                completion(.failure(timeShiftError))
                 return
             }
 
@@ -262,6 +283,12 @@ internal extension HTTPURLResponse {
         guard let string = value(for: "date") else { return nil }
         return HTTPURLResponse.dateFormatter.date(from: string)
     }
+
+    var age: TimeInterval {
+        guard let string = value(for: "Age") else { return 0 }
+        return TimeInterval(string) ?? 0
+    }
+
 
     func value(for key: String) -> String? {
         if #available(iOS 13.0, *) {
