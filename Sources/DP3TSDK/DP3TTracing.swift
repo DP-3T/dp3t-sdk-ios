@@ -170,6 +170,15 @@ public enum DP3TTracing {
         instance = nil
     }
 
+    public static var loggingEnabled: Bool {
+        set {
+            Logger.loggingEnabled = newValue
+        }
+        get {
+            Logger.loggingEnabled
+        }
+    }
+
     public static var loggingDelegate: LoggingDelegate? {
         set {
             Logger.delegate = newValue

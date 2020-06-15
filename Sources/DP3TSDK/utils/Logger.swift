@@ -14,8 +14,18 @@ import Foundation
 class Logger {
     weak static var delegate: LoggingDelegate?
 
+    static var loggingEnabled: Bool = false
+
     let osLog: OSLog
     let category: String
+
+    var logger: OSLog {
+        if Self.loggingEnabled {
+            return osLog
+        }else {
+            return OSLog.disabled
+        }
+    }
 
     init(_ bundle: Bundle = .main, category: String? = nil) {
         self.category = category ?? "default"
@@ -48,12 +58,10 @@ class Logger {
     }
 
     func print(_ value: @autoclosure () -> Any) {
-        guard osLog.isEnabled(type: .debug) else { return }
         log("%{public}@", type: .debug, [String(describing: value())])
     }
 
     func dump(_ value: @autoclosure () -> Any) {
-        guard osLog.isEnabled(type: .debug) else { return }
         var string = String()
         Swift.dump(value(), to: &string)
         log("%{public}@", type: .debug, [string])
@@ -71,6 +79,8 @@ class Logger {
         // The Swift overlay of os_log prevents from accepting an unbounded number of args
         // http://www.openradar.me/33203955
 
+        guard logger.isEnabled(type: type), Self.loggingEnabled else { return }
+
         if let delegate = Logger.delegate {
             var string = message.withUTF8Buffer {
                 String(decoding: $0, as: UTF8.self)
@@ -82,13 +92,13 @@ class Logger {
 
         assert(a.count <= 6)
         switch a.count {
-        case 6: os_log(message, log: osLog, type: type, a[0], a[1], a[2], a[3], a[4], a[5])
-        case 5: os_log(message, log: osLog, type: type, a[0], a[1], a[2], a[3], a[4])
-        case 4: os_log(message, log: osLog, type: type, a[0], a[1], a[2], a[3])
-        case 3: os_log(message, log: osLog, type: type, a[0], a[1], a[2])
-        case 2: os_log(message, log: osLog, type: type, a[0], a[1])
-        case 1: os_log(message, log: osLog, type: type, a[0])
-        default: os_log(message, log: osLog, type: type)
+        case 6: os_log(message, log: logger, type: type, a[0], a[1], a[2], a[3], a[4], a[5])
+        case 5: os_log(message, log: logger, type: type, a[0], a[1], a[2], a[3], a[4])
+        case 4: os_log(message, log: logger, type: type, a[0], a[1], a[2], a[3])
+        case 3: os_log(message, log: logger, type: type, a[0], a[1], a[2])
+        case 2: os_log(message, log: logger, type: type, a[0], a[1])
+        case 1: os_log(message, log: logger, type: type, a[0])
+        default: os_log(message, log: logger, type: type)
         }
     }
 }
