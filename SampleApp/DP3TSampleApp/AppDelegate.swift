@@ -18,6 +18,7 @@ var baseUrl: URL = URL(string: "https://demo.dpppt.org/")!
 extension LoggingStorage: LoggingDelegate {}
 
 func initializeSDK() {
+    DP3TTracing.loggingEnabled = true
     if loggingStorage == nil {
         loggingStorage = try? .init()
         DP3TTracing.loggingDelegate = loggingStorage
