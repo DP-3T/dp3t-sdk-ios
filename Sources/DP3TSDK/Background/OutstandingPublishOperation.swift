@@ -9,7 +9,6 @@
  */
 
 import Foundation
-import UIKit.UIApplication
 
 class OutstandingPublishOperation: Operation {
     weak var keyProvider: DiagnosisKeysProvider!
@@ -19,16 +18,19 @@ class OutstandingPublishOperation: Operation {
 
     private let logger = Logger(OutstandingPublishOperation.self, category: "OutstandingPublishOperation")
 
+    private let runningInBackground: Bool
+
     var now: Date {
         .init()
     }
 
     static let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
 
-    init(keyProvider: DiagnosisKeysProvider, serviceClient: ExposeeServiceClientProtocol, storage: OutstandingPublishStorage = OutstandingPublishStorage()) {
+    init(keyProvider: DiagnosisKeysProvider, serviceClient: ExposeeServiceClientProtocol, storage: OutstandingPublishStorage = OutstandingPublishStorage(), runningInBackground: Bool) {
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
         self.storage = storage
+        self.runningInBackground = runningInBackground
     }
 
     override func main() {
@@ -39,7 +41,13 @@ class OutstandingPublishOperation: Operation {
             logger.log("%{public}d operations in queue", operations.count)
             let today = DayDate(date: now).dayMin
             let yesterday = today.addingTimeInterval(-.day)
-            for op in operations where op.dayToPublish < today {
+            for op in operations {
+
+                guard op.dayToPublish < today else {
+                    // ignore outstanding keys which are still in the future
+                    logger.log("skipping outstanding key %{public}@ until released by EN (one day after)", op.debugDescription)
+                    continue
+                }
 
                 if op.dayToPublish < yesterday {
                     // ignore outstanding keys older than one day, upload token will be invalid
@@ -48,8 +56,9 @@ class OutstandingPublishOperation: Operation {
                     continue
                 }
 
-                if UIApplication.shared.applicationState != .active {
+                if runningInBackground {
                     // skip publish if we are not in foreground since apple does not allow calles to EN.getDiagnosisKeys in background
+                    logger.log("skipping outstanding key %{public}@ because we are not in foreground", op.debugDescription)
                     continue
                 }
 

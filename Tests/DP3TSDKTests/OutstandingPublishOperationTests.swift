@@ -102,7 +102,8 @@ final class OutstandingPublishOperationTests: XCTestCase {
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
-                                                          storage: storage)
+                                                          storage: storage,
+                                                          runningInBackground: false)
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
@@ -127,7 +128,8 @@ final class OutstandingPublishOperationTests: XCTestCase {
         let operationQueue = OperationQueue()
         let operationToTest = MockOutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
-                                                          storage: storage)
+                                                          storage: storage,
+                                                          runningInBackground: false)
         operationToTest.mockDate = dateToPublish.addingTimeInterval(22 * .hour + 30 * .minute)
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
@@ -155,7 +157,8 @@ final class OutstandingPublishOperationTests: XCTestCase {
         let operationQueue = OperationQueue()
         let operationToTest = MockOutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
-                                                          storage: storage)
+                                                          storage: storage,
+                                                          runningInBackground: false)
         operationToTest.mockDate = dateToPublish.addingTimeInterval(.day + 1)
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
@@ -181,7 +184,8 @@ final class OutstandingPublishOperationTests: XCTestCase {
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
-                                                          storage: storage)
+                                                          storage: storage,
+                                                          runningInBackground: false)
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
@@ -214,7 +218,8 @@ final class OutstandingPublishOperationTests: XCTestCase {
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
-                                                          storage: storage)
+                                                          storage: storage,
+                                                          runningInBackground: false)
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
@@ -237,7 +242,8 @@ final class OutstandingPublishOperationTests: XCTestCase {
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
-                                                          storage: storage)
+                                                          storage: storage,
+                                                          runningInBackground: false)
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
@@ -263,7 +269,8 @@ final class OutstandingPublishOperationTests: XCTestCase {
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
-                                                          storage: storage)
+                                                          storage: storage,
+                                                          runningInBackground: false)
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
