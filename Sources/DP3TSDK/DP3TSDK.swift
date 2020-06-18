@@ -176,12 +176,6 @@ class DP3TSDK {
     func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
         log.trace()
 
-        if self.state.trackingState != .active && self.state.trackingState != .stopped {
-            log.error("cant run sync before being authorized")
-            callback?(.success(()))
-            return
-        }
-
         let group = DispatchGroup()
 
         let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider, serviceClient: service)
@@ -190,6 +184,13 @@ class DP3TSDK {
             group.leave()
         }
         OperationQueue().addOperation(outstandingPublishOperation)
+
+        // Skip sync when tracing inactive
+        if self.state.trackingState != .active && self.state.trackingState != .stopped {
+            log.error("Skip sync when tracking is inactive")
+            callback?(.success(()))
+            return
+        }
 
         group.enter()
         var storedResult: Result<Void, DP3TTracingError>?
