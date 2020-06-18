@@ -39,7 +39,13 @@ class OutstandingPublishOperation: Operation {
             logger.log("%{public}d operations in queue", operations.count)
             let today = DayDate(date: now).dayMin
             let yesterday = today.addingTimeInterval(-.day)
-            for op in operations where op.dayToPublish < today {
+            for op in operations {
+
+                guard op.dayToPublish < today else {
+                    // ignore outstanding keys which are still in the future
+                    logger.log("skipping outstanding key %{public}@ until released by EN (one day after)", op.debugDescription)
+                    continue
+                }
 
                 if op.dayToPublish < yesterday {
                     // ignore outstanding keys older than one day, upload token will be invalid
@@ -50,6 +56,7 @@ class OutstandingPublishOperation: Operation {
 
                 if UIApplication.shared.applicationState != .active {
                     // skip publish if we are not in foreground since apple does not allow calles to EN.getDiagnosisKeys in background
+                    logger.log("skipping outstanding key %{public}@ because we are not in foreground", op.debugDescription)
                     continue
                 }
 
