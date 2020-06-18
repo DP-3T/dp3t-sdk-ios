@@ -9,7 +9,6 @@
  */
 
 import Foundation
-import UIKit.UIApplication
 
 class OutstandingPublishOperation: Operation {
     weak var keyProvider: DiagnosisKeysProvider!
@@ -19,16 +18,19 @@ class OutstandingPublishOperation: Operation {
 
     private let logger = Logger(OutstandingPublishOperation.self, category: "OutstandingPublishOperation")
 
+    private let runningInBackground: Bool
+
     var now: Date {
         .init()
     }
 
     static let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
 
-    init(keyProvider: DiagnosisKeysProvider, serviceClient: ExposeeServiceClientProtocol, storage: OutstandingPublishStorage = OutstandingPublishStorage()) {
+    init(keyProvider: DiagnosisKeysProvider, serviceClient: ExposeeServiceClientProtocol, storage: OutstandingPublishStorage = OutstandingPublishStorage(), runningInBackground: Bool) {
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
         self.storage = storage
+        self.runningInBackground = runningInBackground
     }
 
     override func main() {
@@ -54,7 +56,7 @@ class OutstandingPublishOperation: Operation {
                     continue
                 }
 
-                if UIApplication.shared.applicationState != .active {
+                if runningInBackground {
                     // skip publish if we are not in foreground since apple does not allow calles to EN.getDiagnosisKeys in background
                     logger.log("skipping outstanding key %{public}@ because we are not in foreground", op.debugDescription)
                     continue

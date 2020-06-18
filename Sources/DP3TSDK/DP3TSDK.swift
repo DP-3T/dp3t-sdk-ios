@@ -178,7 +178,8 @@ class DP3TSDK {
 
         let group = DispatchGroup()
 
-        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider, serviceClient: service)
+        let runningInBackground = UIApplication.shared.applicationState == .background
+        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider, serviceClient: service, runningInBackground: runningInBackground)
         group.enter()
         outstandingPublishOperation.completionBlock = {
             group.leave()
