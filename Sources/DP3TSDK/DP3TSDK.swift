@@ -186,9 +186,9 @@ class DP3TSDK {
         }
         OperationQueue().addOperation(outstandingPublishOperation)
 
-        // Skip sync when tracing inactive
-        if self.state.trackingState != .active && self.state.trackingState != .stopped {
-            log.error("Skip sync when tracking is inactive")
+        // Skip sync when tracing is not active
+        if self.state.trackingState != .active {
+            log.error("Skip sync when tracking is not active")
             callback?(.success(()))
             return
         }
