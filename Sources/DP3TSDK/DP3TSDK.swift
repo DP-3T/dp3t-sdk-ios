@@ -173,7 +173,7 @@ class DP3TSDK {
     /// Perform a new sync
     /// - Parameter callback: callback
     /// - Throws: if a error happed
-    func sync(runningInBackground: Bool, callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
+    func sync(runningInBackground: Bool, callback: ((SyncResult) -> Void)?) {
         log.trace()
 
         let group = DispatchGroup()
@@ -188,7 +188,7 @@ class DP3TSDK {
         // Skip sync when tracing is not active
         if self.state.trackingState != .active {
             log.error("Skip sync when tracking is not active")
-            callback?(.success(()))
+            callback?(.skipped)
             return
         }
 
@@ -203,7 +203,7 @@ class DP3TSDK {
             switch storedResult! {
             case .success:
                 self.state.lastSync = Date()
-                callback?(.success(()))
+                callback?(.success)
             case let .failure(error):
                 callback?(.failure(error))
             }
