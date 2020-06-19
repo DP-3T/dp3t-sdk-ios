@@ -264,7 +264,8 @@ class ControlViewController: UIViewController {
     }
 
     @objc func sync() {
-        DP3TTracing.sync { [weak self] result in
+        let runningInBackground = UIApplication.shared.applicationState == .background
+        DP3TTracing.sync(runningInBackground: runningInBackground) { [weak self] result in
             switch result {
             case let .failure(error):
                 let ac = UIAlertController(title: "Error",

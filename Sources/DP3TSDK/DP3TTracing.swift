@@ -93,11 +93,11 @@ public enum DP3TTracing {
     /// Triggers sync with the backend to refresh the exposed list
     /// - Parameter callback: callback
 
-    public static func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
+    public static func sync(runningInBackground: Bool, callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
-        instance.sync { result in
+        instance.sync(runningInBackground: runningInBackground) { result in
             DispatchQueue.main.async {
                 callback?(result)
             }
@@ -105,7 +105,7 @@ public enum DP3TTracing {
     }
 
     /// Cancel any ongoing snyc
-    static func cancelSync() {
+    public static func cancelSync() {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
