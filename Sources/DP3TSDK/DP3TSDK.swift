@@ -173,23 +173,24 @@ class DP3TSDK {
     /// Perform a new sync
     /// - Parameter callback: callback
     /// - Throws: if a error happed
-    func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
+    func sync(runningInBackground: Bool, callback: ((SyncResult) -> Void)?) {
         log.trace()
-
-        if self.state.trackingState != .active && self.state.trackingState != .stopped {
-            log.error("cant run sync before being authorized")
-            callback?(.success(()))
-            return
-        }
 
         let group = DispatchGroup()
 
-        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider, serviceClient: service)
+        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider, serviceClient: service, runningInBackground: runningInBackground)
         group.enter()
         outstandingPublishOperation.completionBlock = {
             group.leave()
         }
         OperationQueue().addOperation(outstandingPublishOperation)
+
+        // Skip sync when tracing is not active
+        if self.state.trackingState != .active {
+            log.error("Skip sync when tracking is not active")
+            callback?(.skipped)
+            return
+        }
 
         group.enter()
         var storedResult: Result<Void, DP3TTracingError>?
@@ -202,7 +203,7 @@ class DP3TSDK {
             switch storedResult! {
             case .success:
                 self.state.lastSync = Date()
-                callback?(.success(()))
+                callback?(.success)
             case let .failure(error):
                 callback?(.failure(error))
             }
@@ -285,6 +286,7 @@ class DP3TSDK {
                         case let .success(outstandingPublish):
                             if !isFakeRequest {
                                 self?.state.infectionStatus = .infected
+                                self?.tracer.setEnabled(false, completionHandler: nil)
                             }
 
                             self?.outstandingPublishesStorage.add(outstandingPublish)

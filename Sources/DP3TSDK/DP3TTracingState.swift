@@ -68,3 +68,13 @@ public struct TracingState {
     /// Indicates if the user has enabled backgorundRefresh
     public var backgroundRefreshState: UIBackgroundRefreshStatus
 }
+
+/// Result of a sync
+public enum SyncResult {
+    /// Sync was successful
+    case success
+    /// An error occured
+    case failure(_ error: DP3TTracingError)
+    /// tracing is not active / sdk is still be in initialization phase
+    case skipped
+}

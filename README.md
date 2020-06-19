@@ -10,7 +10,7 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
 
 
 ## Introduction
-This is the first implementation of the DP-3T protocol using the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework of Apple/Google. Only approved government public health authorities can access the APIs. Therefore, using this SDK will result in an API error unless you were granted the `com.apple.developer.exposure-notification` entitlement by apple. Therefore the minimum deployment target is iOS 13.5.
+This is the implementation of the DP-3T protocol using the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework of Apple/Google. Only approved government public health authorities can access the APIs. Therefore, using this SDK will result in an API error unless you were granted the `com.apple.developer.exposure-notification` entitlement by apple. Therefore the minimum deployment target is iOS 13.5.
 
 Our prestandard solution that is not using the Apple/Google framework can be found under the [tag prestandard](https://github.com/DP-3T/dp3t-sdk-ios/tree/prestandard).
 
@@ -21,15 +21,8 @@ Our prestandard solution that is not using the Apple/Google framework can be fou
 * iOS Demo App: [dp3t-app-ios](https://github.com/DP-3T/dp3t-app-ios)
 * Backend SDK: [dp3t-sdk-backend](https://github.com/DP-3T/dp3t-sdk-backend)
 
-## Work in Progress
-The DP3T-SDK for iOS contains alpha-quality code only and is not yet complete. It has not yet been reviewed or audited for security and compatibility. We are both continuing the development and have started a security review. This project is truly open-source and we welcome any feedback on the code regarding both the implementation and security aspects.
-This repository contains the open prototype SDK, so please focus your feedback for this repository on implementation issues.
-
 ## Further Documentation
 The full set of documents for DP3T is at https://github.com/DP-3T/documents. Please refer to the technical documents and whitepapers for a description of the implementation.
-
-## Architecture
-A central discovery service is hosted on [Github](https://github.com/DP-3T/dp3t-discovery). This server provides the necessary information for the SDK to initialize itself. After the SDK loads the base url for its own backend, it will load the infected list from there, as well as post if a user is infected. This will also allow apps to fetch lists from other backend systems participating in this scheme and can handle roaming of users.
 
 ## Calibration App
 Included in this repository is a Calibration App that can run, debug and test the SDK directly without implementing it in a new app first. It collects additional data and stores it locally into a database to allow for tests with phones from different vendors. Various parameters of the SDK are exposed and can be changed at runtime. Additionally it provides an overview of how to use the SDK.
@@ -81,7 +74,7 @@ DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
 
   ```ruby
 
-  pod 'DP3TSDK', => '0.4.0'
+  pod 'DP3TSDK', => '1.0.0'
 
   ```
 
