@@ -1,0 +1,54 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Push a new build to AppCenter"
+  lane :distribute do
+
+  create_keychain(
+    name: "githubactionci",
+    password: "githubkeychain",
+    default_keychain: true,
+    unlock: true
+  )
+
+  match(
+    type: "development",
+    readonly: is_ci,
+    keychain_name: "githubactionci",
+    keychain_password: "githubkeychain"
+  )
+
+  update_code_signing_settings(
+    use_automatic_signing: false,
+    path: ENV["XCODE_PROJ"],
+    profile_name: ENV["sigh_"+ENV["APP_IDENTIFIER"] +"_development_profile-name"],
+    code_sign_identity: "iPhone Developer",
+    bundle_identifier: ENV["APP_IDENTIFIER"] 
+  )
+
+  increment_build_number(
+    build_number: getCustomBundleVersion()
+  )
+
+  build_app(
+    scheme: "Release",
+    export_method: "development"
+  )
+
+  appcenter_upload(
+    owner_type: "organization", 
+    file: ENV["IPA_OUTPUT_PATH"],
+    upload_build_only: true,
+    destinations: "Collaborators,Internal"
+  )
+  end
+
+  def getCustomBundleVersion()
+    # Produces Unique Build Numbers using current timestamp
+    datestring_now = DateTime.now.strftime('%y%m%d.%H%M')
+    bundle_version = "#{datestring_now}.#{ENV['GITHUB_RUN_NUMBER']}"
+    return bundle_version
+  end
+end
+
+

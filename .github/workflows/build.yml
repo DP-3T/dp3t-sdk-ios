@@ -1,0 +1,41 @@
+name: build
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  sdk:
+    runs-on: macOS-latest
+
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Switch to Xcode 11.5
+      run: sudo xcode-select --switch /Applications/Xcode_11.5.app
+
+    # Generate xcode project
+    - name: Generate xcodeproj
+      run: swift package generate-xcodeproj --xcconfig-overrides Sources/Config.xcconfig
+
+    # Compile project and run tests
+    - name: Compile and run tests
+      run: fastlane scan
+
+  sampleapp:
+    runs-on: macOS-latest
+
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Switch to Xcode 11.5
+      run: sudo xcode-select --switch /Applications/Xcode_11.5.app
+
+    # Compile sample app for iOS Simulator (no signing)
+    - name: Compile and run tests
+      run: fastlane gym --project SampleApp/DP3TSampleApp.xcodeproj --scheme "Debug" --skip_package_ipa true --destination "generic/platform=iOS Simulator"
+
