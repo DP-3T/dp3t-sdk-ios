@@ -247,7 +247,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
-        XCTAssertEqual(storage.removeCallCount, 0)
+        XCTAssertEqual(storage.removeCallCount, 1)
         XCTAssertEqual(service.addedExposeeListCount, 0)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 1)
@@ -274,7 +274,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
-        XCTAssertEqual(storage.removeCallCount, 0)
+        XCTAssertEqual(storage.removeCallCount, 1)
         XCTAssertEqual(service.addedExposeeListCount, 1)
         XCTAssertEqual(mockManager.fakeAccessedCount, 1)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
