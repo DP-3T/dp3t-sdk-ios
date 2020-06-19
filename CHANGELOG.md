@@ -1,5 +1,10 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 1.0.0 (19.06.2020)
+- Introduce possibility to turn off logging
+- Stop tracing when changing state to infected
+- Fixes issues when getting last key 
+
 ## Version 0.7.0 (12.06.2020)
 - Do not try to call getDiagnosisKeys() in background as iOS 13.5 does not allow delayed retrieval of last key in background
 - Re-introduce time drift detection (of 10min)
