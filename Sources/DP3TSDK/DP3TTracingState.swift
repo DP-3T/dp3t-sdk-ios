@@ -75,6 +75,6 @@ public enum SyncResult {
     case success
     /// An error occured
     case failure(_ error: DP3TTracingError)
-    /// tracing is not active, sdk could also still be in initialization phase
-    case tracingNotActive
+    /// tracing is not active / sdk is still be in initialization phase
+    case skipped
 }

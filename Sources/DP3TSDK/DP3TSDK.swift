@@ -188,7 +188,7 @@ class DP3TSDK {
         // Skip sync when tracing is not active
         if self.state.trackingState != .active {
             log.error("Skip sync when tracking is not active")
-            callback?(.tracingNotActive)
+            callback?(.skipped)
             return
         }
 
