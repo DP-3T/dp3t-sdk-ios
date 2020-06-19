@@ -108,6 +108,10 @@ class OutstandingPublishOperation: Operation {
                     } else {
                         logger.error("could not retrieve key")
                     }
+
+                    logger.log("removing publish operation %{public}@ from storage", op.debugDescription)
+                    storage.remove(publish: op)
+
                     self.cancel()
                     return
                 }
@@ -140,6 +144,10 @@ class OutstandingPublishOperation: Operation {
                     if let error = errorHappend {
                         logger.error("error happend while publishing key %{public}@: %{public}@", op.debugDescription, error.localizedDescription)
                     }
+
+                    logger.log("removing publish operation %{public}@ from storage", op.debugDescription)
+                    storage.remove(publish: op)
+
                     self.cancel()
                     return
                 }
