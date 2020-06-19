@@ -173,12 +173,11 @@ class DP3TSDK {
     /// Perform a new sync
     /// - Parameter callback: callback
     /// - Throws: if a error happed
-    func sync(callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
+    func sync(runningInBackground: Bool, callback: ((Result<Void, DP3TTracingError>) -> Void)?) {
         log.trace()
 
         let group = DispatchGroup()
 
-        let runningInBackground = UIApplication.shared.applicationState == .background
         let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider, serviceClient: service, runningInBackground: runningInBackground)
         group.enter()
         outstandingPublishOperation.completionBlock = {
