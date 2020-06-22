@@ -180,6 +180,7 @@ class KnownCasesSynchronizer {
             let task = service.getExposee(batchTimestamp: currentKeyDate) { [weak self] result in
                 guard let self = self else { return }
                 self.queue.sync {
+                    /// task could be cancelled in that case the dispatchGroup was already left so we don't do anything here
                     guard self.isCancelled == false else {
                         return
                     }
@@ -212,6 +213,10 @@ class KnownCasesSynchronizer {
                             self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
                             occuredErrors.append(.caseSynchronizationError(errors: [error]))
                         }
+                    }
+                    /// task could be cancelled in that case the dispatchGroup was already left so we don't do anything here
+                    guard self.isCancelled == false else {
+                        return
                     }
                     self.dispatchGroup.leave()
                     self.tasksRunning -= 1
