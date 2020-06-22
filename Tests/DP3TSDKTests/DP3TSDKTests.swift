@@ -14,6 +14,7 @@ import Foundation
 import XCTest
 
 private class MockTracer: Tracer {
+
     var delegate: TracerDelegate?
 
     var state: TrackingState = .active
@@ -23,6 +24,10 @@ private class MockTracer: Tracer {
     func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?) {
         isEnabled = enabled
         completionHandler?(nil)
+    }
+
+    func addInitialisationCallback(callback: @escaping () -> Void) {
+        callback()
     }
 }
 
@@ -79,7 +84,7 @@ class DP3TSDKTests: XCTestCase {
             case .failure(_):
                 XCTFail()
             case let .success(state):
-                XCTAssert(state.trackingState == .stopped)
+                XCTAssert(state.trackingState == .initialization)
             }
             exp.fulfill()
         }

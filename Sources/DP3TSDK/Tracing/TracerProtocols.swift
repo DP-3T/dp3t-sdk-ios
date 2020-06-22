@@ -20,4 +20,6 @@ protocol Tracer {
     var state: TrackingState { get }
 
     func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?)
+    
+    func addInitialisationCallback(callback: @escaping  ()-> Void )
 }

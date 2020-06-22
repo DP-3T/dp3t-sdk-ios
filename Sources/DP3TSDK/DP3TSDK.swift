@@ -212,7 +212,7 @@ class DP3TSDK {
         }
 
         if self.state.trackingState == .initialization {
-            DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
+            tracer.addInitialisationCallback {
                 sync()
             }
         } else  {
