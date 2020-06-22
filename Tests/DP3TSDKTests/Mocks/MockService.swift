@@ -21,15 +21,18 @@ class MockService: ExposeeServiceClientProtocol {
     var error: DP3TNetworkingError?
     var publishedUntil: Date = .init()
     var data: Data? = "Data".data(using: .utf8)
+    var errorAfter: Int = 0
 
     func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
         return session.dataTask(with: .init(url: URL(string: "http://www.google.com")!)) { _, _, _ in
-            if let error = self.error {
+            self.queue.sync {
+                self.requests.append(batchTimestamp)
+            }
+            
+            if let error = self.error, self.errorAfter <= 0 {
                 completion(.failure(error))
             } else {
-                self.queue.sync {
-                    self.requests.append(batchTimestamp)
-                }
+                self.errorAfter -= 1
                 completion(.success(.init(data: self.data, publishedUntil: self.publishedUntil)))
             }
         }
