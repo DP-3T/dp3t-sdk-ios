@@ -237,12 +237,13 @@ class KnownCasesSynchronizer {
                 return
             }
 
+            self.defaults.lastSyncTimestamps = lastSyncStore
+
             if let lastError = occuredErrors.last {
                 self.logger.error("finishing sync with error: %{public}@", lastError.localizedDescription)
                 callback?(.failure(lastError))
             } else {
                 self.logger.log("finishing sync successful")
-                self.defaults.lastSyncTimestamps = lastSyncStore
                 callback?(.success(()))
             }
             
