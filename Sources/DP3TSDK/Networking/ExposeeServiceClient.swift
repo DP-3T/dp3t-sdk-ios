@@ -275,8 +275,9 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 internal extension HTTPURLResponse {
     static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, dd MMMM yyyy HH:mm:ss ZZZ"
-        formatter.locale = Locale(identifier: "en")
+        formatter.dateFormat = "EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'"
+        formatter.timeZone = TimeZone(abbreviation: "GMT")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }()
 
