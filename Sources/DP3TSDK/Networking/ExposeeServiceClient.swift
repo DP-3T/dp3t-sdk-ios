@@ -96,7 +96,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         log.log("detected timeshift is %{public}.2f", timeShift)
 
         if timeShift > Default.shared.parameters.networking.allowedServerTimeDiff {
-            log.error("detected timeshift exceeds threshold %(public).2f", timeShift)
+            log.error("detected timeshift exceeds threshold %{public}.2f", Default.shared.parameters.networking.allowedServerTimeDiff)
             return .timeInconsistency(shift: timeShift)
         }
 
@@ -275,28 +275,20 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 internal extension HTTPURLResponse {
     static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, dd MMMM yyyy HH:mm:ss ZZZ"
+        formatter.dateFormat = "EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'"
+        formatter.timeZone = TimeZone(abbreviation: "GMT")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }()
 
     var date: Date? {
-        guard let string = value(for: "date") else { return nil }
+        guard let string = value(forHTTPHeaderField: "date") else { return nil }
         return HTTPURLResponse.dateFormatter.date(from: string)
     }
 
     var age: TimeInterval {
-        guard let string = value(for: "Age") else { return 0 }
+        guard let string = value(forHTTPHeaderField: "Age") else { return 0 }
         return TimeInterval(string) ?? 0
-    }
-
-
-    func value(for key: String) -> String? {
-        if #available(iOS 13.0, *) {
-            return value(forHTTPHeaderField: key)
-        } else {
-            // https://bugs.swift.org/browse/SR-2429
-            return (allHeaderFields as NSDictionary)[key] as? String
-        }
     }
 }
 

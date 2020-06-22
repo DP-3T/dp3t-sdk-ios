@@ -60,7 +60,7 @@ public class DP3TJWTVerifier {
     @available(iOS 11.0, *)
     @discardableResult
     public func verify<ClaimType: DP3TClaims>(claimType: ClaimType.Type, httpResponse: HTTPURLResponse, httpBody: Data, claimsLeeway _: TimeInterval = 10) throws -> ClaimType {
-        guard let jwtString = httpResponse.value(for: jwtTokenHeaderKey) else {
+        guard let jwtString = httpResponse.value(forHTTPHeaderField: jwtTokenHeaderKey) else {
             throw DP3TNetworkingError.jwtSignatureError(code: 1, debugDescription: "No JWT Token found in the provided response header field \(jwtTokenHeaderKey)")
         }
         do {
