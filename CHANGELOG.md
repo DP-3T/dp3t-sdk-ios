@@ -1,5 +1,9 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 1.0.1 (22.06.2020)
+- Make timeshift detection independent from locale / region settings
+- Update last sync timestamps of individual days that were successful even if some others failed
+
 ## Version 1.0.0 (19.06.2020)
 - Introduce possibility to turn off logging
 - Stop tracing when changing state to infected
