@@ -33,7 +33,7 @@ class ExposureNotificationTracer: Tracer {
     init(manager: ENManager) {
         self.manager = manager
 
-        state = .stopped
+        state = .initialization
 
         logger.log("calling ENMananger.activate")
         manager.activate { [weak self] error in
@@ -125,6 +125,8 @@ extension TrackingState {
 extension TrackingState: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
+        case .initialization:
+            return "initialization"
         case .active:
             return "active"
         case .stopped:
