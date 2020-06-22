@@ -254,6 +254,26 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         XCTAssertNotEqual(defaults.lastSyncTimestamps.count, 10)
     }
 
+    func testStoringOfSuccessfulDates(){
+        let matcher = MockMatcher()
+        let service = MockService()
+        let defaults = MockDefaults()
+        service.error = .HTTPFailureResponse(status: 400)
+        service.errorAfter = 5
+        let sync = KnownCasesSynchronizer(matcher: matcher,
+                                          service: service,
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+        let expecation = expectation(description: "syncExpectation")
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
+            expecation.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+
+        XCTAssertEqual(service.requests.count, 10)
+        XCTAssertEqual(defaults.lastSyncTimestamps.count, 5)
+    }
+
     static var formatter: DateFormatter = {
         let df = DateFormatter()
         df.dateFormat = "dd.MM.yyyy HH:mm"
