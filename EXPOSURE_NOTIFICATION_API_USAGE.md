@@ -23,7 +23,12 @@ To check for exposure on a given day (we check the past 10 days) we need to call
 
 #### Exposure Configuration
 
-The exposure configuration defines the configuration for the Apple scoring of exposures. In our case we ignore most of the scoring methods and only provide the thresholds for the duration at attenuation buckets. This allows us to group the duration of a contact with another device into three buckets regarding the messured attenuation values that we then use to detect if the contact was long enought and close ennough.
+The exposure configuration defines the configuration for the Apple scoring of exposures. In our case we ignore most of the scoring methods and only provide the thresholds for the duration at attenuation buckets. The thresholds for the attenuation buckets are loaded from our [config server](https://github.com/DP-3T/dp3t-config-backend-ch/blob/master/dpppt-config-backend/src/main/java/org/dpppt/switzerland/backend/sdk/config/ws/model/GAENSDKConfig.java). This allows us to group the duration of a contact with another device into three buckets regarding the measured attenuation values that we then use to detect if the contact was long enough and close ennough.
+To detect an exposure the following formula is used to compute the exposure duration:
+```
+durationAttenuationLow * factorLow + durationAtttenuationMedium * factorMedium
+```
+If this duration is at least as much as defined in the triggerThreshold a notification is triggered for that day.
 
 #### Diagnosis key URLs
 
