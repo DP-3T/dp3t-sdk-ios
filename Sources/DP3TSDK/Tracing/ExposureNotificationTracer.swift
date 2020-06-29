@@ -26,6 +26,8 @@ class ExposureNotificationTracer: Tracer {
 
     private let logger = Logger(ExposureNotificationTracer.self, category: "exposureNotificationTracer")
 
+    private let managerClass: ENManager.Type
+
     private(set) var state: TrackingState {
         didSet {
             guard oldValue != state else { return }
@@ -34,8 +36,9 @@ class ExposureNotificationTracer: Tracer {
         }
     }
 
-    init(manager: ENManager) {
+    init(manager: ENManager, managerClass: ENManager.Type = ENManager.self) {
         self.manager = manager
+        self.managerClass = managerClass
 
         state = .initialization
 
@@ -49,7 +52,9 @@ class ExposureNotificationTracer: Tracer {
                     self.initializeObservers()
                 }
                 self.logger.log("notify callbacks after initialisation (count: %d)", self.initializationCallbacks.count)
-                self.initializationCallbacks.forEach { $0() }
+                self.initializationCallbacks.forEach {
+                    DispatchQueue.main.async(execute: $0)
+                }
                 self.initializationCallbacks.removeAll()
             }
         }
@@ -63,7 +68,7 @@ class ExposureNotificationTracer: Tracer {
         queue.sync {
             self.logger.trace()
             guard self.state == .initialization else {
-                callback()
+                DispatchQueue.main.async(execute: callback)
                 return
             }
             initializationCallbacks.append(callback)
@@ -93,7 +98,7 @@ class ExposureNotificationTracer: Tracer {
 
     func updateState() {
         state = .init(state: manager.exposureNotificationStatus,
-                      authorizationStatus: ENManager.authorizationStatus,
+                      authorizationStatus: managerClass.authorizationStatus,
                       enabled: manager.exposureNotificationEnabled)
     }
 
