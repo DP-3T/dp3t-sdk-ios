@@ -10,16 +10,124 @@
 
 @testable import DP3TSDK
 import XCTest
-import ExposureNotification
 
 class ExposureNotificationTracerTests: XCTestCase {
+
+    var manager: MockENManager!
+    var tracer: ExposureNotificationTracer!
+
+    override func setUp() {
+        self.manager = MockENManager()
+        self.tracer = ExposureNotificationTracer(manager: manager, managerClass: MockENManager.self)
+    }
+
     func testCallingCallbacks() {
-        let manager = ENManager()
-        let tracer = ExposureNotificationTracer(manager: manager)
         let ex = expectation(description: "init")
         tracer.addInitialisationCallback {
             ex.fulfill()
         }
+        manager.completeActivation()
+        wait(for: [ex], timeout: 1)
+    }
+
+    func testCallingCallbacksAfterActivate() {
+        let ex = expectation(description: "init")
+        tracer.addInitialisationCallback {
+            ex.fulfill()
+        }
+        manager.completeActivation()
+        wait(for: [ex], timeout: 1)
+
+        let ex1 = expectation(description: "afterInit")
+        tracer.addInitialisationCallback {
+            ex1.fulfill()
+        }
+        wait(for: [ex1], timeout: 1)
+    }
+
+    func testStatusActive(){
+        manager.status = .active
+        MockENManager.authStatus = .authorized
+        manager.isEnabled = true
+
+        let ex = expectation(description: "init")
+        tracer.addInitialisationCallback {
+            XCTAssertEqual(self.tracer.state, TrackingState.active)
+
+            ex.fulfill()
+        }
+        manager.completeActivation()
+        wait(for: [ex], timeout: 1)
+    }
+
+    func testStatusStopped(){
+        manager.status = .active
+        MockENManager.authStatus = .authorized
+        manager.isEnabled = false
+
+        let ex = expectation(description: "init")
+        tracer.addInitialisationCallback {
+            XCTAssertEqual(self.tracer.state, TrackingState.stopped)
+
+            ex.fulfill()
+        }
+        manager.completeActivation()
+        wait(for: [ex], timeout: 1)
+    }
+
+    func testStatusInctiveBluetoothOff(){
+        manager.status = .bluetoothOff
+        MockENManager.authStatus = .authorized
+        manager.isEnabled = false
+
+        let ex = expectation(description: "init")
+        tracer.addInitialisationCallback {
+            XCTAssertEqual(self.tracer.state, TrackingState.inactive(error: .bluetoothTurnedOff))
+
+            ex.fulfill()
+        }
+        manager.completeActivation()
+        wait(for: [ex], timeout: 1)
+    }
+
+    func testStatusPermission(){
+        manager.status = .restricted
+        MockENManager.authStatus = .authorized
+        manager.isEnabled = false
+
+        let ex = expectation(description: "init")
+        tracer.addInitialisationCallback {
+            XCTAssertEqual(self.tracer.state, TrackingState.inactive(error: .permissonError))
+
+            ex.fulfill()
+        }
+        manager.completeActivation()
+        wait(for: [ex], timeout: 1)
+    }
+
+    func testStatusInitialisation(){
+        XCTAssertEqual(tracer.state, TrackingState.initialization)
+    }
+
+    func testKVOStatusUpdate(){
+        manager.status = .restricted
+        MockENManager.authStatus = .authorized
+        manager.isEnabled = false
+
+        let ex = expectation(description: "init")
+        tracer.addInitialisationCallback {
+            
+            XCTAssertEqual(self.tracer.state, TrackingState.inactive(error: .permissonError))
+
+            self.manager.status = .active
+            self.manager.isEnabled = true
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                XCTAssertEqual(self.tracer.state, TrackingState.active)
+                ex.fulfill()
+            }
+        }
+        manager.completeActivation()
         wait(for: [ex], timeout: 1)
     }
 }

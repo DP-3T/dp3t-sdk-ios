@@ -46,21 +46,29 @@ private class MockKeyProvider: DiagnosisKeysProvider {
 class DP3TSDKTests: XCTestCase {
 
     fileprivate var keychain: MockKeychain!
-    fileprivate var tracer: MockTracer!
-    fileprivate var matcher: MockMatcher!
+    fileprivate var tracer: ExposureNotificationTracer!
+    fileprivate var matcher: ExposureNotificationMatcher!
     fileprivate var service: MockService!
     fileprivate var defaults: MockDefaults!
     fileprivate var keyProvider: MockKeyProvider!
     fileprivate var descriptor: ApplicationDescriptor!
     fileprivate var backgroundTaskManager: DP3TBackgroundTaskManager!
+    fileprivate var manager: MockENManager!
+    fileprivate var exposureDayStorage: ExposureDayStorage!
     fileprivate var sdk: DP3TSDK!
 
     override func setUp() {
         keychain = MockKeychain()
-        tracer = MockTracer()
-        matcher = MockMatcher()
-        service = MockService()
+
+        manager = MockENManager()
+
+        exposureDayStorage = ExposureDayStorage(keychain: keychain)
+
         defaults = MockDefaults()
+        tracer = ExposureNotificationTracer(manager: manager, managerClass: MockENManager.self)
+        matcher = ExposureNotificationMatcher(manager: manager, exposureDayStorage: exposureDayStorage, defaults: defaults)
+
+        service = MockService()
         keyProvider = MockKeyProvider()
         descriptor = ApplicationDescriptor(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
         backgroundTaskManager = DP3TBackgroundTaskManager(handler: nil, keyProvider: keyProvider, serviceClient: service)
@@ -69,7 +77,7 @@ class DP3TSDKTests: XCTestCase {
                           tracer: tracer,
                           matcher: matcher,
                           diagnosisKeysProvider: keyProvider,
-                          exposureDayStorage: ExposureDayStorage(keychain: keychain),
+                          exposureDayStorage: exposureDayStorage,
                           outstandingPublishesStorage: OutstandingPublishStorage(keychain: keychain),
                           service: service,
                           synchronizer: KnownCasesSynchronizer(matcher: matcher, service: service, defaults: defaults, descriptor: descriptor),
@@ -97,7 +105,7 @@ class DP3TSDKTests: XCTestCase {
             exp.fulfill()
         }
         wait(for: [exp], timeout: 0.1)
-        XCTAssert(tracer.isEnabled)
+        XCTAssertEqual(tracer.state, TrackingState.active)
     }
 
     func testInfected(){
@@ -160,5 +168,36 @@ class DP3TSDKTests: XCTestCase {
         wait(for: [stateExpAfter], timeout: 0.1)
 
         XCTAssertThrowsError(try sdk.startTracing())
+    }
+
+    func testSyncDontCompleteBeforeInit(){
+        let exp = expectation(description: "sync")
+        exp.isInverted = true
+        sdk.sync(runningInBackground: false) { (result) in
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 0.1)
+    }
+
+    func testSyncCompleteAfterInit(){
+        let exp = expectation(description: "sync")
+        sdk.sync(runningInBackground: false) { (result) in
+            exp.fulfill()
+        }
+        manager.completeActivation()
+        wait(for: [exp], timeout: 0.1)
+    }
+
+    func testSyncWhenActive(){
+        let exp = expectation(description: "sync")
+        sdk.sync(runningInBackground: false) { (result) in
+            exp.fulfill()
+        }
+        manager.status = .active
+        MockENManager.authStatus = .authorized
+        manager.isEnabled = true
+        manager.completeActivation()
+        wait(for: [exp], timeout: 1.0)
+        XCTAssertEqual(service.requests.count, 10)
     }
 }
