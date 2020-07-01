@@ -91,7 +91,7 @@ class DP3TSDK {
 
         let synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service, descriptor: applicationDescriptor)
 
-        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service)
+        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service, tracer: tracer)
 
         self.init(applicationDescriptor: applicationDescriptor,
                   urlSession: urlSession,
