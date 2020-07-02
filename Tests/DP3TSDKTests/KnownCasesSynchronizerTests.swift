@@ -25,7 +25,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let now = Self.formatter.date(from: "19.05.2020 09:00")!
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: now) { _ in
+        sync.sync(now: now) { res in
+        XCTAssertEqual(res, SyncResult.success)
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -44,7 +45,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
+            XCTAssertEqual(res, SyncResult.success)
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -63,14 +65,19 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
 
         let today = DayDate().dayMin
+        var suceesses = 0
         for i in 0 ..< 24 * 4 {
             let time = today.addingTimeInterval(Double(i) * TimeInterval.hour / 4)
             let expecation = expectation(description: "syncExpectation")
-            sync.sync(now: time) { _ in
+            sync.sync(now: time) { res in
+                if res == .success {
+                    suceesses += 1
+                }
                 expecation.fulfill()
             }
             waitForExpectations(timeout: 1)
         }
+        XCTAssertEqual(suceesses, 2)
         XCTAssertEqual(matcher.timesCalledReceivedNewData, 20)
     }
 
@@ -106,7 +113,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
+            XCTAssertEqual(res, SyncResult.success)
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -124,7 +132,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!.addingTimeInterval(.day * 15)) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!.addingTimeInterval(.day * 15)) { res in
+            XCTAssertEqual(res, SyncResult.success)
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -143,7 +152,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { res in
+            XCTAssertEqual(res, SyncResult.failure(.networkingError(error: service.error!)))
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -161,7 +171,27 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { _ in
+        sync.sync(now: .init(timeIntervalSinceNow: .hour)) { res in
+            XCTAssertEqual(res, SyncResult.failure(.bluetoothTurnedOff))
+            expecation.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+
+        XCTAssert(defaults.lastSyncTimestamps.isEmpty)
+    }
+
+    func testDontStoreLastSyncSkipped() {
+        let matcher = MockMatcher()
+        let service = MockService()
+        let defaults = MockDefaults()
+        let sync = KnownCasesSynchronizer(matcher: matcher,
+                                          service: service,
+                                          defaults: defaults,
+                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+        let expecation = expectation(description: "syncExpectation")
+        let now = Self.formatter.date(from: "19.05.2020 01:00")!
+        sync.sync(now: now) { res in
+            XCTAssertEqual(res, SyncResult.skipped)
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -178,7 +208,9 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
+
+            XCTAssertEqual(res, SyncResult.success)
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -189,7 +221,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         service.requests = []
 
         let secondExpectation = expectation(description: "secondSyncExpectation")
-        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!.addingTimeInterval(.hour + .day)) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!.addingTimeInterval(.hour + .day)) { res in
+            XCTAssertEqual(res, SyncResult.success)
             secondExpectation.fulfill()
         }
         waitForExpectations(timeout: 1)
@@ -212,7 +245,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         expecation.expectedFulfillmentCount = iterations
 
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-            sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
+            sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
+                XCTAssertEqual(res, SyncResult.success)
                 expecation.fulfill()
             }
         }
@@ -265,7 +299,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { _ in
+        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
+            XCTAssertEqual(res, SyncResult.failure(.networkingError(error: service.error!)))
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)

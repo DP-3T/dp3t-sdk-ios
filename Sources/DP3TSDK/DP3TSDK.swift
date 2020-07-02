@@ -194,7 +194,7 @@ class DP3TSDK {
             }
 
             group.enter()
-            var storedResult: Result<Void, DP3TTracingError>?
+            var storedResult: SyncResult?
             self.synchronizer.sync { result in
                 storedResult = result
                 group.leave()
@@ -205,6 +205,8 @@ class DP3TSDK {
                 case .success:
                     self.state.lastSync = Date()
                     callback?(.success)
+                case .skipped:
+                    callback?(.skipped)
                 case let .failure(error):
                     callback?(.failure(error))
                 }
