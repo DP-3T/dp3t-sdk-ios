@@ -27,26 +27,37 @@ class DP3TBackgroundTaskManager {
 
     private let serviceClient: ExposeeServiceClientProtocol
 
+    private let tracer: Tracer
+
     init(handler: DP3TBackgroundHandler?,
          keyProvider: DiagnosisKeysProvider,
-         serviceClient: ExposeeServiceClientProtocol) {
+         serviceClient: ExposeeServiceClientProtocol,
+         tracer: Tracer) {
         self.handler = handler
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
+        self.tracer = tracer
+
+        NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     /// Register a background task
     func register() {
         logger.trace()
-        defer {
-            scheduleBackgroundTask()
-        }
         guard !Self.didRegisterBackgroundTask else { return }
         Self.didRegisterBackgroundTask = true
 
         BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .main) { task in
             self.handleBackgroundTask(task)
         }
+    }
+
+    @objc func appDidEnterBackground(){
+        scheduleBackgroundTask()
     }
 
     private func handleBackgroundTask(_ task: BGTask) {
@@ -95,6 +106,10 @@ class DP3TBackgroundTaskManager {
 
     private func scheduleBackgroundTask() {
         logger.trace()
+        guard tracer.isAuthorized else {
+            logger.log("skipping schedule because ENManager is not authorized")
+            return
+        }
         let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
         do {

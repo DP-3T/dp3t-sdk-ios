@@ -80,6 +80,8 @@ class ExposureNotificationTracer: Tracer {
         NotificationCenter.default.removeObserver(self)
     }
 
+    var isAuthorized: Bool { ENManager.authorizationStatus == .authorized }
+
     @objc func willEnterForeground(){
         updateState()
     }

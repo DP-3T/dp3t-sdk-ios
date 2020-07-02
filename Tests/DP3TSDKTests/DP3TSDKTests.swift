@@ -14,6 +14,7 @@ import Foundation
 import XCTest
 
 private class MockTracer: Tracer {
+    var isAuthorized: Bool = true
 
     var delegate: TracerDelegate?
 
@@ -71,7 +72,7 @@ class DP3TSDKTests: XCTestCase {
         service = MockService()
         keyProvider = MockKeyProvider()
         descriptor = ApplicationDescriptor(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
-        backgroundTaskManager = DP3TBackgroundTaskManager(handler: nil, keyProvider: keyProvider, serviceClient: service)
+        backgroundTaskManager = DP3TBackgroundTaskManager(handler: nil, keyProvider: keyProvider, serviceClient: service, tracer: tracer)
         sdk = DP3TSDK(applicationDescriptor: descriptor,
                           urlSession: MockSession(data: nil, urlResponse: nil, error: nil),
                           tracer: tracer,
