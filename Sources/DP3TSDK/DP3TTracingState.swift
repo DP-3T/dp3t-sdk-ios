@@ -36,6 +36,8 @@ public enum InfectionStatus {
 
 /// The tracking state of the bluetooth and the other networking api
 public enum TrackingState: Equatable {
+    /// The tracker is not fully initialized
+    case initialization
     /// The tracking is active and working fine
     case active
     /// The tracking is stopped by the user
@@ -45,8 +47,8 @@ public enum TrackingState: Equatable {
 
     public static func == (lhs: TrackingState, rhs: TrackingState) -> Bool {
         switch (lhs, rhs) {
-        case (.active, .active):
-            return true
+        case (.active, .active): fallthrough
+        case (.initialization, initialization): fallthrough
         case (.stopped, stopped):
             return true
         case let (.inactive(lhsError), .inactive(rhsError)):

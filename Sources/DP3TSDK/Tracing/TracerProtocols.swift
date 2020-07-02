@@ -22,4 +22,6 @@ protocol Tracer {
     var isAuthorized: Bool { get }
 
     func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?)
+    
+    func addInitialisationCallback(callback: @escaping  ()-> Void )
 }

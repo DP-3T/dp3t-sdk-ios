@@ -484,6 +484,8 @@ extension ControlViewController: UITextFieldDelegate {
 private extension TrackingState {
     var stringValue: String {
         switch self {
+        case .initialization:
+            return "initialization"
         case .active:
             return "active"
         case let .inactive(error):

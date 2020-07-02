@@ -11,41 +11,9 @@
 import Foundation
 
 @testable import DP3TSDK
-import ExposureNotification
 import Foundation
 import XCTest
 import ZIPFoundation
-
-private class MockSummary: ENExposureDetectionSummary {
-    override var attenuationDurations: [NSNumber] {
-        get {
-            internalAttenutationDurations
-        }
-        set {
-            internalAttenutationDurations = newValue
-        }
-    }
-
-    private var internalAttenutationDurations: [NSNumber] = [0, 0, 0]
-}
-
-private class MockManager: ENManager {
-    var detectExposuresWasCalled = false
-
-    var data: [Data] = []
-
-    var summary = MockSummary()
-
-    override func detectExposures(configuration _: ENExposureConfiguration, diagnosisKeyURLs: [URL], completionHandler: @escaping ENDetectExposuresHandler) -> Progress {
-        detectExposuresWasCalled = true
-        completionHandler(summary, nil)
-        diagnosisKeyURLs.forEach {
-            let diagData = try! Data(contentsOf: $0)
-            data.append(diagData)
-        }
-        return Progress()
-    }
-}
 
 final class ExposureNotificationMatcherTests: XCTestCase {
     var keychain = MockKeychain()
@@ -55,7 +23,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
     }
 
     func testCallingOfMatcher() {
-        let mockmanager = MockManager()
+        let mockmanager = MockENManager()
         let storage = ExposureDayStorage(keychain: keychain)
         let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage)
 
@@ -70,7 +38,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
     }
 
     func testCallingMatcherMultithreaded() {
-        let mockmanager = MockManager()
+        let mockmanager = MockENManager()
         let storage = ExposureDayStorage(keychain: keychain)
         let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage)
 
@@ -85,7 +53,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
     }
 
     func testDetectingMatch() {
-        let mockmanager = MockManager()
+        let mockmanager = MockENManager()
         let storage = ExposureDayStorage(keychain: keychain)
         let defaults = MockDefaults()
         let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
@@ -104,7 +72,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
     }
 
     func testDetectingMatchFirstBucketOnly() {
-        let mockmanager = MockManager()
+        let mockmanager = MockENManager()
         let storage = ExposureDayStorage(keychain: keychain)
         let defaults = MockDefaults()
         let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
@@ -124,7 +92,7 @@ final class ExposureNotificationMatcherTests: XCTestCase {
     }
 
     func testDetectingMatchSecondBucketOnly() {
-        let mockmanager = MockManager()
+        let mockmanager = MockENManager()
         let storage = ExposureDayStorage(keychain: keychain)
         let defaults = MockDefaults()
         let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
