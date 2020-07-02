@@ -72,11 +72,23 @@ public struct TracingState {
 }
 
 /// Result of a sync
-public enum SyncResult {
+public enum SyncResult: Equatable {
     /// Sync was successful
     case success
     /// An error occured
     case failure(_ error: DP3TTracingError)
-    /// tracing is not active / sdk is still be in initialization phase
+    /// tracing is not active / sdk is still be in initialization phase / sync is defered due to ratelimit
     case skipped
+
+    public static func == (lhs: SyncResult, rhs: SyncResult) -> Bool {
+        switch (lhs, rhs) {
+        case (.success, .success),
+             (.skipped, .skipped):
+            return true
+        case let (.failure(lhsError), .failure(rhsError)):
+            return lhsError.localizedDescription == rhsError.localizedDescription
+        default:
+            return false
+        }
+    }
 }
