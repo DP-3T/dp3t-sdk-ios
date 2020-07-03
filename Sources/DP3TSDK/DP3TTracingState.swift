@@ -36,6 +36,8 @@ public enum InfectionStatus {
 
 /// The tracking state of the bluetooth and the other networking api
 public enum TrackingState: Equatable {
+    /// The tracker is not fully initialized
+    case initialization
     /// The tracking is active and working fine
     case active
     /// The tracking is stopped by the user
@@ -45,8 +47,8 @@ public enum TrackingState: Equatable {
 
     public static func == (lhs: TrackingState, rhs: TrackingState) -> Bool {
         switch (lhs, rhs) {
-        case (.active, .active):
-            return true
+        case (.active, .active): fallthrough
+        case (.initialization, initialization): fallthrough
         case (.stopped, stopped):
             return true
         case let (.inactive(lhsError), .inactive(rhsError)):
@@ -70,11 +72,23 @@ public struct TracingState {
 }
 
 /// Result of a sync
-public enum SyncResult {
+public enum SyncResult: Equatable {
     /// Sync was successful
     case success
     /// An error occured
     case failure(_ error: DP3TTracingError)
-    /// tracing is not active / sdk is still be in initialization phase
+    /// tracing is not active / sdk is still be in initialization phase / sync is defered due to ratelimit
     case skipped
+
+    public static func == (lhs: SyncResult, rhs: SyncResult) -> Bool {
+        switch (lhs, rhs) {
+        case (.success, .success),
+             (.skipped, .skipped):
+            return true
+        case let (.failure(lhsError), .failure(rhsError)):
+            return lhsError.localizedDescription == rhsError.localizedDescription
+        default:
+            return false
+        }
+    }
 }

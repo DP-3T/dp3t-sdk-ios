@@ -74,7 +74,7 @@ DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
 
   ```ruby
 
-  pod 'DP3TSDK', => '1.0.1'
+  pod 'DP3TSDK', => '1.0.2'
 
   ```
 
@@ -145,7 +145,7 @@ DP3TTracing.iWasExposed(onset: Date(), authentication: .none) { result in
 ```
 
 ### Sync with backend for exposed user
-The SDK does not automatically sync with the backend for new exposed users. The app is responsible for fetching the new exposed users as it sees fit (periodically or via user input):
+The SDK automatically syncs with the backend for new exposed users by scheduling a background task.
 ```swift
 DP3TTracing.sync() { result in
 	// Handle result here
@@ -168,6 +168,8 @@ The SDK supports iOS 13 Background tasks. To enable them the app has to support 
 	<string>processing</string>
 </array>
 ```
+
+If a DP3TBackgroundHandler was passed to the SDK on initialisation it will be called on each background task execution by the SDK.
 
 ## License
 

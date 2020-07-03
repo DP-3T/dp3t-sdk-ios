@@ -91,7 +91,7 @@ class DP3TSDK {
 
         let synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service, descriptor: applicationDescriptor)
 
-        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service)
+        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service, tracer: tracer)
 
         self.init(applicationDescriptor: applicationDescriptor,
                   urlSession: urlSession,
@@ -131,7 +131,7 @@ class DP3TSDK {
         self.backgroundTaskManager = backgroundTaskManager
         self.defaults = defaults
 
-        self.state = TracingState(trackingState: .stopped,
+        self.state = TracingState(trackingState: .initialization,
                                   lastSync: defaults.lastSync,
                                   infectionStatus: InfectionStatus.getInfectionState(from: exposureDayStorage),
                                   backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
@@ -185,28 +185,40 @@ class DP3TSDK {
         }
         OperationQueue().addOperation(outstandingPublishOperation)
 
-        // Skip sync when tracing is not active
-        if self.state.trackingState != .active {
-            log.error("Skip sync when tracking is not active")
-            callback?(.skipped)
-            return
+        let sync = {
+            // Skip sync when tracing is not active
+            if self.state.trackingState != .active {
+                self.log.error("Skip sync when tracking is not active")
+                callback?(.skipped)
+                return
+            }
+
+            group.enter()
+            var storedResult: SyncResult?
+            self.synchronizer.sync { result in
+                storedResult = result
+                group.leave()
+            }
+            group.notify(queue: .main) { [weak self] in
+                guard let self = self else { return }
+                switch storedResult! {
+                case .success:
+                    self.state.lastSync = Date()
+                    callback?(.success)
+                case .skipped:
+                    callback?(.skipped)
+                case let .failure(error):
+                    callback?(.failure(error))
+                }
+            }
         }
 
-        group.enter()
-        var storedResult: Result<Void, DP3TTracingError>?
-        synchronizer.sync { result in
-            storedResult = result
-            group.leave()
-        }
-        group.notify(queue: .main) { [weak self] in
-            guard let self = self else { return }
-            switch storedResult! {
-            case .success:
-                self.state.lastSync = Date()
-                callback?(.success)
-            case let .failure(error):
-                callback?(.failure(error))
+        if self.state.trackingState == .initialization {
+            tracer.addInitialisationCallback {
+                sync()
             }
+        } else  {
+            sync()
         }
     }
 

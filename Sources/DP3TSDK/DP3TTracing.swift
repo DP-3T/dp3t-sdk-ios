@@ -28,7 +28,7 @@ private var instance: DP3TSDK!
 /// DP3TTracing
 public enum DP3TTracing {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "1.0.1"
+    public static let frameworkVersion: String = "1.0.2"
 
     /// sets global parameter values which are used throughout the sdk
     public static var parameters: DP3TParameters {

@@ -19,5 +19,9 @@ protocol Tracer {
 
     var state: TrackingState { get }
 
+    var isAuthorized: Bool { get }
+
     func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?)
+    
+    func addInitialisationCallback(callback: @escaping  ()-> Void )
 }

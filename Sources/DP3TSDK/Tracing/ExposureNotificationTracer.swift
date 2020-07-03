@@ -20,7 +20,13 @@ class ExposureNotificationTracer: Tracer {
 
     var delegate: TracerDelegate?
 
+    private let queue = DispatchQueue(label: "org.dpppt.tracer")
+
+    private var initializationCallbacks: [ () -> Void ] = []
+
     private let logger = Logger(ExposureNotificationTracer.self, category: "exposureNotificationTracer")
+
+    private let managerClass: ENManager.Type
 
     private(set) var state: TrackingState {
         didSet {
@@ -30,18 +36,26 @@ class ExposureNotificationTracer: Tracer {
         }
     }
 
-    init(manager: ENManager) {
+    init(manager: ENManager, managerClass: ENManager.Type = ENManager.self) {
         self.manager = manager
+        self.managerClass = managerClass
 
-        state = .stopped
+        state = .initialization
 
         logger.log("calling ENMananger.activate")
         manager.activate { [weak self] error in
             guard let self = self else { return }
-            if let error = error {
-                self.logger.error("ENMananger.activate failed error: %{public}@", error.localizedDescription)
-            } else {
-                self.initializeObservers()
+            self.queue.async {
+                if let error = error {
+                    self.logger.error("ENMananger.activate failed error: %{public}@", error.localizedDescription)
+                } else {
+                    self.initializeObservers()
+                }
+                self.logger.log("notify callbacks after initialisation (count: %d)", self.initializationCallbacks.count)
+                self.initializationCallbacks.forEach {
+                    DispatchQueue.main.async(execute: $0)
+                }
+                self.initializationCallbacks.removeAll()
             }
         }
         NotificationCenter.default.addObserver(self,
@@ -50,10 +64,23 @@ class ExposureNotificationTracer: Tracer {
                                                object: nil)
     }
 
+    func addInitialisationCallback(callback: @escaping  ()-> Void ){
+        queue.sync {
+            self.logger.trace()
+            guard self.state == .initialization else {
+                DispatchQueue.main.async(execute: callback)
+                return
+            }
+            initializationCallbacks.append(callback)
+        }
+    }
+
     deinit {
         manager.invalidate()
         NotificationCenter.default.removeObserver(self)
     }
+
+    var isAuthorized: Bool { ENManager.authorizationStatus == .authorized }
 
     @objc func willEnterForeground(){
         updateState()
@@ -73,7 +100,7 @@ class ExposureNotificationTracer: Tracer {
 
     func updateState() {
         state = .init(state: manager.exposureNotificationStatus,
-                      authorizationStatus: ENManager.authorizationStatus,
+                      authorizationStatus: managerClass.authorizationStatus,
                       enabled: manager.exposureNotificationEnabled)
     }
 
@@ -125,6 +152,8 @@ extension TrackingState {
 extension TrackingState: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
+        case .initialization:
+            return "initialization"
         case .active:
             return "active"
         case .stopped:

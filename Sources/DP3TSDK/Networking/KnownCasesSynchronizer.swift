@@ -68,7 +68,7 @@ class KnownCasesSynchronizer {
     }
 
     /// A callback result of async operations
-    typealias Callback = (Result<Void, DP3TTracingError>) -> Void
+    typealias Callback = (SyncResult) -> Void
 
     /// Synchronizes the local database with the remote one
     /// - Parameters:
@@ -244,7 +244,11 @@ class KnownCasesSynchronizer {
                 callback?(.failure(lastError))
             } else {
                 self.logger.log("finishing sync successful")
-                callback?(.success(()))
+                if totalNumberOfRequests != 0 {
+                    callback?(.success)
+                } else {
+                    callback?(.skipped)
+                }
             }
             
             DP3TTracing.activityDelegate?.syncCompleted(totalRequest: totalNumberOfRequests, errors: occuredErrors)
