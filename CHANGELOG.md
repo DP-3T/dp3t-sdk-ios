@@ -1,5 +1,10 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 1.0.2 (03.07.2020)
+- defers sync until ENManager is fully initialized
+- fixes in background task handling
+- fix in storing of lastSync Date
+
 ## Version 1.0.1 (22.06.2020)
 - Make timeshift detection independent from locale / region settings
 - Update last sync timestamps of individual days that were successful even if some others failed
