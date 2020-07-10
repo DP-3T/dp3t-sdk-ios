@@ -62,6 +62,7 @@ class DP3TBackgroundTaskManager {
 
     private func handleExposureNotificationBackgroundTask(_ task: BGTask) {
         logger.trace()
+        scheduleBackgroundTasks()
 
         let queue = OperationQueue()
 
@@ -100,8 +101,6 @@ class DP3TBackgroundTaskManager {
             let success = !queue.operations.map { $0.isCancelled }.contains(true)
             task.setTaskCompleted(success: success)
         }
-
-        scheduleBackgroundTask()
     }
 
     private func scheduleBackgroundTask() {
