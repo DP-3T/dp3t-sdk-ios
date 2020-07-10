@@ -13,7 +13,7 @@ import Foundation
 import UIKit.UIApplication
 
 class DP3TBackgroundTaskManager {
-    static let taskIdentifier: String = "org.dpppt.exposure-notification"
+    static let exposureNotificationTaskIdentifier: String = "org.dpppt.exposure-notification"
 
     /// Background task registration should only happen once per run
     /// If the SDK gets destroyed and initialized again this would cause a crash
@@ -51,8 +51,8 @@ class DP3TBackgroundTaskManager {
         guard !Self.didRegisterBackgroundTask else { return }
         Self.didRegisterBackgroundTask = true
 
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .main) { task in
-            self.handleBackgroundTask(task)
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.exposureNotificationTaskIdentifier, using: .main) { task in
+            self.handleExposureNotificationBackgroundTask(task)
         }
     }
 
@@ -60,7 +60,7 @@ class DP3TBackgroundTaskManager {
         scheduleBackgroundTask()
     }
 
-    private func handleBackgroundTask(_ task: BGTask) {
+    private func handleExposureNotificationBackgroundTask(_ task: BGTask) {
         logger.trace()
 
         let queue = OperationQueue()
@@ -110,7 +110,7 @@ class DP3TBackgroundTaskManager {
             logger.log("skipping schedule because ENManager is not authorized")
             return
         }
-        let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
+        let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.exposureNotificationTaskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
         do {
             handler?.didScheduleBackgrounTask()
