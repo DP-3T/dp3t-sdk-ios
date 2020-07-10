@@ -40,7 +40,7 @@ class KnownCasesSynchronizer {
 
     private var callbacks: [Callback] = []
 
-    private var backgroundTask: UIBackgroundTaskIdentifier?
+    private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
     private var dataTasks: [URLSessionDataTask] = []
 
@@ -88,8 +88,8 @@ class KnownCasesSynchronizer {
             self.callbacks.append(callback)
 
             // If we already have a background task we need to cancel it
-            if let backgroundTask = self.backgroundTask, backgroundTask != .invalid {
-                UIApplication.shared.endBackgroundTask(backgroundTask)
+            if self.backgroundTask != .invalid {
+                UIApplication.shared.endBackgroundTask(self.backgroundTask)
                 self.backgroundTask = .invalid
             }
 
@@ -101,7 +101,7 @@ class KnownCasesSynchronizer {
             self.internalSync(now: now) { [weak self] result in
                 guard let self = self else { return }
                 self.queue.async {
-                    UIApplication.shared.endBackgroundTask(self.backgroundTask!)
+                    UIApplication.shared.endBackgroundTask(self.backgroundTask)
                     self.backgroundTask = .invalid
                     self.callbacks.forEach { $0(result) }
                     self.callbacks.removeAll()
