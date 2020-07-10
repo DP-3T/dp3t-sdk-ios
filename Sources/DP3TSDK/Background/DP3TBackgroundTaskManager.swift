@@ -13,7 +13,8 @@ import Foundation
 import UIKit.UIApplication
 
 class DP3TBackgroundTaskManager {
-    static let taskIdentifier: String = "org.dpppt.exposure-notification"
+    static let exposureNotificationTaskIdentifier: String = "org.dpppt.exposure-notification"
+    static let refreshTaskIdentifier: String = "org.dpppt.refresh"
 
     /// Background task registration should only happen once per run
     /// If the SDK gets destroyed and initialized again this would cause a crash
@@ -51,17 +52,23 @@ class DP3TBackgroundTaskManager {
         guard !Self.didRegisterBackgroundTask else { return }
         Self.didRegisterBackgroundTask = true
 
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.taskIdentifier, using: .main) { task in
-            self.handleBackgroundTask(task)
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.exposureNotificationTaskIdentifier, using: .main) { task in
+            self.handleExposureNotificationBackgroundTask(task)
+        }
+
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.refreshTaskIdentifier, using: .main) { task in
+            // Downcast the parameter to an app refresh task as this identifier is used for a refresh request.
+            self.handleRefreshTask(task as! BGAppRefreshTask)
         }
     }
 
     @objc func appDidEnterBackground(){
-        scheduleBackgroundTask()
+        scheduleBackgroundTasks()
     }
 
-    private func handleBackgroundTask(_ task: BGTask) {
+    private func handleExposureNotificationBackgroundTask(_ task: BGTask) {
         logger.trace()
+        scheduleBackgroundTasks()
 
         let queue = OperationQueue()
 
@@ -72,7 +79,7 @@ class DP3TBackgroundTaskManager {
 
             completionGroup.enter()
             handlerOperation.completionBlock = { [weak self] in
-                self?.logger.log("handlerOperation finished")
+                self?.logger.log("Exposure notification handlerOperation finished")
                 completionGroup.leave()
             }
 
@@ -83,40 +90,91 @@ class DP3TBackgroundTaskManager {
 
         completionGroup.enter()
         syncOperation.completionBlock = { [weak self] in
-            self?.logger.log("syncOperation finished")
+            self?.logger.log("SyncOperation finished")
             completionGroup.leave()
         }
 
         queue.addOperation(syncOperation)
 
         task.expirationHandler = { [weak self] in
-            self?.logger.error("DP3TBackgroundTaskManager expiration handler called")
+            self?.logger.error("Exposure notification task expiration handler called")
             queue.cancelAllOperations()
         }
 
         completionGroup.notify(queue: .main) { [weak self] in
-            self?.logger.log("DP3TBackgroundTaskManager task completed")
+            self?.logger.log("Exposure notification task completed")
 
             let success = !queue.operations.map { $0.isCancelled }.contains(true)
             task.setTaskCompleted(success: success)
         }
-
-        scheduleBackgroundTask()
     }
 
-    private func scheduleBackgroundTask() {
+    private func handleRefreshTask(_ task: BGTask) {
         logger.trace()
+        scheduleBackgroundTasks()
+
+        let queue = OperationQueue()
+        let completionGroup = DispatchGroup()
+
+        if let handler = handler {
+            let handlerOperation = HandlerOperation(handler: handler)
+
+            completionGroup.enter()
+            handlerOperation.completionBlock = { [weak self] in
+                self?.logger.log("Refresh handlerOperation finished")
+                completionGroup.leave()
+            }
+
+            queue.addOperation(handlerOperation)
+        }
+
+        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: keyProvider,
+                                                                      serviceClient: serviceClient,
+                                                                      runningInBackground: true)
+        completionGroup.enter()
+        outstandingPublishOperation.completionBlock = {
+            completionGroup.leave()
+        }
+        queue.addOperation(outstandingPublishOperation)
+
+        task.expirationHandler = { [weak self] in
+            self?.logger.error("Refresh task expiration handler called")
+            queue.cancelAllOperations()
+        }
+
+        completionGroup.notify(queue: .main) { [weak self] in
+            self?.logger.log("Refresh task completed")
+
+            let success = !queue.operations.map { $0.isCancelled }.contains(true)
+            task.setTaskCompleted(success: success)
+        }
+    }
+
+    private func scheduleBackgroundTasks() {
+        logger.trace()
+
+        // Schedule next app refresh task 12h in the future
+        let refreshRequest = BGAppRefreshTaskRequest(identifier: DP3TBackgroundTaskManager.refreshTaskIdentifier)
+        refreshRequest.earliestBeginDate = Date(timeIntervalSinceNow: 12 * 60 * 60)
+
+        do {
+            try BGTaskScheduler.shared.submit(refreshRequest)
+        } catch {
+            logger.error("Scheduling refresh task failed error: %{public}@", error.localizedDescription)
+        }
+
+        // Only schedule exposure notification task after EN is authorized
         guard tracer.isAuthorized else {
-            logger.log("skipping schedule because ENManager is not authorized")
+            logger.log("Skipping scheduling of exposure notification task because ENManager is not authorized")
             return
         }
-        let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.taskIdentifier)
+        let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.exposureNotificationTaskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
         do {
             handler?.didScheduleBackgrounTask()
             try BGTaskScheduler.shared.submit(taskRequest)
         } catch {
-            logger.error("background task schedule failed error: %{public}@", error.localizedDescription)
+            logger.error("Exposure notification task schedule failed error: %{public}@", error.localizedDescription)
         }
     }
 }

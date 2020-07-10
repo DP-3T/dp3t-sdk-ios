@@ -154,18 +154,20 @@ DP3TTracing.sync() { result in
 
 #### Background Tasks
 
-The SDK supports iOS 13 Background tasks. To enable them the app has to support the `Background process` capability and include  `org.dpppt.exposure-notification` in the `BGTaskSchedulerPermittedIdentifiers`  `Info.plist` property.
+The SDK supports iOS 13 Background tasks. To enable them the app has to support the `Background process` and `Background fetch` capabilities and include  `org.dpppt.exposure-notification` and `org.dpppt.refresh` in the `BGTaskSchedulerPermittedIdentifiers`  `Info.plist` property.
 
 `Info.plist` sample:
 
 ```swift
 <key>BGTaskSchedulerPermittedIdentifiers</key>
 <array>
-	<string>org.dpppt.exposure-notification</string>
+  <string>org.dpppt.exposure-notification</string>
+  <string>org.dpppt.refresh</string>
 </array>
 <key>UIBackgroundModes</key>
-	<array>
-	<string>processing</string>
+<array>
+  <string>processing</string>
+  <string>fetch</string>
 </array>
 ```
 
