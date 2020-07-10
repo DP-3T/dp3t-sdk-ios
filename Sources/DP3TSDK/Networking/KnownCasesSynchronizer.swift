@@ -95,7 +95,8 @@ class KnownCasesSynchronizer {
 
             self.backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "org.dpppt.sync") { [weak self] in
                 guard let self = self else { return }
-                self.cancelSync()
+                UIApplication.shared.endBackgroundTask(self.backgroundTask)
+                self.backgroundTask = .invalid
             }
 
             self.internalSync(now: now) { [weak self] result in
@@ -111,7 +112,7 @@ class KnownCasesSynchronizer {
     }
 
     func cancelSync() {
-        queue.sync { [weak self] in
+        queue.async { [weak self] in
             guard let self = self else { return }
             self.isCancelled = true
 
