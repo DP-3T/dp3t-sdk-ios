@@ -10,7 +10,7 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
 
 
 ## Introduction
-This is the implementation of the DP-3T protocol using the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework of Apple/Google. Only approved government public health authorities can access the APIs. Therefore, using this SDK will result in an API error unless you were granted the `com.apple.developer.exposure-notification` entitlement by apple. Therefore the minimum deployment target is iOS 13.5.
+This is the implementation of the DP-3T protocol using the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework of Apple/Google. Only approved government public health authorities can access the APIs. Therefore, using this SDK will result in an API error unless you were granted the `com.apple.developer.exposure-notification` entitlement by Apple. The ExposureNotification.framework is available starting with iOS 13.5.
 
 Our prestandard solution that is not using the Apple/Google framework can be found under the [tag prestandard](https://github.com/DP-3T/dp3t-sdk-ios/tree/prestandard).
 
@@ -25,7 +25,7 @@ Our prestandard solution that is not using the Apple/Google framework can be fou
 The full set of documents for DP3T is at https://github.com/DP-3T/documents. Please refer to the technical documents and whitepapers for a description of the implementation.
 
 ## Calibration App
-Included in this repository is a Calibration App that can run, debug and test the SDK directly without implementing it in a new app first. It collects additional data and stores it locally into a database to allow for tests with phones from different vendors. Various parameters of the SDK are exposed and can be changed at runtime. Additionally it provides an overview of how to use the SDK.
+Included in this repository is a Calibration App that can run, debug and test the SDK directly without implementing it in a new app first. Various parameters of the SDK are exposed and can be changed at runtime. Additionally it provides an overview of how to use the SDK.
 
 <p align="center">
   <img src="SampleApp/screenshots/1.png" width="256">
@@ -44,12 +44,12 @@ init | Initializes the SDK and configures it | `initialize(applicationDescriptor
 ### Methods 
 Name | Description | Function Name
 ---- | ----------- | -------------
-startTracing | Starts Bluetooth tracing | `func startTracing(completionHandler: )throws` 
-stopTracing | Stops Bluetooth tracing | `func stopTracing(completionHandler:)` 
+startTracing | Starts EN tracing | `func startTracing(completionHandler: )throws` 
+stopTracing | Stops EN tracing | `func stopTracing(completionHandler:)` 
 sync | Pro-actively triggers sync with backend to refresh exposed list | `func sync(callback:)` 
 status | Returns a TracingState-Object describing the current state. This contains:<br/>- `numberOfHandshakes` : `Int` <br /> - `trackingState` : `TrackingState` <br /> - `lastSync` : `Date` <br /> - `infectionStatus`:`InfectionStatus`<br /> - `backgroundRefreshState`:`UIBackgroundRefreshStatus ` | `func status(callback:)` 
 iWasExposed | This method must be called upon positive test. | `func iWasExposed(onset:authentication:isFakeRequest:callback:)` 
-reset | Removes all SDK related data (key and database) and de-initializes SDK | `func reset() throws`
+reset | Removes all SDK related data | `func reset() throws`
 
 
 ## Installation
@@ -105,20 +105,6 @@ To start and stop tracing use
 try DP3TTracing.startTracing()
 DP3TTracing.stopTracing()
 ```
-Make sure that the app includes in the `Info.plist` the bluetooth keys `NSBluetoothAlwaysUsageDescription` and `NSBluetoothPeripheralUsageDescription` and that the user has granted the app permission to use the Bluetooth periferals. Also the app as to support `BackgroundMode` capability for `bluetooth-central` and `bluetooth-peripheral`.
-
-`Info.plist` sample:
-```swift
-<key>UIBackgroundModes</key>
-  <array>
-    <string>bluetooth-central</string>
-    <string>bluetooth-peripheral</string>
-  </array>
-<key>NSBluetoothAlwaysUsageDescription</key>
-  <string>User facing text justifying bluetooth usage</string>
-<key>NSBluetoothPeripheralUsageDescription</key>
-  <string>User facing text justifying bluetooth usage</string>
-```
 
 ### Checking the current tracing status
 ```swift
@@ -154,7 +140,7 @@ DP3TTracing.sync() { result in
 
 #### Background Tasks
 
-The SDK supports iOS 13 Background tasks. To enable them the app has to support the `Background process` and `Background fetch` capabilities and include  `org.dpppt.exposure-notification` and `org.dpppt.refresh` in the `BGTaskSchedulerPermittedIdentifiers`  `Info.plist` property.
+The SDK supports iOS 13 background tasks. It uses the provided `exposure-notification` background processing task as well as the `BGAppRefreshTask`. To enable them the app has to support the `Background process` and `Background fetch` capabilities and include  `org.dpppt.exposure-notification` and `org.dpppt.refresh` in the `BGTaskSchedulerPermittedIdentifiers`  `Info.plist` property.
 
 `Info.plist` sample:
 
@@ -171,7 +157,7 @@ The SDK supports iOS 13 Background tasks. To enable them the app has to support 
 </array>
 ```
 
-If a DP3TBackgroundHandler was passed to the SDK on initialisation it will be called on each background task execution by the SDK.
+If a `DP3TBackgroundHandler` was passed to the SDK on initialisation it will be called on each background task execution by the SDK.
 
 ## License
 
