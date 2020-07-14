@@ -146,7 +146,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 completion(.success(.init(data: nil, publishedUntil: publishedUntil)))
                 return
             default:
-                completion(.failure(.HTTPFailureResponse(status: httpStatus)))
+                completion(.failure(.HTTPFailureResponse(status: httpStatus, data: data)))
                 return
             }
 
@@ -200,7 +200,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
         request.httpBody = payload
 
-        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))
                 return
@@ -212,7 +212,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
             let statusCode = httpResponse.statusCode
             guard statusCode == 200 else {
-                completion(.failure(.HTTPFailureResponse(status: statusCode)))
+                completion(.failure(.HTTPFailureResponse(status: statusCode, data: data)))
                 return
             }
 
@@ -246,7 +246,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         }
         request.httpBody = payload
 
-        let task = urlSession.dataTask(with: request, completionHandler: { _, response, error in
+        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))
                 return
@@ -258,7 +258,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
             let statusCode = httpResponse.statusCode
             guard statusCode == 200 else {
-                completion(.failure(.HTTPFailureResponse(status: statusCode)))
+                completion(.failure(.HTTPFailureResponse(status: statusCode, data: data)))
                 return
             }
 
