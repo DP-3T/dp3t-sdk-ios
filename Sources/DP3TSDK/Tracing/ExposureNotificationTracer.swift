@@ -149,7 +149,9 @@ class ExposureNotificationTracer: Tracer {
             return
         }
 
-        if !enabled { deferredActivation = false }
+        if !enabled {
+            deferredActivation = false
+        }
 
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
             guard let self = self else { return }
