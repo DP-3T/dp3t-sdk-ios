@@ -58,7 +58,7 @@ class ExposureNotificationTracer: Tracer {
         logger.log("calling ENMananger.activate")
         manager.activate { [weak self] error in
             guard let self = self else { return }
-            self.queue.sync {
+            self.queue.async {
                 if let error = error {
                     self.logger.error("ENMananger.activate failed error: %{public}@", error.localizedDescription)
                     self.state = .inactive(error: .exposureNotificationError(error: error))
@@ -99,7 +99,7 @@ class ExposureNotificationTracer: Tracer {
     var isAuthorized: Bool { ENManager.authorizationStatus == .authorized }
 
     @objc func willEnterForeground(){
-        self.queue.sync {
+        self.queue.async {
             if !self.isActivated {
                 self.activateManager()
             } else if self.deferredEnable,

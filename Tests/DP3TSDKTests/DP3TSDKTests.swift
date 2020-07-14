@@ -211,6 +211,7 @@ class DP3TSDKTests: XCTestCase {
         MockENManager.authStatus = .unknown
         let message = "mockError"
         manager.completeActivation(error:  MockError(message: message))
+        sleep(1)
         let expStatus = expectation(description: "status")
         sdk.status { (result) in
             switch result {
@@ -240,9 +241,11 @@ class DP3TSDKTests: XCTestCase {
 
         // app comes again in foreground
         tracer.willEnterForeground()
+        sleep(1)
 
         MockENManager.authStatus = .authorized
         manager.completeActivation()
+        sleep(1)
 
         let expStatusAfter = expectation(description: "statusafter")
         sdk.status { (result) in
@@ -280,8 +283,7 @@ class DP3TSDKTests: XCTestCase {
         // app comes again in foreground
         tracer.willEnterForeground()
 
-
-        sleep(1)
+       sleep(1)
 
         XCTAssertEqual(tracer.state, TrackingState.active)
     }
@@ -291,6 +293,7 @@ class DP3TSDKTests: XCTestCase {
         let error = MockError(message: "mockError")
 
         manager.completeActivation(error: error)
+        sleep(1)
         let exp = expectation(description: "enable")
         try! sdk.startTracing { (err) in
             XCTAssert(err != nil)
@@ -308,6 +311,8 @@ class DP3TSDKTests: XCTestCase {
 
         // app comes again in foreground
         tracer.willEnterForeground()
+
+        sleep(1)
 
         manager.completeActivation()
 
