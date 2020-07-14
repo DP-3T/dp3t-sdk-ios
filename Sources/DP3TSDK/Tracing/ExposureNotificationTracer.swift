@@ -30,7 +30,7 @@ class ExposureNotificationTracer: Tracer {
 
     private var isActivated: Bool = false
 
-    private var deferredEnable: Bool = false
+    private var deferredEnable: Bool?
 
     private(set) var state: TrackingState {
         didSet {
@@ -66,9 +66,9 @@ class ExposureNotificationTracer: Tracer {
                     self.isActivated = true
                     self.initializeObservers()
                     
-                    if self.deferredEnable,
+                    if let deferredEnable = self.deferredEnable,
                         TrackingState.active != self.state{
-                        self.setEnabled(self.deferredEnable, completionHandler: nil)
+                        self.setEnabled(deferredEnable, completionHandler: nil)
                     }
                 }
                 self.logger.log("notify callbacks after initialisation (count: %d)", self.initializationCallbacks.count)
@@ -102,9 +102,9 @@ class ExposureNotificationTracer: Tracer {
         self.queue.async {
             if !self.isActivated {
                 self.activateManager()
-            } else if self.deferredEnable,
+            } else if let deferredEnable = self.deferredEnable,
                 TrackingState.active != self.state{
-                self.setEnabled(self.deferredEnable, completionHandler: nil)
+                self.setEnabled(deferredEnable, completionHandler: nil)
             } else {
                 self.updateState()
             }
@@ -148,7 +148,7 @@ class ExposureNotificationTracer: Tracer {
         }
 
         if !enabled {
-            deferredEnable = false
+            deferredEnable = nil
         }
 
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
@@ -158,7 +158,7 @@ class ExposureNotificationTracer: Tracer {
                 self.deferredEnable = enabled
                 self.state = .inactive(error: .exposureNotificationError(error: error))
             } else {
-                self.deferredEnable = false
+                self.deferredEnable = nil
                 self.updateState()
             }
             completionHandler?(error)
