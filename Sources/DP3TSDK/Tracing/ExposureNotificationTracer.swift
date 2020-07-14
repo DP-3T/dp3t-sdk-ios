@@ -158,6 +158,7 @@ class ExposureNotificationTracer: Tracer {
                 self.deferredActivation = enabled
                 self.state = .inactive(error: .exposureNotificationError(error: error))
             } else {
+                self.deferredActivation = false
                 self.updateState()
             }
             completionHandler?(error)
