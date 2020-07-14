@@ -30,7 +30,7 @@ class ExposureNotificationTracer: Tracer {
 
     private var isActivated: Bool = false
 
-    private var deferredActivation: Bool = false
+    private var deferredEnable: Bool = false
 
     private(set) var state: TrackingState {
         didSet {
@@ -66,9 +66,9 @@ class ExposureNotificationTracer: Tracer {
                     self.isActivated = true
                     self.initializeObservers()
                     
-                    if self.deferredActivation,
+                    if self.deferredEnable,
                         TrackingState.active != self.state{
-                        self.setEnabled(self.deferredActivation, completionHandler: nil)
+                        self.setEnabled(self.deferredEnable, completionHandler: nil)
                     }
                 }
                 self.logger.log("notify callbacks after initialisation (count: %d)", self.initializationCallbacks.count)
@@ -102,11 +102,9 @@ class ExposureNotificationTracer: Tracer {
         self.queue.sync {
             if !self.isActivated {
                 self.activateManager()
-            }
-
-            if self.deferredActivation,
+            } else if self.deferredEnable,
                 TrackingState.active != self.state{
-                self.setEnabled(self.deferredActivation, completionHandler: nil)
+                self.setEnabled(self.deferredEnable, completionHandler: nil)
             } else {
                 self.updateState()
             }
@@ -137,8 +135,8 @@ class ExposureNotificationTracer: Tracer {
         logger.log("calling ENMananger.setExposureNotificationEnabled %{public}@", enabled ? "true" : "false")
 
         guard self.isActivated else {
-            logger.log("could not activate since manager is not activated")
-            self.deferredActivation = enabled
+            logger.log("could not enable since manager is not activated")
+            self.deferredEnable = enabled
             
             // use stored error if available
             if case let TrackingState.inactive(error: error) = state {
@@ -150,17 +148,17 @@ class ExposureNotificationTracer: Tracer {
         }
 
         if !enabled {
-            deferredActivation = false
+            deferredEnable = false
         }
 
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
             guard let self = self else { return }
             if let error = error {
                 self.logger.error("ENMananger.setExposureNotificationEnabled failed error: %{public}@", error.localizedDescription)
-                self.deferredActivation = enabled
+                self.deferredEnable = enabled
                 self.state = .inactive(error: .exposureNotificationError(error: error))
             } else {
-                self.deferredActivation = false
+                self.deferredEnable = false
                 self.updateState()
             }
             completionHandler?(error)
