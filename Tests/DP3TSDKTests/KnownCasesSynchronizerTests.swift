@@ -292,7 +292,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
-        service.error = .HTTPFailureResponse(status: 400, data: nil)
+        service.error = .HTTPFailureResponse(status: 400)
         service.errorAfter = 5
         let sync = KnownCasesSynchronizer(matcher: matcher,
                                           service: service,

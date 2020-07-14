@@ -45,7 +45,7 @@ public enum DP3TNetworkingError: Error {
     /// The response is not an HTTP response
     case notHTTPResponse
     /// An unexpected HTTP error state was returned
-    case HTTPFailureResponse(status: Int, data: Data?)
+    case HTTPFailureResponse(status: Int)
     /// Response body was not expected to be empty
     case noDataReturned
     /// The returned body could not be parsed. The data might be in the wrong format or corrupted
@@ -77,7 +77,7 @@ public enum DP3TNetworkingError: Error {
             return 600
         case .timeInconsistency:
             return 700
-        case let .HTTPFailureResponse(status: status, data: _):
+        case let .HTTPFailureResponse(status: status):
             // Combines the HTTP Status error with the error
             return 8000 + status
         case .jwtSignatureError(code: let code, debugDescription: _):
