@@ -66,8 +66,7 @@ class ExposureNotificationTracer: Tracer {
                     self.isActivated = true
                     self.initializeObservers()
                     
-                    if let deferredEnable = self.deferredEnable,
-                        TrackingState.active != self.state{
+                    if let deferredEnable = self.deferredEnable {
                         self.setEnabled(deferredEnable, completionHandler: nil)
                     }
                 }
@@ -102,8 +101,7 @@ class ExposureNotificationTracer: Tracer {
         self.queue.async {
             if !self.isActivated {
                 self.activateManager()
-            } else if let deferredEnable = self.deferredEnable,
-                TrackingState.active != self.state{
+            } else if let deferredEnable = self.deferredEnable {
                 self.setEnabled(deferredEnable, completionHandler: nil)
             } else {
                 self.updateState()
