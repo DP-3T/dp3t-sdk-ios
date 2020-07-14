@@ -168,12 +168,6 @@ class ExposureNotificationTracer: Tracer {
 
 extension TrackingState {
     init(state: ENStatus, authorizationStatus: ENAuthorizationStatus, enabled: Bool) {
-
-        if authorizationStatus == .unknown {
-            self = .stopped
-            return
-        }
-
         guard authorizationStatus == .authorized else {
             self = .inactive(error: .permissonError)
             return
