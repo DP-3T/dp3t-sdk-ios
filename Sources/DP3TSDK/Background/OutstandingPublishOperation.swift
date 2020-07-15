@@ -56,10 +56,15 @@ class OutstandingPublishOperation: Operation {
                     continue
                 }
 
-                if runningInBackground {
-                    // skip publish if we are not in foreground since apple does not allow calles to EN.getDiagnosisKeys in background
-                    logger.log("skipping outstanding key %{public}@ because we are not in foreground", op.debugDescription)
-                    continue
+                if #available(iOS 13.6, *) {
+                    // this was fixed by apple with iOS 13.6 beta 4
+                    // (there is unfortunally no way to negate #available checks)
+                } else {
+                    if runningInBackground {
+                        // skip publish if we are not in foreground since apple does not allow calles to EN.getDiagnosisKeys in background
+                        logger.log("skipping outstanding key %{public}@ because we are not in foreground", op.debugDescription)
+                        continue
+                    }
                 }
 
                 logger.log("handling outstanding Publish %@", op.debugDescription)
