@@ -56,7 +56,7 @@ class ExposureNotificationMatcher: Matcher {
 
             let semaphore = DispatchSemaphore(value: 0)
             var exposureSummary: ENExposureDetectionSummary?
-            var exposureDetectionError: Error?
+            var exposureDetectionError: Error? = DP3TTracingError.cancelled
 
             logger.log("calling detectExposures for day %{public}@ and description: %{public}@", keyDate.description, configuration.stringVal)
             manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
@@ -64,7 +64,16 @@ class ExposureNotificationMatcher: Matcher {
                 exposureDetectionError = error
                 semaphore.signal()
             }
-            semaphore.wait()
+            
+            // Wait for 3min and abort if detectExposures did not return in time
+            if semaphore.wait(timeout: .now() + 180) == .timedOut {
+                // This should never be the case but it protects us from errors
+                // in ExposureNotifications.frameworks which cause the completion
+                // handler to never get called.
+                // If ENManager would return after 3min, the app gets kill before
+                // that because we are only allowed to run for 2.5min in background
+                logger.error("ENManager.detectExposures() failed to return in time")
+            }
 
             if let error = exposureDetectionError {
                 logger.error("ENManager.detectExposures failed error: %{public}@", error.localizedDescription)

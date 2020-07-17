@@ -101,11 +101,12 @@ class DP3TSDKTests: XCTestCase {
     }
 
     func testCallEnable(){
+        manager.completeActivation()
         let exp = expectation(description: "enable")
         try! sdk.startTracing { (err) in
             exp.fulfill()
         }
-        wait(for: [exp], timeout: 0.1)
+        wait(for: [exp], timeout: 1.0)
         XCTAssertEqual(tracer.state, TrackingState.active)
     }
 
@@ -200,5 +201,123 @@ class DP3TSDKTests: XCTestCase {
         manager.completeActivation()
         wait(for: [exp], timeout: 1.0)
         XCTAssertEqual(service.requests.count, 10)
+    }
+
+    struct MockError: Error, Equatable {
+        let message: String
+    }
+
+    func testActivationAfterFailure() {
+        MockENManager.authStatus = .unknown
+        let message = "mockError"
+        manager.completeActivation(error:  MockError(message: message))
+        sleep(1)
+        let expStatus = expectation(description: "status")
+        sdk.status { (result) in
+            switch result {
+            case let .success(state):
+                switch state.trackingState {
+                case let .inactive(error: error):
+                    switch error {
+                    case let .exposureNotificationError(error: enError):
+                        guard let mockError = enError as? MockError else {
+                            XCTFail()
+                            return
+                        }
+                        XCTAssertEqual(mockError.message, message)
+                    default:
+                        XCTFail()
+                    }
+                default:
+                    XCTFail()
+                }
+            case .failure(_):
+                XCTFail()
+            }
+            expStatus.fulfill()
+        }
+        wait(for: [expStatus], timeout: 0.1)
+
+
+        // app comes again in foreground
+        tracer.willEnterForeground()
+        sleep(1)
+
+        MockENManager.authStatus = .authorized
+        manager.completeActivation()
+        sleep(1)
+
+        let expStatusAfter = expectation(description: "statusafter")
+        sdk.status { (result) in
+            switch result {
+            case let .success(state):
+                switch state.trackingState {
+                case .stopped:
+                    break;
+                default:
+                    XCTFail()
+                }
+            case .failure(_):
+                XCTFail()
+            }
+            expStatusAfter.fulfill()
+        }
+        wait(for: [expStatusAfter], timeout: 0.1)
+    }
+
+    func testEnableAfterEnableFailure(){
+        manager.enableError = MockError(message: "message")
+        manager.completeActivation()
+        let exp = expectation(description: "enable")
+        try! sdk.startTracing { (err) in
+            XCTAssert(err != nil)
+            XCTAssertEqual((err! as! MockError).message, "message")
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1.0)
+        XCTAssertEqual(tracer.state, TrackingState.inactive(error: .exposureNotificationError(error: manager.enableError!)))
+
+
+        manager.enableError = nil
+
+        // app comes again in foreground
+        tracer.willEnterForeground()
+
+       sleep(1)
+
+        XCTAssertEqual(tracer.state, TrackingState.active)
+    }
+
+    func testEnableAfterActivationFailure(){
+        MockENManager.authStatus = .unknown
+        let error = MockError(message: "mockError")
+
+        manager.completeActivation(error: error)
+        sleep(1)
+        let exp = expectation(description: "enable")
+        try! sdk.startTracing { (err) in
+            XCTAssert(err != nil)
+            switch (err! as! DP3TTracingError) {
+            case let .exposureNotificationError(error: enError):
+                XCTAssertEqual(enError as! MockError, error)
+            default:
+                XCTFail()
+            }
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1.0)
+        XCTAssertEqual(tracer.state, TrackingState.inactive(error: .exposureNotificationError(error: error)))
+
+
+        // app comes again in foreground
+        tracer.willEnterForeground()
+
+        sleep(1)
+
+        manager.completeActivation()
+
+        sleep(1)
+
+        XCTAssertEqual(tracer.state, TrackingState.active)
     }
 }

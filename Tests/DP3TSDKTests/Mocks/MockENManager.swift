@@ -41,6 +41,8 @@ class MockENManager: ENManager {
 
     var summary = MockSummary()
 
+    var enableError: Error?
+
     override func detectExposures(configuration _: ENExposureConfiguration, diagnosisKeyURLs: [URL], completionHandler: @escaping ENDetectExposuresHandler) -> Progress {
         detectExposuresWasCalled = true
         completionHandler(summary, nil)
@@ -56,14 +58,18 @@ class MockENManager: ENManager {
     }
 
     override func setExposureNotificationEnabled(_ enabled: Bool, completionHandler: @escaping ENErrorHandler) {
-        self.isEnabled = enabled
-        self.status = .active
-        Self.authStatus = .authorized
-        completionHandler(nil)
+        if let error = enableError {
+            completionHandler(error)
+        } else {
+            self.isEnabled = enabled
+            self.status = .active
+            Self.authStatus = .authorized
+            completionHandler(nil)
+        }
     }
 
-    func completeActivation(){
-        activateCallbacks.forEach{ $0(nil)}
+    func completeActivation(error: Error? = nil){
+        activateCallbacks.forEach{ $0(error)}
         activateCallbacks.removeAll()
     }
 
