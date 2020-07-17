@@ -1,5 +1,13 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 1.1.0 (17.07.2020)
+- adds background refresh task to improve background time
+- retrieves keys in background on iOS > 13.6
+- expose data if HTTP Code is not expected
+- handle case if EN Framework is not available (iOS 14 beta)
+- defer schedule background task until EN is authorized
+- retrys activation and enabling of ENManager if failed on willEnterForeground
+
 ## Version 1.0.2 (03.07.2020)
 - defers sync until ENManager is fully initialized
 - fixes in background task handling
