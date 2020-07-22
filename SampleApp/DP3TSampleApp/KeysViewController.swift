@@ -13,15 +13,30 @@ import ExposureNotification
 import UIKit
 import ZIPFoundation
 
-class KeyDiffableDataSource: UITableViewDiffableDataSource<Date, NetworkingHelper.DebugZips> {
+struct KeySection: Hashable {
+    let date: Date
+    let experimentName: String?
+
+    var title: String {
+        let dateString = Self.formatter.string(from: date)
+        if let experimentName = experimentName {
+            return "\(dateString) - \(experimentName)"
+        }
+        return dateString
+    }
+
     static var formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd.MM.yyyy"
         return formatter
     }()
+}
+
+class KeyDiffableDataSource: UITableViewDiffableDataSource<KeySection, NetworkingHelper.DebugZips> {
+
 
     override func tableView(_: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return Self.formatter.string(from: snapshot().sectionIdentifiers[section])
+        return snapshot().sectionIdentifiers[section].title
     }
 }
 
@@ -72,23 +87,35 @@ class KeysViewController: UIViewController {
         let date = Date().addingTimeInterval(60 * 60 * 24)
         datePicker.setDate(date, animated: false)
         networkingHelper.getDebugKeys(day: date) { [weak self] result in
-            var snapshot = NSDiffableDataSourceSnapshot<Date, NetworkingHelper.DebugZips>()
-            snapshot.appendSections([date])
-            snapshot.appendItems(result, toSection: date)
+            var snapshot = NSDiffableDataSourceSnapshot<KeySection, NetworkingHelper.DebugZips>()
+            let section = KeySection(date: date, experimentName: nil)
+            snapshot.appendSections([section])
+            snapshot.appendItems(result, toSection: section)
             self?.dataSource.apply(snapshot, animatingDifferences: true)
         }
+
     }
 
     @objc func datePickerDidChange() {
         let date = datePicker.date
-        guard !dataSource.snapshot().sectionIdentifiers.contains(date) else { return }
         networkingHelper.getDebugKeys(day: date) { [weak self] result in
             guard let self = self else { return }
             var snapshot = self.dataSource.snapshot()
-            if !snapshot.sectionIdentifiers.contains(date) {
-                snapshot.appendSections([date])
+            let section = KeySection(date: date, experimentName: nil)
+            if !snapshot.sectionIdentifiers.contains(section) {
+                var inserted = false
+                for s in snapshot.sectionIdentifiers {
+                    if !inserted, date > s.date {
+                        snapshot.insertSections([section], beforeSection: s)
+                        inserted = true
+                        continue
+                    }
+                }
+                if !inserted {
+                    snapshot.appendSections([section])
+                }
             }
-            snapshot.appendItems(result, toSection: date)
+            snapshot.appendItems(result, toSection: section)
             self.dataSource.apply(snapshot, animatingDifferences: true)
         }
     }
