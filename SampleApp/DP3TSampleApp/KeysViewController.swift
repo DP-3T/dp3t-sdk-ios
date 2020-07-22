@@ -20,9 +20,9 @@ struct KeySection: Hashable {
     var title: String {
         let dateString = Self.formatter.string(from: date)
         if let experimentName = experimentName {
-            return "\(dateString) - \(experimentName)"
+            return "\(dateString) - Experiment: \(experimentName)"
         }
-        return dateString
+        return "\(dateString) - Single Device"
     }
 
     static var formatter: DateFormatter = {
@@ -33,8 +33,6 @@ struct KeySection: Hashable {
 }
 
 class KeyDiffableDataSource: UITableViewDiffableDataSource<KeySection, NetworkingHelper.DebugZips> {
-
-
     override func tableView(_: UITableView, titleForHeaderInSection section: Int) -> String? {
         return snapshot().sectionIdentifiers[section].title
     }
@@ -49,6 +47,8 @@ class KeysViewController: UIViewController {
     private lazy var dataSource: KeyDiffableDataSource = makeDataSource()
 
     private let networkingHelper = NetworkingHelper()
+
+    let activityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -84,40 +84,99 @@ class KeysViewController: UIViewController {
         tableView.dataSource = dataSource
         tableView.delegate = self
 
-        let date = Date().addingTimeInterval(60 * 60 * 24)
-        datePicker.setDate(date, animated: false)
-        networkingHelper.getDebugKeys(day: date) { [weak self] result in
-            var snapshot = NSDiffableDataSourceSnapshot<KeySection, NetworkingHelper.DebugZips>()
-            let section = KeySection(date: date, experimentName: nil)
-            snapshot.appendSections([section])
-            snapshot.appendItems(result, toSection: section)
-            self?.dataSource.apply(snapshot, animatingDifferences: true)
-        }
+        self.dataSource.apply(NSDiffableDataSourceSnapshot<KeySection, NetworkingHelper.DebugZips>(), animatingDifferences: true)
 
+
+        activityIndicator.hidesWhenStopped = true
+        let barButton = UIBarButtonItem(customView: activityIndicator)
+        self.navigationItem.setRightBarButton(barButton, animated: true)
+        activityIndicator.stopAnimating()
+
+        let ts = Date().timeIntervalSince1970
+        let roundendTs = Date(timeIntervalSince1970: ts - ts.truncatingRemainder(dividingBy: 60 * 60 * 24))
+        let date = roundendTs.addingTimeInterval(60 * 60 * 24)
+        datePicker.setDate(date, animated: false)
+        loadKey(for: date)
+    }
+
+    func loadKey(for date: Date) {
+        activityIndicator.startAnimating()
+        networkingHelper.getDebugKeys(day: date) { [weak self] result in
+            guard let self = self else { return }
+            defer { self.activityIndicator.stopAnimating() }
+            var snapshot = self.dataSource.snapshot()
+
+            let pattern = "key_export_experiment_([a-zA-Z0-9]+)_(.+)"
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else { return }
+
+            let grouped = result.reduce([KeySection: [NetworkingHelper.DebugZips]]()) { (result, zip) -> [KeySection : [NetworkingHelper.DebugZips]] in
+                var experimentName: String? = nil
+                //var deviceName: String?
+
+                if let match = regex.firstMatch(in: zip.name, options: [], range: NSRange(location: 0, length: zip.name.utf16.count)) {
+                    if let experimentRange = Range(match.range(at: 1), in: zip.name) {
+                        experimentName = String(zip.name[experimentRange])
+                    }
+
+                    /*if let deviceRange = Range(match.range(at: 2), in: zip.name) {
+                        deviceName = zip.name[deviceRange]
+                    }*/
+                }
+
+                let section = KeySection(date: date, experimentName: experimentName)
+                var mutatingResult = result
+                mutatingResult[section, default: []].append(zip)
+                return mutatingResult
+            }
+
+            for groupedItem in grouped {
+                let section = groupedItem.key
+                if !snapshot.sectionIdentifiers.contains(section) {
+                    var inserted = false
+                    for s in snapshot.sectionIdentifiers {
+                        if !inserted, date > s.date {
+                            snapshot.insertSections([section], beforeSection: s)
+                            inserted = true
+                            continue
+                        }
+                    }
+                    if !inserted {
+                        snapshot.appendSections([section])
+                    }
+                }
+                let existingNames = snapshot.itemIdentifiers(inSection: section).map(\.name)
+                for zip in groupedItem.value {
+                    if !existingNames.contains(zip.name) {
+                        snapshot.appendItems([zip], toSection: section)
+                    }
+                }
+            }
+
+            if grouped.isEmpty {
+                let section = KeySection(date: date, experimentName: nil)
+                if !snapshot.sectionIdentifiers.contains(section) {
+                    var inserted = false
+                    for s in snapshot.sectionIdentifiers {
+                        if !inserted, date > s.date {
+                            snapshot.insertSections([section], beforeSection: s)
+                            inserted = true
+                            continue
+                        }
+                    }
+                    if !inserted {
+                        snapshot.appendSections([section])
+                    }
+                }
+                snapshot.appendItems([], toSection: section)
+            }
+
+            self.dataSource.apply(snapshot, animatingDifferences: true)
+        }
     }
 
     @objc func datePickerDidChange() {
         let date = datePicker.date
-        networkingHelper.getDebugKeys(day: date) { [weak self] result in
-            guard let self = self else { return }
-            var snapshot = self.dataSource.snapshot()
-            let section = KeySection(date: date, experimentName: nil)
-            if !snapshot.sectionIdentifiers.contains(section) {
-                var inserted = false
-                for s in snapshot.sectionIdentifiers {
-                    if !inserted, date > s.date {
-                        snapshot.insertSections([section], beforeSection: s)
-                        inserted = true
-                        continue
-                    }
-                }
-                if !inserted {
-                    snapshot.appendSections([section])
-                }
-            }
-            snapshot.appendItems(result, toSection: section)
-            self.dataSource.apply(snapshot, animatingDifferences: true)
-        }
+        loadKey(for: date)
     }
 
     func makeDataSource() -> KeyDiffableDataSource {
