@@ -251,7 +251,7 @@ class ControlViewController: UIViewController {
                 uploadKeysButton.setTitleColor(.blue, for: .normal)
                 uploadKeysButton.setTitleColor(.black, for: .highlighted)
             }
-            uploadKeysButton.setTitle("Upload Keys for Debugging", for: .normal)
+            uploadKeysButton.setTitle("Upload Keys for Experiment", for: .normal)
             uploadKeysButton.addTarget(self, action: #selector(uploadKeys), for: .touchUpInside)
             stackView.addArrangedSubview(uploadKeysButton)
         }
