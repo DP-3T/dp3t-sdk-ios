@@ -242,7 +242,7 @@ extension NSDiffableDataSourceSnapshot where SectionIdentifierType == KeySection
             for s in sectionIdentifiers {
                 if !inserted,
                     section.date > s.date,
-                    (section.experimentName == nil && s.experimentName == nil) || section.experimentName! > s.experimentName! {
+                    (section.experimentName == nil || s.experimentName == nil) || section.experimentName! > s.experimentName! {
                     insertSections([section], beforeSection: s)
                     inserted = true
                     break
