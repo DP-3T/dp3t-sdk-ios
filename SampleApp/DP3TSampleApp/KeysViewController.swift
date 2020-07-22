@@ -134,7 +134,7 @@ class KeysViewController: UIViewController {
                 if !snapshot.sectionIdentifiers.contains(section) {
                     var inserted = false
                     for s in snapshot.sectionIdentifiers {
-                        if !inserted, date > s.date {
+                        if !inserted, date > s.date, (section.experimentName == nil && s.experimentName == nil) || section.experimentName! > s.experimentName! {
                             snapshot.insertSections([section], beforeSection: s)
                             inserted = true
                             continue
