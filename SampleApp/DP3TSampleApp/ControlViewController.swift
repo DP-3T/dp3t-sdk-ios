@@ -361,8 +361,14 @@ class ControlViewController: UIViewController {
             guard let deviceName = deviceNameTextField.text, !deviceName.isEmpty,
                   let experimentName = experimentNameTextField.text, !experimentName.isEmpty else {
                     var errors: [String] = []
-                    if deviceNameTextField.text == nil || deviceNameTextField.text!.isEmpty { errors.append("device name") }
-                    if experimentNameTextField.text == nil || experimentNameTextField.text!.isEmpty { errors.append("experiment name") }
+                    if deviceNameTextField.text == nil ||
+                        deviceNameTextField.text!.isEmpty {
+                        errors.append("device name")
+                    }
+                    if experimentNameTextField.text == nil ||
+                        experimentNameTextField.text!.isEmpty {
+                        errors.append("experiment name")
+                    }
 
                     let errorAlert = UIAlertController(title: "Error", message: "Please provide \(errors.joined(separator: " and "))", preferredStyle: .alert)
                     errorAlert.addAction(.init(title: "OK", style: .default) { _ in
