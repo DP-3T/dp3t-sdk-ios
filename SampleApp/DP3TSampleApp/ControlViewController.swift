@@ -340,16 +340,39 @@ class ControlViewController: UIViewController {
     }
 
     @objc func uploadKeys() {
-        let alert = UIAlertController(title: "Upload Keys", message: "Enter debug device name", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Upload Keys", message: "Enter experiment name and device name", preferredStyle: .alert)
+
+        alert.addTextField { (textField) in
+            textField.placeholder = "experiment Name"
+            textField.text = ""
+            textField.tag = 1
+        }
 
         alert.addTextField { textField in
             textField.placeholder = "debug device name"
-            textField.text = ""
+            textField.text = UIDevice.current.name
+            textField.tag = 0
         }
 
-        alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [weak alert] _ in
-            let textField = alert?.textFields![0]
-            self.uploadHelper.uploadDebugKeys(debugName: textField?.text ?? "noName") { result in
+        alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [weak alert, weak self] _ in
+            guard let self = self,
+                  let deviceNameTextField = alert?.textFields?.first(where: { $0.tag == 0 }),
+                  let experimentNameTextField = alert?.textFields?.first(where: { $0.tag == 1 }) else { return }
+            guard let deviceName = deviceNameTextField.text, !deviceName.isEmpty,
+                  let experimentName = experimentNameTextField.text, !experimentName.isEmpty else {
+                    var errors: [String] = []
+                    if deviceNameTextField.text == nil || deviceNameTextField.text!.isEmpty { errors.append("device name") }
+                    if experimentNameTextField.text == nil || experimentNameTextField.text!.isEmpty { errors.append("experiment name") }
+
+                    let errorAlert = UIAlertController(title: "Error", message: "Please provide \(errors.joined(separator: " and "))", preferredStyle: .alert)
+                    errorAlert.addAction(.init(title: "OK", style: .default) { _ in
+                        self.uploadKeys()
+                    })
+                    self.present(errorAlert, animated: true, completion: nil)
+                    return
+            }
+            let name = "experiment_\(experimentName)_\(deviceName)";
+            self.uploadHelper.uploadDebugKeys(debugName: name) { result in
                 print(result)
             }
         }))
