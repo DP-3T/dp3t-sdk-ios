@@ -12,7 +12,7 @@ import CoreBluetooth
 import Foundation
 
 public struct DP3TParameters: Codable {
-    static let parameterVersion: Int = 12
+    static let parameterVersion: Int = 13
 
     let version: Int
 
@@ -33,7 +33,7 @@ public struct DP3TParameters: Codable {
 
         public var numberOfDaysToKeepMatchedContacts = 10
 
-        public var numberOfKeysToSubmit: Int = 14
+        public var numberOfKeysToSubmit: Int = 30
     }
 
     public struct Networking: Codable {
