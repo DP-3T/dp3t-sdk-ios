@@ -13,6 +13,7 @@ import CommonCrypto
 import ExposureNotification
 import UIKit
 import ZIPFoundation
+import DP3TSDK
 
 struct CodableDiagnosisKey: Codable, Equatable, Hashable {
     let keyData: Data
@@ -161,7 +162,7 @@ class NetworkingHelper {
                 }
 
                 var keys = keys?.map(CodableDiagnosisKey.init(key:)) ?? []
-                while keys.count < 14 {
+                while keys.count < DP3TTracing.parameters.crypto.numberOfKeysToSubmit {
                     let ts = Date().timeIntervalSince1970
                     let day = ts - ts.truncatingRemainder(dividingBy: 60 * 60 * 24)
                     keys.append(.init(keyData: Crypto.generateRandomKey(lenght: 16),
