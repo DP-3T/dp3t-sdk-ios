@@ -181,6 +181,10 @@ extension TrackingState {
             self = .inactive(error: .bluetoothTurnedOff)
         case .restricted:
             self = .inactive(error: .permissonError)
+        case .paused:
+            self = .stopped
+        case .unauthorized:
+            self = .inactive(error: .permissonError)
         @unknown default:
             fatalError()
         }
