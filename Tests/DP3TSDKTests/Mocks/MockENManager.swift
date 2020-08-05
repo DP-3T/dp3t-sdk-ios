@@ -84,6 +84,12 @@ class MockENManager: ENManager {
     override class var authorizationStatus: ENAuthorizationStatus {
         Self.authStatus
     }
+
+    var keys: [ENTemporaryExposureKey] = []
+
+    override func getDiagnosisKeys(completionHandler: @escaping ENGetDiagnosisKeysHandler) {
+        completionHandler(keys, nil)
+    }
 }
 
 class MockSummary: ENExposureDetectionSummary {
