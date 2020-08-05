@@ -16,11 +16,12 @@ import ExposureNotification
 class DiagnosisKeysProviderTests: XCTestCase {
 
     var manager: MockENManager!
-    var descriptor: ApplicationDescriptor!
+    var descriptor: ApplicationDescriptor {
+        MockService.descriptor
+    }
 
     override func setUp() {
         manager = MockENManager()
-        descriptor = ApplicationDescriptor(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
     }
 
     func testFilteringOfOldTests(){

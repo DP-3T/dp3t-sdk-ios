@@ -52,7 +52,11 @@ class DP3TSDKTests: XCTestCase {
     fileprivate var service: MockService!
     fileprivate var defaults: MockDefaults!
     fileprivate var keyProvider: MockKeyProvider!
-    fileprivate var descriptor: ApplicationDescriptor!
+
+    var descriptor: ApplicationDescriptor {
+        MockService.descriptor
+    }
+
     fileprivate var backgroundTaskManager: DP3TBackgroundTaskManager!
     fileprivate var manager: MockENManager!
     fileprivate var exposureDayStorage: ExposureDayStorage!
@@ -71,7 +75,6 @@ class DP3TSDKTests: XCTestCase {
 
         service = MockService()
         keyProvider = MockKeyProvider()
-        descriptor = ApplicationDescriptor(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
         backgroundTaskManager = DP3TBackgroundTaskManager(handler: nil, keyProvider: keyProvider, serviceClient: service, tracer: tracer)
         sdk = DP3TSDK(applicationDescriptor: descriptor,
                           urlSession: MockSession(data: nil, urlResponse: nil, error: nil),
