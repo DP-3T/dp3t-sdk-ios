@@ -13,7 +13,11 @@ import Foundation
 
 class MockService: ExposeeServiceClientProtocol {
 
-    var descriptor: ApplicationDescriptor = .init(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
+    static var descriptor: ApplicationDescriptor = .init(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
+
+    var descriptor: ApplicationDescriptor {
+        Self.descriptor
+    }
 
     var requests: [Date] = []
     let session = MockSession(data: "Data".data(using: .utf8), urlResponse: nil, error: nil)

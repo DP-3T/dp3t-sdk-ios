@@ -74,7 +74,11 @@ extension ENManager: DiagnosisKeysProvider {
                 completionHandler(.failure(.exposureNotificationError(error: error)))
             } else if let keys = keys {
                 logger.log("received %d keys", keys.count)
-                var filteredKeys = keys
+
+                let oldestDate = DayDate(date: Date().addingTimeInterval(-Default.shared.parameters.crypto.maxAgeOfKeyToRetreive)).dayMin
+
+                // make sure to never retreive keys older than maxNumberOfDaysToRetreive even if the onset date is older
+                var filteredKeys = keys.filter { $0.date > oldestDate }
 
                 // if a onsetDate was passed we filter the keys using it
                 if let onsetDate = onsetDate {
