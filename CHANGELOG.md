@@ -1,5 +1,11 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 1.1.1 (13.08.2020)
+- resolves keychain issue with iOS 14
+- adds iOS 14 info.plist entries for calibration app
+- DP3TNetworkingError.HTTPFailureResponse includes raw data
+- submitted keys are now always filled up to 30 instead of 14
+
 ## Version 1.1.0 (17.07.2020)
 - adds background refresh task to improve background time
 - retrieves keys in background on iOS > 13.6
