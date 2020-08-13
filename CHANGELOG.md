@@ -1,5 +1,8 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 1.1.1 (13.08.2020)
+- DP3TNetworkingError.HTTPFailureResponse includes raw data
+
 ## Version 1.1.0 (17.07.2020)
 - adds background refresh task to improve background time
 - retrieves keys in background on iOS > 13.6
