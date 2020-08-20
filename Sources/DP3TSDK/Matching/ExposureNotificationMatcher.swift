@@ -35,11 +35,13 @@ class ExposureNotificationMatcher: Matcher {
         logger.trace()
         return try synchronousQueue.sync {
             var urls: [URL] = []
+            let tempDirectory = FileManager.default
+                .urls(for: .cachesDirectory, in: .userDomainMask).first!
+                .appendingPathComponent(UUID().uuidString)
             if let archive = Archive(data: data, accessMode: .read) {
                 logger.debug("unarchived archive")
                 for entry in archive {
-                    let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-                        .appendingPathComponent(UUID().uuidString).appendingPathComponent(entry.path)
+                    let localURL = tempDirectory.appendingPathComponent(entry.path)
                     do {
                         _ = try archive.extract(entry, to: localURL)
                     } catch {
@@ -83,7 +85,7 @@ class ExposureNotificationMatcher: Matcher {
 
             timingManager?.addDetection(timestamp: now)
 
-            try? urls.forEach(deleteDiagnosisKeyFile(at:))
+            try? FileManager.default.removeItem(at: tempDirectory)
 
             if let summary = exposureSummary {
                 let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[1]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
