@@ -12,7 +12,7 @@ import CoreBluetooth
 import Foundation
 
 public struct DP3TParameters: Codable {
-    static let parameterVersion: Int = 12
+    static let parameterVersion: Int = 15
 
     let version: Int
 
@@ -31,9 +31,11 @@ public struct DP3TParameters: Codable {
 
         public var timeZone: TimeZone = TimeZone(identifier: "UTC")!
 
-        public var numberOfDaysToKeepMatchedContacts = 10
+        public var numberOfDaysToKeepMatchedContacts = 14
 
-        public var numberOfKeysToSubmit: Int = 14
+        public var maxAgeOfKeyToRetreive: TimeInterval = .day * 14
+
+        public var numberOfKeysToSubmit: Int = 30
     }
 
     public struct Networking: Codable {

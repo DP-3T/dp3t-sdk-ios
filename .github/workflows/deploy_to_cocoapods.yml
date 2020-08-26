@@ -13,8 +13,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Switch to Xcode 11.5
-      run: sudo xcode-select --switch /Applications/Xcode_11.5.app
+    - name: Switch to Xcode 11.6
+      run: sudo xcode-select --switch /Applications/Xcode_11.6.app
     
     - name: Install Cocoapods
       run: gem install cocoapods

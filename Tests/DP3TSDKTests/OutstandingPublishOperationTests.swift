@@ -56,11 +56,7 @@ private class ExposeeServiceClientMock: ExposeeServiceClient {
     var addedExposeeListCount: Int = 0
 
     init() {
-        let descriptor = ApplicationDescriptor(appId: "XCD",
-                                               bucketBaseUrl: URL(string: "https://ubique.ch")!,
-                                               reportBaseUrl: URL(string: "https://ubique.ch")!,
-                                               jwtPublicKey: nil,
-                                               mode: .test)
+        let descriptor = MockService.descriptor
         let session = MockSession(data: nil, urlResponse: nil, error: nil)
         super.init(descriptor: descriptor, urlSession: session, urlCache: .shared)
     }

@@ -74,13 +74,18 @@ DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
 
   ```ruby
 
-  pod 'DP3TSDK', => '1.1.1'
+  pod 'DP3TSDK', => '1.2.0'
 
   ```
 
 This version points to the HEAD of the `develop` branch and will always fetch the latest development status. Future releases will be made available using semantic versioning to ensure stability for depending projects.
 
 ## Using the SDK
+
+In order to use the SDK with iOS 14 you need to specify the region for which the app works and the version of the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework which should be used. 
+
+This is done by adding [`ENDeveloperRegion`](https://developer.apple.com/documentation/bundleresources/information_property_list/endeveloperregion) as an `Info.plist` property with the according ISO 3166-1 country code as its value.
+The SDK currently works with EN Framework version 1 and therefore we need to specify [`ENAPIVersion`](https://developer.apple.com/documentation/bundleresources/information_property_list/enapiversion) with a value of 1 in the `Info.plist`.
 
 ### Initialization
 
