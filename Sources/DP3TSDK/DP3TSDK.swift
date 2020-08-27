@@ -186,19 +186,20 @@ class DP3TSDK {
         OperationQueue().addOperation(outstandingPublishOperation)
 
         let sync = {
+            var storedResult: SyncResult?
+
             // Skip sync when tracing is not active
             if self.state.trackingState != .active {
                 self.log.error("Skip sync when tracking is not active")
-                callback?(.skipped)
-                return
+                storedResult = .skipped
+            } else {
+                group.enter()
+                self.synchronizer.sync { result in
+                    storedResult = result
+                    group.leave()
+                }
             }
 
-            group.enter()
-            var storedResult: SyncResult?
-            self.synchronizer.sync { result in
-                storedResult = result
-                group.leave()
-            }
             group.notify(queue: .main) { [weak self] in
                 guard let self = self else { return }
                 switch storedResult! {
