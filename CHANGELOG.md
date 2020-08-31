@@ -1,5 +1,8 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 1.2.1 (31.08.2020)
+- ensures that backgroundtask keeps running until outstandingPublishOperation is finished
+
 ## Version 1.2.0 (26.08.2020)
 - resolves keychain issue with iOS 14
 - adds iOS 14 info.plist entries for calibration app
