@@ -407,7 +407,15 @@ class ControlViewController: UIViewController {
     }
 
     @objc func resetInfectionState() {
-        try? DP3TTracing.resetInfectionStatus()
+        do {
+            try DP3TTracing.resetInfectionStatus()
+        } catch let error as DP3TTracingError {
+            let ac = UIAlertController(title: "Error",
+                                       message: error.description,
+                                       preferredStyle: .alert)
+            ac.addAction(.init(title: "OK", style: .destructive))
+            self.present(ac, animated: true)
+        } catch {}
     }
 
     @objc func resetExposureDays() {
@@ -544,6 +552,8 @@ extension DP3TTracingError {
             return "exposureNotificationError \(error.localizedDescription)"
         case .cancelled:
             return "cancelled"
+        case .infectionStatusNotResettable:
+            return "infectionStatusNotResettable"
         }
     }
 }

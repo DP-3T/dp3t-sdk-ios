@@ -150,6 +150,15 @@ public enum DP3TTracing {
         try instance.resetExposureDays()
     }
 
+    /// checks if infection status is resettable
+
+    public static var isInfectionStatusResettable: Bool {
+        guard instance != nil else {
+            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
+        }
+        return instance.isInfectionStatusResettable
+    }
+
     /// reset the infection status
 
     public static func resetInfectionStatus() throws {

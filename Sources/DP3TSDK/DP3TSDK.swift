@@ -178,7 +178,10 @@ class DP3TSDK {
 
         let group = DispatchGroup()
 
-        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider, serviceClient: service, runningInBackground: runningInBackground)
+        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider,
+                                                                      serviceClient: service,
+                                                                      runningInBackground: runningInBackground,
+                                                                      tracer: tracer)
         group.enter()
         outstandingPublishOperation.completionBlock = {
             group.leave()
@@ -266,7 +269,7 @@ class DP3TSDK {
             }
         } else {
             group.enter()
-            diagnosisKeysProvider.getDiagnosisKeys(onsetDate: onset, appDesc: applicationDescriptor) { result in
+            diagnosisKeysProvider.getDiagnosisKeys(onsetDate: onset, appDesc: applicationDescriptor, disableExposureNotificationAfterCompletion: false) { result in
                 diagnosisKeysResult = result
                 group.leave()
             }
@@ -294,15 +297,23 @@ class DP3TSDK {
                                              delayedKeyDate: DayDate())
 
                 self.service.addExposeeList(model, authentication: authentication) { [weak self] result in
+                    guard let self = self else { return }
                     DispatchQueue.main.async {
                         switch result {
                         case let .success(outstandingPublish):
                             if !isFakeRequest {
-                                self?.state.infectionStatus = .infected
-                                self?.tracer.setEnabled(false, completionHandler: nil)
+                                self.state.infectionStatus = .infected
+                                if #available(iOS 13.7, *) {
+                                    // if we are running on iOS > 13.7 we have to keep EN framework running in order to export the key of the last day
+                                    // EN framework will later get disabled
+                                    self.log.log("disable resetting of infection status")
+                                    self.defaults.infectionStatusIsResettable = false
+                                } else {
+                                    self.tracer.setEnabled(false, completionHandler: nil)
+                                }
                             }
 
-                            self?.outstandingPublishesStorage.add(outstandingPublish)
+                            self.outstandingPublishesStorage.add(outstandingPublish)
 
                             callback(.success(()))
                         case let .failure(error):
@@ -314,6 +325,10 @@ class DP3TSDK {
         }
     }
 
+    var isInfectionStatusResettable: Bool {
+        defaults.infectionStatusIsResettable
+    }
+
     /// reset exposure days
     func resetExposureDays() throws {
         exposureDayStorage.markExposuresAsDeleted()
@@ -322,6 +337,9 @@ class DP3TSDK {
 
     /// reset the infection status
     func resetInfectionStatus() throws {
+        guard defaults.infectionStatusIsResettable else {
+            throw DP3TTracingError.infectionStatusNotResettable
+        }
         state.infectionStatus = .healthy
     }
 
