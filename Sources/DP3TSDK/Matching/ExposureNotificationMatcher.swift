@@ -87,8 +87,19 @@ class ExposureNotificationMatcher: Matcher {
 
             try? FileManager.default.removeItem(at: tempDirectory)
 
+
             if let summary = exposureSummary {
-                let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[1]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
+
+                if #available(iOS 13.7, *) {
+                    manager.getExposureWindows(summary: summary) { (windows, error) in
+                        print("1")
+                    }
+                } else {
+                    // Fallback on earlier versions
+                }
+
+
+                /*let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[1]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
 
                 logger.log("reiceived exposureSummary for day %{public}@ : %{public}@ computed threshold: %{public}.2f (low:%{public}.2f, high: %{public}.2f) required %{public}d",
                            keyDate.description, summary.debugDescription, computedThreshold, defaults.parameters.contactMatching.factorLow, defaults.parameters.contactMatching.factorHigh, defaults.parameters.contactMatching.triggerThreshold)
@@ -100,7 +111,7 @@ class ExposureNotificationMatcher: Matcher {
                     return true
                 } else {
                     logger.log("exposureSummary does not meet requirements")
-                }
+                }*/
             }
             return false
         }
@@ -124,6 +135,37 @@ extension ENExposureConfiguration {
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.metadata = [Self.thresholdsKey: [parameters.contactMatching.lowerThreshold,
                                                        parameters.contactMatching.higherThreshold]]
+        if #available(iOS 13.7, *) {
+            configuration.infectiousnessForDaysSinceOnsetOfSymptoms = [-14: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -13: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -12: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -11: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -10: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -9: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -8: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -7: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -6: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -5: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -4: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -3: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -2: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -1: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       -0: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       1: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       2: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       3: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       4: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       5: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       6: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       7: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       8: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       9: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       10: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       11: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       12: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       13: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
+                                                                       14: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue))]
+        }
         return configuration
     }
 

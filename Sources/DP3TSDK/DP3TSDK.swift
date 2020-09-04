@@ -299,7 +299,7 @@ class DP3TSDK {
                         case let .success(outstandingPublish):
                             if !isFakeRequest {
                                 self?.state.infectionStatus = .infected
-                                self?.tracer.setEnabled(false, completionHandler: nil)
+                                //self?.tracer.setEnabled(false, completionHandler: nil)
                             }
 
                             self?.outstandingPublishesStorage.add(outstandingPublish)

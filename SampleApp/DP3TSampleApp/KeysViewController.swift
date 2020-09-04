@@ -168,6 +168,7 @@ class KeysViewController: UIViewController {
                 )
 
                 cell.textLabel?.text = zip.name
+                cell.textLabel?.numberOfLines = 0
                 return cell
             }
         )
@@ -198,14 +199,23 @@ extension KeysViewController: UITableViewDelegate {
             manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { summary, error in
                 var string = summary?.description ?? error.debugDescription
                 if let summary = summary {
-                    let parameters = DP3TTracing.parameters.contactMatching
+
+                    if #available(iOS 13.7, *) {
+                        print(EN_FEATURE_GENERAL)
+                        manager.getExposureWindows(summary: summary) { (windows, error) in
+                            print("1")
+                        }
+                    }
+
+
+                    /*let parameters = DP3TTracing.parameters.contactMatching
                     let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[1]) * parameters.factorHigh) / 60
                     string.append("\n--------\n computed Threshold: \(computedThreshold)")
                     if computedThreshold > Double(parameters.triggerThreshold) {
                         string.append("\n meets requirement of \(parameters.triggerThreshold)")
                     } else {
                         string.append("\n doesn't meet requirement of \(parameters.triggerThreshold)")
-                    }
+                    }*/
                 }
 
                 loggingStorage?.log(string, type: .info)
@@ -231,6 +241,38 @@ extension ENExposureConfiguration {
         configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.lowerThreshold,
                                                                     parameters.contactMatching.higherThreshold]]
+
+        if #available(iOS 13.7, *) {
+            configuration.infectiousnessForDaysSinceOnsetOfSymptoms = [-14: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -13: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -12: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -11: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -10: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -9: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -8: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -7: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -6: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -5: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -4: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -3: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -2: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -1: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       -0: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       1: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       2: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       3: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       4: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       5: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       6: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       7: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       8: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       9: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       10: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       11: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       12: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       13: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
+                                                                       14: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue))]
+        }
         return configuration
     }
 }
