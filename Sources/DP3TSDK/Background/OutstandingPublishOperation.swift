@@ -69,6 +69,7 @@ class OutstandingPublishOperation: Operation {
                     if #available(iOS 13.7, *), !op.fake {
                         tracer.setEnabled(false, completionHandler: nil)
                     }
+                    enableResettingOfInfectionStatus(fake: op.fake)
                     continue
                 }
 
@@ -136,10 +137,7 @@ class OutstandingPublishOperation: Operation {
                         logger.error("could not retrieve key")
                     }
 
-                    if op.fake == false {
-                        logger.log("enabling resetting of infection status")
-                        defaults.infectionStatusIsResettable = true
-                    }
+                    enableResettingOfInfectionStatus(fake: op.fake)
 
                     logger.log("removing publish operation %{public}@ from storage", op.debugDescription)
                     storage.remove(publish: op)
@@ -180,10 +178,7 @@ class OutstandingPublishOperation: Operation {
                     logger.log("removing publish operation %{public}@ from storage", op.debugDescription)
                     storage.remove(publish: op)
 
-                    if op.fake == false {
-                        logger.log("enabling resetting of infection status")
-                        defaults.infectionStatusIsResettable = true
-                    }
+                    enableResettingOfInfectionStatus(fake: op.fake)
 
                     self.cancel()
                     return
@@ -191,11 +186,15 @@ class OutstandingPublishOperation: Operation {
                 logger.log("successfully published %{public}@ removing publish from storage", op.debugDescription)
                 storage.remove(publish: op)
 
-                if op.fake == false {
-                    self.logger.log("enabling resetting of infection status")
-                    self.defaults.infectionStatusIsResettable = true
-                }
+                enableResettingOfInfectionStatus(fake: op.fake)
             }
+        }
+    }
+    
+    fileprivate func enableResettingOfInfectionStatus(fake: Bool){
+        if !fake {
+            self.logger.log("enabling resetting of infection status")
+            self.defaults.infectionStatusIsResettable = true
         }
     }
 }
