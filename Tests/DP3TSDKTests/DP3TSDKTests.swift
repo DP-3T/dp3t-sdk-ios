@@ -93,7 +93,7 @@ class DP3TSDKTests: XCTestCase {
         try! sdk.startTracing { (err) in
             exp.fulfill()
         }
-        wait(for: [exp], timeout: 1.0)
+        wait(for: [exp], timeout: 2.0)
         XCTAssertEqual(tracer.state, TrackingState.active)
     }
 
