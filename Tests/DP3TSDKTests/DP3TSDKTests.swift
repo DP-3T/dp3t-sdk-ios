@@ -127,7 +127,7 @@ class DP3TSDKTests: XCTestCase {
         XCTAssertEqual(outstandingPublishStorage.get().count, 1)
 
         if #available(iOS 13.7, *) {
-            XCTAssert(defaults.infectionStatusIsResettable == false)
+            XCTAssertFalse(defaults.infectionStatusIsResettable)
         }
         XCTAssert(model != nil)
         XCTAssertEqual(model!.gaenKeys.count, defaults.parameters.crypto.numberOfKeysToSubmit)

@@ -112,7 +112,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 0)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
-        XCTAssert(mockDefaults.infectionStatusIsResettable == false)
+        XCTAssertFalse(mockDefaults.infectionStatusIsResettable)
     }
 
     func testPublishBeforeMidnight(){
@@ -145,7 +145,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 0)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
-        XCTAssert(mockDefaults.infectionStatusIsResettable == false)
+        XCTAssertFalse(mockDefaults.infectionStatusIsResettable)
     }
 
 
@@ -179,7 +179,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 1)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 1)
-        XCTAssert(mockDefaults.infectionStatusIsResettable == true)
+        XCTAssert(mockDefaults.infectionStatusIsResettable)
     }
 
 
@@ -210,7 +210,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 1)
         XCTAssertEqual(mockManager.fakeAccessedCount, 1)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
-        XCTAssert(mockDefaults.infectionStatusIsResettable == false)
+        XCTAssertFalse(mockDefaults.infectionStatusIsResettable)
     }
 
     func testPublishingReal() {
@@ -249,7 +249,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 2)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 2)
-        XCTAssert(mockDefaults.infectionStatusIsResettable == true)
+        XCTAssert(mockDefaults.infectionStatusIsResettable)
     }
 
     func testPublishingDiagnosisKeyProviderError() {
@@ -278,7 +278,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 0)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 1)
-        XCTAssert(mockDefaults.infectionStatusIsResettable == true)
+        XCTAssert(mockDefaults.infectionStatusIsResettable)
     }
 
     func testPublishingExposeeServiceClientError() {
@@ -310,7 +310,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 1)
         XCTAssertEqual(mockManager.fakeAccessedCount, 1)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
-        XCTAssert(mockDefaults.infectionStatusIsResettable == false)
+        XCTAssertFalse(mockDefaults.infectionStatusIsResettable)
     }
 
     static var formatter: DateFormatter = {
