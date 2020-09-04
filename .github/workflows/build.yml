@@ -14,8 +14,8 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - name: Switch to Xcode 11.6
-      run: sudo xcode-select --switch /Applications/Xcode_11.6.app
+    - name: Switch to Xcode 11.7
+      run: sudo xcode-select --switch /Applications/Xcode_11.7.app
 
     # Generate xcode project
     - name: Generate xcodeproj
@@ -32,8 +32,8 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - name: Switch to Xcode 11.6
-      run: sudo xcode-select --switch /Applications/Xcode_11.6.app
+    - name: Switch to Xcode 11.7
+      run: sudo xcode-select --switch /Applications/Xcode_11.7.app
 
     # Compile sample app for iOS Simulator (no signing)
     - name: Compile and run tests
