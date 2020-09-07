@@ -36,6 +36,9 @@ public enum DP3TTracingError: Error {
 
     /// The user was marked as infected
     case userAlreadyMarkedAsInfected
+
+    /// the infection status is not resettable currently
+    case infectionStatusNotResettable
 }
 
 /// A set of networking errors returned from the SDK

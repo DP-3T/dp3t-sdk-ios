@@ -16,7 +16,7 @@ protocol DiagnosisKeysProvider: class {
 
     func getFakeKeys(count: Int, startingFrom: Date) -> [CodableDiagnosisKey]
 
-    func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
+    func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, disableExposureNotificationAfterCompletion: Bool, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 }
 
 extension DiagnosisKeysProvider {
@@ -41,7 +41,7 @@ extension DiagnosisKeysProvider {
 fileprivate var logger = Logger(.main, category: "DiagnosisKeysProvider")
 
 extension ENManager: DiagnosisKeysProvider {
-    func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
+    func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, disableExposureNotificationAfterCompletion: Bool, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.trace()
         if !exposureNotificationEnabled {
             // Enable exposure notifications first, if currently not enabled (e.g. last day key)
@@ -55,8 +55,7 @@ extension ENManager: DiagnosisKeysProvider {
                 }
             }
         } else {
-            // Do not disable if it's currently already enabled
-            self.getDiagnosisKeysInternal(onsetDate: onsetDate, appDesc: appDesc, disableExposureNotificationAfterCompletion: false, completionHandler: completionHandler)
+            self.getDiagnosisKeysInternal(onsetDate: onsetDate, appDesc: appDesc, disableExposureNotificationAfterCompletion: disableExposureNotificationAfterCompletion, completionHandler: completionHandler)
         }
     }
 

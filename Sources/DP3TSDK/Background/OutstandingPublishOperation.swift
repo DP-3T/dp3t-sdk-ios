@@ -20,17 +20,28 @@ class OutstandingPublishOperation: Operation {
 
     private let runningInBackground: Bool
 
+    private var defaults: DefaultStorage
+
+    private var tracer: Tracer
+
     var now: Date {
         .init()
     }
 
     static let serialQueue = DispatchQueue(label: "org.dpppt.outstandingPublishQueue")
 
-    init(keyProvider: DiagnosisKeysProvider, serviceClient: ExposeeServiceClientProtocol, storage: OutstandingPublishStorage = OutstandingPublishStorage(), runningInBackground: Bool) {
+    init(keyProvider: DiagnosisKeysProvider,
+         serviceClient: ExposeeServiceClientProtocol,
+         storage: OutstandingPublishStorage = OutstandingPublishStorage(),
+         runningInBackground: Bool,
+         defaults: DefaultStorage = Default.shared,
+         tracer: Tracer) {
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
         self.storage = storage
         self.runningInBackground = runningInBackground
+        self.defaults = defaults
+        self.tracer = tracer
     }
 
     override func main() {
@@ -53,6 +64,12 @@ class OutstandingPublishOperation: Operation {
                     // ignore outstanding keys older than one day, upload token will be invalid
                     logger.log("skipping outstanding key %{public}@ because of age and removing publish from storage", op.debugDescription)
                     storage.remove(publish: op)
+
+                    // if we are running on iOS > 13.7 we need to disable the tracing
+                    if #available(iOS 13.7, *), !op.fake {
+                        tracer.setEnabled(false, completionHandler: nil)
+                    }
+                    enableResettingOfInfectionStatus(fake: op.fake)
                     continue
                 }
 
@@ -88,7 +105,13 @@ class OutstandingPublishOperation: Operation {
                 } else {
                     // get all keys up until today
                     group.enter()
-                    keyProvider.getDiagnosisKeys(onsetDate: nil, appDesc: serviceClient.descriptor) { result in
+
+                    // if we are running on iOS > 13.7 we need to disable the tracing after retreiving the key
+                    var disableAfterCompletion = false
+                    if #available(iOS 13.7, *) {
+                        disableAfterCompletion = true
+                    }
+                    keyProvider.getDiagnosisKeys(onsetDate: nil, appDesc: serviceClient.descriptor, disableExposureNotificationAfterCompletion: disableAfterCompletion) { result in
                         switch result {
                         case let .success(keys):
                             let rollingStartNumber = DayDate(date: op.dayToPublish).period
@@ -113,6 +136,8 @@ class OutstandingPublishOperation: Operation {
                     } else {
                         logger.error("could not retrieve key")
                     }
+
+                    enableResettingOfInfectionStatus(fake: op.fake)
 
                     logger.log("removing publish operation %{public}@ from storage", op.debugDescription)
                     storage.remove(publish: op)
@@ -153,12 +178,23 @@ class OutstandingPublishOperation: Operation {
                     logger.log("removing publish operation %{public}@ from storage", op.debugDescription)
                     storage.remove(publish: op)
 
+                    enableResettingOfInfectionStatus(fake: op.fake)
+
                     self.cancel()
                     return
                 }
                 logger.log("successfully published %{public}@ removing publish from storage", op.debugDescription)
                 storage.remove(publish: op)
+
+                enableResettingOfInfectionStatus(fake: op.fake)
             }
+        }
+    }
+    
+    fileprivate func enableResettingOfInfectionStatus(fake: Bool){
+        if !fake {
+            self.logger.log("enabling resetting of infection status")
+            self.defaults.infectionStatusIsResettable = true
         }
     }
 }
