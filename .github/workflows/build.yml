@@ -23,7 +23,7 @@ jobs:
 
     # Compile project and run tests
     - name: Compile and run tests
-      run: fastlane scan
+      run: fastlane scan --disable_concurrent_testing true
 
   sampleapp:
     runs-on: macOS-latest
