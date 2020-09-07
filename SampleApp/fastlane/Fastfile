@@ -4,18 +4,12 @@ platform :ios do
   desc "Push a new build to AppCenter"
   lane :distribute do
 
-  create_keychain(
-    name: "githubactionci",
-    password: "githubkeychain",
-    default_keychain: true,
-    unlock: true
-  )
+  # Create temporary keychain,...
+  setup_ci
 
   match(
     type: "development",
-    readonly: is_ci,
-    keychain_name: "githubactionci",
-    keychain_password: "githubkeychain"
+    readonly: is_ci
   )
 
   update_code_signing_settings(
