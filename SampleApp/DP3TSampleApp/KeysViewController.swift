@@ -203,19 +203,18 @@ extension KeysViewController: UITableViewDelegate {
                     if #available(iOS 13.7, *) {
                         print(EN_FEATURE_GENERAL)
                         manager.getExposureWindows(summary: summary) { (windows, error) in
-                            print("1")
+                            string.append("windows: \(windows?.debugDescription ?? "nil")")
+                        }
+                    } else {
+                        let parameters = DP3TTracing.parameters.contactMatching
+                        let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[1]) * parameters.factorHigh) / 60
+                        string.append("\n--------\n computed Threshold: \(computedThreshold)")
+                        if computedThreshold > Double(parameters.triggerThreshold) {
+                            string.append("\n meets requirement of \(parameters.triggerThreshold)")
+                        } else {
+                            string.append("\n doesn't meet requirement of \(parameters.triggerThreshold)")
                         }
                     }
-
-
-                    /*let parameters = DP3TTracing.parameters.contactMatching
-                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[1]) * parameters.factorHigh) / 60
-                    string.append("\n--------\n computed Threshold: \(computedThreshold)")
-                    if computedThreshold > Double(parameters.triggerThreshold) {
-                        string.append("\n meets requirement of \(parameters.triggerThreshold)")
-                    } else {
-                        string.append("\n doesn't meet requirement of \(parameters.triggerThreshold)")
-                    }*/
                 }
 
                 loggingStorage?.log(string, type: .info)
