@@ -17,13 +17,34 @@ jobs:
     - name: Switch to Xcode 11.7
       run: sudo xcode-select --switch /Applications/Xcode_11.7.app
 
+    # Install Simulators for testing on 13.5 13.6 and 13.7
+    - name: Install Simulators
+      run: |
+        gem install xcode-install
+        xcversion simulators --install="iOS 13.5" --no-progress
+        xcversion simulators --install="iOS 13.6" --no-progress
+        xcrun simctl create 'iPhone 11 (13.5)' com.apple.CoreSimulator.SimDeviceType.iPhone-11 com.apple.CoreSimulator.SimRuntime.iOS-13-5
+        xcrun simctl create 'iPhone 11 (13.6)' com.apple.CoreSimulator.SimDeviceType.iPhone-11 com.apple.CoreSimulator.SimRuntime.iOS-13-6
+
     # Generate xcode project
     - name: Generate xcodeproj
       run: swift package generate-xcodeproj --xcconfig-overrides Sources/Config.xcconfig
 
-    # Compile project and run tests
-    - name: Compile and run tests
-      run: fastlane scan --disable_concurrent_testing true
+    # Compile project
+    - name: Compile
+      run: fastlane scan --build_for_testing
+
+    # Run Tests on 13.7
+    - name: Run tests on iOS 13.7
+      run: fastlane scan --test_without_building --disable_concurrent_testing true
+
+    # Run Tests on 13.6
+    - name: Run tests on iOS 13.6
+      run: fastlane scan --test_without_building --disable_concurrent_testing true --device 'iPhone 11 (13.6)'
+
+    # Run Tests on 13.5
+    - name: Run tests on iOS 13.5
+      run: fastlane scan --test_without_building --disable_concurrent_testing true --device 'iPhone 11 (13.5)'
 
   sampleapp:
     runs-on: macOS-latest
