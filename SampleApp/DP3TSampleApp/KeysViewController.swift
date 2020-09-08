@@ -203,7 +203,12 @@ extension KeysViewController: UITableViewDelegate {
                     if #available(iOS 13.7, *) {
                         print(EN_FEATURE_GENERAL)
                         manager.getExposureWindows(summary: summary) { (windows, error) in
-                            string.append("windows: \(windows?.debugDescription ?? "nil")")
+                            let alertController = UIAlertController(title: "Windows", message: "windows: \(windows?.debugDescription ?? "nil")", preferredStyle: .actionSheet)
+                            let actionOk = UIAlertAction(title: "OK",
+                                                         style: .default,
+                                                         handler: nil)
+                            alertController.addAction(actionOk)
+                            self.present(alertController, animated: true, completion: nil)
                         }
                     } else {
                         let parameters = DP3TTracing.parameters.contactMatching
@@ -214,17 +219,17 @@ extension KeysViewController: UITableViewDelegate {
                         } else {
                             string.append("\n doesn't meet requirement of \(parameters.triggerThreshold)")
                         }
+
+                        loggingStorage?.log(string, type: .info)
+                        let alertController = UIAlertController(title: "Summary", message: string, preferredStyle: .alert)
+                        let actionOk = UIAlertAction(title: "OK",
+                                                     style: .default,
+                                                     handler: nil)
+                        alertController.addAction(actionOk)
+                        self.present(alertController, animated: true, completion: nil)
+                        try? localUrls.forEach(FileManager.default.removeItem(at:))
                     }
                 }
-
-                loggingStorage?.log(string, type: .info)
-                let alertController = UIAlertController(title: "Summary", message: string, preferredStyle: .alert)
-                let actionOk = UIAlertAction(title: "OK",
-                                             style: .default,
-                                             handler: nil)
-                alertController.addAction(actionOk)
-                self.present(alertController, animated: true, completion: nil)
-                try? localUrls.forEach(FileManager.default.removeItem(at:))
             }
         }
     }
