@@ -31,7 +31,7 @@ class ExposureNotificationMatcher: Matcher {
         self.defaults = defaults
     }
 
-    func receivedNewData(_ data: Data, keyDate: Date, now: Date = .init()) throws -> Bool {
+    func receivedNewData(_ data: Data, now: Date = .init()) throws -> Bool {
         logger.trace()
         return try synchronousQueue.sync {
             var urls: [URL] = []
@@ -54,17 +54,18 @@ class ExposureNotificationMatcher: Matcher {
 
             guard urls.isEmpty == false else { return false }
 
-            let configuration: ENExposureConfiguration = .configuration()
-
             let semaphore = DispatchSemaphore(value: 0)
             var exposureSummary: ENExposureDetectionSummary?
             var exposureDetectionError: Error? = DP3TTracingError.cancelled
 
-            logger.log("calling detectExposures for day %{public}@ and description: %{public}@", keyDate.description, configuration.stringVal)
-            manager.detectExposures(configuration: configuration, diagnosisKeyURLs: urls) { summary, error in
+            logger.log("calling detectExposures")
+            manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: urls) { summary, error in
                 exposureSummary = summary
                 exposureDetectionError = error
-                semaphore.signal()
+
+                self.manager.getExposureWindows(summary: summary!) { (windows, erro) in
+                    semaphore.signal()
+                }
             }
             
             // Wait for 3min and abort if detectExposures did not return in time
@@ -87,32 +88,64 @@ class ExposureNotificationMatcher: Matcher {
 
             try? FileManager.default.removeItem(at: tempDirectory)
 
-
-            if let summary = exposureSummary {
-
-                if #available(iOS 13.7, *) {
-                    manager.getExposureWindows(summary: summary) { (windows, error) in
-                        print("1")
-                    }
-                } else {
-                    // Fallback on earlier versions
-                }
-
-
-                /*let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * defaults.parameters.contactMatching.factorLow + Double(truncating: summary.attenuationDurations[1]) * defaults.parameters.contactMatching.factorHigh) / TimeInterval.minute
-
-                logger.log("reiceived exposureSummary for day %{public}@ : %{public}@ computed threshold: %{public}.2f (low:%{public}.2f, high: %{public}.2f) required %{public}d",
-                           keyDate.description, summary.debugDescription, computedThreshold, defaults.parameters.contactMatching.factorLow, defaults.parameters.contactMatching.factorHigh, defaults.parameters.contactMatching.triggerThreshold)
-
-                if computedThreshold >= Double(defaults.parameters.contactMatching.triggerThreshold) {
-                    logger.log("exposureSummary meets requiremnts")
-                    let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: keyDate, reportDate: Date(), isDeleted: false)
-                    exposureDayStorage.add(day)
-                    return true
-                } else {
-                    logger.log("exposureSummary does not meet requirements")
-                }*/
+            guard let summary = exposureSummary else {
+                assertionFailure("This should never happen, EN.detectExposure should either return a error or a summary")
+                return false
             }
+
+            var exposureWindows: [ENExposureWindow]?
+            var exposureWindowsError: Error? = DP3TTracingError.cancelled
+            manager.getExposureWindows(summary: summary) { (windows, error) in
+                exposureWindows = windows
+                exposureWindowsError = error
+                semaphore.signal()
+            }
+
+            // Wait for 3min and abort if getExposureWindows did not return in time
+            if semaphore.wait(timeout: .now() + 180) == .timedOut {
+                // This should never be the case but it protects us from errors
+                // in ExposureNotifications.frameworks which cause the completion
+                // handler to never get called.
+                // If ENManager would return after 3min, the app gets kill before
+                // that because we are only allowed to run for 2.5min in background
+                logger.error("ENManager.getExposureWindows() failed to return in time")
+            }
+
+            if let error = exposureWindowsError {
+                logger.error("ENManager.getExposureWindows failed error: %{public}@", error.localizedDescription)
+                try? urls.forEach(deleteDiagnosisKeyFile(at:))
+                throw DP3TTracingError.exposureNotificationError(error: error)
+            }
+
+            guard let windows = exposureWindows else {
+                assertionFailure("This should never happen, EN.getExposureWindows should either return a error or windows")
+                return false
+            }
+
+            
+            let parameters = defaults.parameters.contactMatching
+            let groups = windows.groupByDay
+            let exposureDays = exposureDayStorage.getDays()
+            for (day, windows) in groups {
+                let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
+                                                                  higherThreshold: parameters.higherThreshold)
+
+                if attenuationValues.matches(factorLow: parameters.factorLow,
+                                             factorHigh: parameters.factorHigh,
+                                             triggerThreshold: parameters.triggerThreshold * 60) {
+                    let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: day, reportDate: Date(), isDeleted: false)
+                    exposureDayStorage.add(day)
+
+                }
+            }
+
+            if exposureDayStorage.getDays() != exposureDays {
+                // a new exposure was found
+                logger.log("finishing matching session with new exposure(s)")
+                return true
+            }
+
+            logger.log("finishing matching session with no new exposures")
             return false
         }
     }
@@ -120,59 +153,5 @@ class ExposureNotificationMatcher: Matcher {
     func deleteDiagnosisKeyFile(at localURL: URL) throws {
         logger.trace()
         try FileManager.default.removeItem(at: localURL)
-    }
-}
-
-extension ENExposureConfiguration {
-    static var thresholdsKey: String = "attenuationDurationThresholds"
-
-    static func configuration(parameters: DP3TParameters = Default.shared.parameters) -> ENExposureConfiguration {
-        let configuration = ENExposureConfiguration()
-        configuration.minimumRiskScore = 0
-        configuration.attenuationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.daysSinceLastExposureLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.durationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.metadata = [Self.thresholdsKey: [parameters.contactMatching.lowerThreshold,
-                                                       parameters.contactMatching.higherThreshold]]
-        if #available(iOS 13.7, *) {
-            configuration.infectiousnessForDaysSinceOnsetOfSymptoms = [-14: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -13: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -12: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -11: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -10: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -9: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -8: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -7: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -6: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -5: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -4: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -3: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -2: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -1: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       -0: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       1: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       2: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       3: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       4: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       5: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       6: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       7: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       8: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       9: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       10: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       11: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       12: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       13: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue)),
-                                                                       14: NSNumber(integerLiteral: Int(ENInfectiousness.standard.rawValue))]
-        }
-        return configuration
-    }
-
-    var stringVal: String {
-        if let thresholds = metadata?[Self.thresholdsKey] as? [Int] {
-            return "<ENExposureConfiguration attenuationDurationThresholds: [\(thresholds[0]),\(thresholds[1])]>"
-        }
-        return "<ENExposureConfiguration attenuationDurationThresholds: nil>"
     }
 }

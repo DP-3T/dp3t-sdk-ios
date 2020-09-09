@@ -202,8 +202,27 @@ extension KeysViewController: UITableViewDelegate {
 
                     if #available(iOS 13.7, *) {
                         print(EN_FEATURE_GENERAL)
-                        manager.getExposureWindows(summary: summary) { (windows, error) in
-                            let alertController = UIAlertController(title: "Windows", message: "windows: \(windows?.debugDescription ?? "nil")", preferredStyle: .actionSheet)
+                        manager.getExposureWindows(summary: summary) { (weakWindows, error) in
+                            if let allWindows = weakWindows {
+                                let parameters = DP3TTracing.parameters.contactMatching
+                                let groups = allWindows.groupByDay
+                                var exposureDays = Set<Date>()
+                                for (day, windows) in groups {
+                                    let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
+                                                                                      higherThreshold: parameters.higherThreshold)
+
+                                    if attenuationValues.matches(factorLow: parameters.factorLow,
+                                                                 factorHigh: parameters.factorHigh,
+                                                                 triggerThreshold: parameters.triggerThreshold) {
+                                        exposureDays.insert(day)
+
+                                    }
+                                }
+                                print(exposureDays)
+                            }
+
+
+                            let alertController = UIAlertController(title: "Windows", message: "windows: \(weakWindows?.debugDescription ?? "nil")", preferredStyle: .actionSheet)
                             let actionOk = UIAlertAction(title: "OK",
                                                          style: .default,
                                                          handler: nil)
@@ -238,44 +257,10 @@ extension KeysViewController: UITableViewDelegate {
 extension ENExposureConfiguration {
     static func configuration(parameters: DP3TParameters = DP3TTracing.parameters) -> ENExposureConfiguration {
         let configuration = ENExposureConfiguration()
-        configuration.minimumRiskScore = 0
-        configuration.attenuationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.daysSinceLastExposureLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.durationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.lowerThreshold,
-                                                                    parameters.contactMatching.higherThreshold]]
-
-        if #available(iOS 13.7, *) {
-            configuration.infectiousnessForDaysSinceOnsetOfSymptoms = [-14: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -13: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -12: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -11: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -10: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -9: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -8: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -7: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -6: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -5: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -4: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -3: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -2: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -1: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       -0: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       1: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       2: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       3: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       4: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       5: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       6: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       7: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       8: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       9: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       10: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       11: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       12: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       13: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue)),
-                                                                       14: NSNumber(integerLiteral: Int(ENInfectiousness.high.rawValue))]
+        configuration.reportTypeNoneMap = .confirmedTest
+        configuration.infectiousnessForDaysSinceOnsetOfSymptoms = [ENDaysSinceOnsetOfSymptomsUnknown as NSNumber: ENInfectiousness.high.rawValue as NSNumber]
+        for i in -14...14 {
+            configuration.infectiousnessForDaysSinceOnsetOfSymptoms?[i as NSNumber] = ENInfectiousness.high.rawValue as NSNumber
         }
         return configuration
     }

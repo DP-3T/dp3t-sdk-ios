@@ -192,7 +192,7 @@ class KnownCasesSynchronizer {
                             if let data = knownCasesData.data {
                                 if let matcher = self.matcher {
                                     self.logger.log("received data(%{public}d bytes) for %{public}@", data.count, currentKeyDate.description)
-                                    let foundNewMatch = try matcher.receivedNewData(data, keyDate: currentKeyDate, now: now)
+                                    let foundNewMatch = try matcher.receivedNewData(data, now: now)
                                     matchfound = matchfound || foundNewMatch
                                 }else {
                                     self.logger.error("matcher not present")

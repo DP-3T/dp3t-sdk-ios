@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = DF07D0A52451E59200CFD431 /* Alamofire */; };
+		F80B17EA2507BB4000A5D880 /* ExposureWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80B17E82507BB4000A5D880 /* ExposureWindow.swift */; };
 		F812AC56243DF459005F26AE /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC55243DF459005F26AE /* RootViewController.swift */; };
 		F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC58243E02A1005F26AE /* ControlViewController.swift */; };
 		F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC5A243E02AF005F26AE /* ParametersViewController.swift */; };
@@ -21,11 +22,13 @@
 		F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = F83BE14F242DDFF60043FA1E /* SnapKit */; };
 		F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85D4F3F243EFC6A00529168 /* Defaults.swift */; };
 		F85D4F42243F0D8B00529168 /* StackView+Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */; };
+		F88A3BDE2508AB4A001DDE5B /* ENExposureConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F88A3BDD2508AB4A001DDE5B /* ENExposureConfiguration.swift */; };
 		F89B452424731DD40011AD07 /* KeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F89B452324731DD40011AD07 /* KeysViewController.swift */; };
 		F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F80B17E82507BB4000A5D880 /* ExposureWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExposureWindow.swift; path = ../../../Sources/DP3TSDK/Matching/ExposureWindow.swift; sourceTree = "<group>"; };
 		F812AC55243DF459005F26AE /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		F812AC58243E02A1005F26AE /* ControlViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlViewController.swift; sourceTree = "<group>"; };
 		F812AC5A243E02AF005F26AE /* ParametersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParametersViewController.swift; sourceTree = "<group>"; };
@@ -40,6 +43,7 @@
 		F83BE17C242DE1BF0043FA1E /* covid-tracing-ios-sdk */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "covid-tracing-ios-sdk"; path = ..; sourceTree = "<group>"; };
 		F85D4F3F243EFC6A00529168 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
 		F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StackView+Spacing.swift"; sourceTree = "<group>"; };
+		F88A3BDD2508AB4A001DDE5B /* ENExposureConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ENExposureConfiguration.swift; path = ../../../Sources/DP3TSDK/Matching/ENExposureConfiguration.swift; sourceTree = "<group>"; };
 		F89B452324731DD40011AD07 /* KeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysViewController.swift; sourceTree = "<group>"; };
 		F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkingHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -59,6 +63,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F80B17E62507BB0D00A5D880 /* SDKReferences */ = {
+			isa = PBXGroup;
+			children = (
+				F88A3BDD2508AB4A001DDE5B /* ENExposureConfiguration.swift */,
+				F80B17E82507BB4000A5D880 /* ExposureWindow.swift */,
+			);
+			path = SDKReferences;
+			sourceTree = "<group>";
+		};
 		F83BE12D242DDC450043FA1E = {
 			isa = PBXGroup;
 			children = (
@@ -90,6 +103,7 @@
 				F89B452324731DD40011AD07 /* KeysViewController.swift */,
 				F812AC5A243E02AF005F26AE /* ParametersViewController.swift */,
 				F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */,
+				F80B17E62507BB0D00A5D880 /* SDKReferences */,
 				F83BE142242DDC460043FA1E /* Assets.xcassets */,
 				F83BE144242DDC460043FA1E /* LaunchScreen.storyboard */,
 				F83BE147242DDC460043FA1E /* Info.plist */,
@@ -188,6 +202,8 @@
 			files = (
 				F89B452424731DD40011AD07 /* KeysViewController.swift in Sources */,
 				F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */,
+				F88A3BDE2508AB4A001DDE5B /* ENExposureConfiguration.swift in Sources */,
+				F80B17EA2507BB4000A5D880 /* ExposureWindow.swift in Sources */,
 				F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */,
 				F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */,
 				F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */,
@@ -284,7 +300,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XPL89PTG92;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -364,7 +380,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XPL89PTG92;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
