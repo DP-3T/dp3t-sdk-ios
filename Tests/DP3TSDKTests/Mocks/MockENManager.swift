@@ -53,6 +53,16 @@ class MockENManager: ENManager {
         return Progress()
     }
 
+    var getExposureWindowsWasCalled = false
+
+    var windows: [MockWindow] = []
+
+    override func getExposureWindows(summary: ENExposureDetectionSummary, completionHandler: @escaping ENGetExposureWindowsHandler) -> Progress {
+        getExposureWindowsWasCalled = true
+        completionHandler(windows, nil)
+        return Progress()
+    }
+
     override func activate(completionHandler: @escaping ENErrorHandler) {
         activateCallbacks.append(completionHandler)
     }

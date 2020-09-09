@@ -20,7 +20,7 @@ class MockMatcher: Matcher {
 
     var findsMatch: Bool = false
 
-    func receivedNewData(_ data: Data, keyDate: Date, now: Date) throws -> Bool {
+    func receivedNewData(_ data: Data, now: Date) throws -> Bool {
         timesCalledReceivedNewData += 1
         timingManager?.addDetection(timestamp: now)
         if let error = error {

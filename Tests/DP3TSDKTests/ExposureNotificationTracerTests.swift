@@ -116,7 +116,7 @@ class ExposureNotificationTracerTests: XCTestCase {
 
         let ex = expectation(description: "init")
         tracer.addInitialisationCallback {
-            
+
             XCTAssertEqual(self.tracer.state, TrackingState.inactive(error: .permissonError))
 
             self.manager.status = .active
