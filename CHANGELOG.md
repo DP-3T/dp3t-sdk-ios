@@ -1,5 +1,8 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 1.2.2 ()
+- 'Bearer' is not added as prefix to auth key if using HTTPAuthorizationBearer auth method. 
+
 ## Version 1.2.1 (31.08.2020)
 - ensures that backgroundtask keeps running until outstandingPublishOperation is finished
 

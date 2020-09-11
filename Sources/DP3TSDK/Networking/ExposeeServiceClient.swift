@@ -242,7 +242,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         request.addValue(String(payload.count), forHTTPHeaderField: "Content-Length")
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
         if case let ExposeeAuthMethod.HTTPAuthorizationBearer(token: token) = authentication {
-            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            request.addValue(token, forHTTPHeaderField: "Authorization")
         }
         request.httpBody = payload
 
