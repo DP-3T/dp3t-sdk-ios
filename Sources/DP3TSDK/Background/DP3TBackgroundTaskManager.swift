@@ -30,6 +30,10 @@ class DP3TBackgroundTaskManager {
 
     private let tracer: Tracer
 
+    /// The minimal execution time is needed to prevent any status hickups from iOS
+    /// we make sure that every task is running for at least 5 seconds before we complete it
+    private let minimalExecutionTime: TimeInterval = 5
+
     init(handler: DP3TBackgroundHandler?,
          keyProvider: DiagnosisKeysProvider,
          serviceClient: ExposeeServiceClientProtocol,
@@ -67,6 +71,7 @@ class DP3TBackgroundTaskManager {
     }
 
     private func handleExposureNotificationBackgroundTask(_ task: BGTask) {
+        let startingTime = Date()
         logger.trace()
         scheduleBackgroundTasks()
 
@@ -96,20 +101,47 @@ class DP3TBackgroundTaskManager {
 
         queue.addOperation(syncOperation)
 
+        var taskDidExpire = false
         task.expirationHandler = { [weak self] in
-            self?.logger.error("Exposure notification task expiration handler called")
-            queue.cancelAllOperations()
+            self?.logger.error("Exposure notification expiration handler called ")
+            taskDidExpire = true
+            if queue.operationCount != 0 {
+                // if operations are running we cancel all of them which then triggers the notify
+                self?.logger.log("cancelAllOperations")
+                queue.cancelAllOperations()
+            } else {
+                // if we dont have any operations running we got killed while trying to run for minimalExecutionTime
+                // so we just end the task
+                self?.logger.log("setTaskCompleted")
+                task.setTaskCompleted(success: false)
+            }
         }
 
         completionGroup.notify(queue: .main) { [weak self] in
-            self?.logger.log("Exposure notification task completed")
-
-            let success = !queue.operations.map { $0.isCancelled }.contains(true)
-            task.setTaskCompleted(success: success)
+            guard let self = self else { return }
+            func complete() {
+                self.logger.log("Exposure notification completed")
+                let success = !queue.operations.map { $0.isCancelled }.contains(true)
+                task.setTaskCompleted(success: success)
+            }
+            let remainingtime = self.minimalExecutionTime + startingTime.timeIntervalSinceNow
+            // if the task did not expire and we did not reach minimalExecutionTime we wait for the remainig time difference
+            // if we do expire in the meantime we will complete the task in the expirationHandler
+            if !taskDidExpire || remainingtime > 0 {
+                self.logger.log("sleeping for %{public}f seconds till ending task", remainingtime)
+                DispatchQueue.main.asyncAfter(deadline: .now() + remainingtime) {
+                    complete()
+                }
+            } else {
+                self.logger.log("ending task since minimalExecutionTime was reached")
+                complete()
+            }
         }
     }
 
     private func handleRefreshTask(_ task: BGTask) {
+        let startingTime = Date()
+
         logger.trace()
         scheduleBackgroundTasks()
 
@@ -138,16 +170,41 @@ class DP3TBackgroundTaskManager {
         }
         queue.addOperation(outstandingPublishOperation)
 
+        var taskDidExpire = false
         task.expirationHandler = { [weak self] in
-            self?.logger.error("Refresh task expiration handler called")
-            queue.cancelAllOperations()
+            self?.logger.error("Refresh task expiration handler called ")
+            taskDidExpire = true
+            if queue.operationCount != 0 {
+                // if operations are running we cancel all of them which then triggers the notify
+                self?.logger.log("cancelAllOperations")
+                queue.cancelAllOperations()
+            } else {
+                // if we dont have any operations running we got killed while trying to run for minimalExecutionTime
+                // so we just end the task
+                self?.logger.log("setTaskCompleted")
+                task.setTaskCompleted(success: false)
+            }
         }
 
         completionGroup.notify(queue: .main) { [weak self] in
-            self?.logger.log("Refresh task completed")
-
-            let success = !queue.operations.map { $0.isCancelled }.contains(true)
-            task.setTaskCompleted(success: success)
+            guard let self = self else { return }
+            func complete() {
+                self.logger.log("Refresh task completed")
+                let success = !queue.operations.map { $0.isCancelled }.contains(true)
+                task.setTaskCompleted(success: success)
+            }
+            let remainingtime = self.minimalExecutionTime + startingTime.timeIntervalSinceNow
+            // if the task did not expire and we did not reach minimalExecutionTime we wait for the remainig time difference
+            // if we do expire in the meantime we will complete the task in the expirationHandler
+            if !taskDidExpire || remainingtime > 0 {
+                self.logger.log("sleeping for %{public}f seconds till ending task", remainingtime)
+                DispatchQueue.main.asyncAfter(deadline: .now() + remainingtime) {
+                    complete()
+                }
+            } else {
+                self.logger.log("ending task since minimalExecutionTime was reached")
+                complete()
+            }
         }
     }
 
