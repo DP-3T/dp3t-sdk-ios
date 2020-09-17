@@ -52,13 +52,6 @@ class KeysViewController: UIViewController {
 
     private let nameRegex = try? NSRegularExpression(pattern: "key_export_experiment_([a-zA-Z0-9]+)_(.+)", options: .caseInsensitive)
 
-    struct RowData {
-        let isSectionGroupHeader: Bool
-        let title: String
-        let zips: [NetworkingHelper.DebugZips]
-        var result: String?
-    }
-
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Keys"
