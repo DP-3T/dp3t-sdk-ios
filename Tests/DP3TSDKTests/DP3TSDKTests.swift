@@ -84,7 +84,7 @@ class DP3TSDKTests: XCTestCase {
             }
             exp.fulfill()
         }
-        wait(for: [exp], timeout: 0.1)
+        wait(for: [exp], timeout: 1.0)
     }
 
     func testCallEnable(){
@@ -114,14 +114,14 @@ class DP3TSDKTests: XCTestCase {
             }
             stateexp.fulfill()
         }
-        wait(for: [stateexp], timeout: 0.1)
+        wait(for: [stateexp], timeout: 1.0)
 
         let exp = expectation(description: "infected")
         keyProvider.keys = [ .init(keyData: Data(count: 16), rollingPeriod: 144, rollingStartNumber: DayDate().period, transmissionRiskLevel: 0, fake: 0) ]
         sdk.iWasExposed(onset: .init(timeIntervalSinceNow: -.day), authentication: .none) { (result) in
             exp.fulfill()
         }
-        wait(for: [exp], timeout: 0.1)
+        wait(for: [exp], timeout: 1.0)
         let model = service.exposeeListModel
 
         XCTAssertEqual(outstandingPublishStorage.get().count, 1)
@@ -165,7 +165,7 @@ class DP3TSDKTests: XCTestCase {
             }
             stateExpAfter.fulfill()
         }
-        wait(for: [stateExpAfter], timeout: 0.1)
+        wait(for: [stateExpAfter], timeout: 1.0)
 
 
         XCTAssertThrowsError(try sdk.startTracing())
@@ -177,7 +177,7 @@ class DP3TSDKTests: XCTestCase {
         sdk.sync(runningInBackground: false) { (result) in
             exp.fulfill()
         }
-        wait(for: [exp], timeout: 0.1)
+        wait(for: [exp], timeout: 1.0)
     }
 
     func testSyncCompleteAfterInit(){
@@ -186,7 +186,7 @@ class DP3TSDKTests: XCTestCase {
             exp.fulfill()
         }
         manager.completeActivation()
-        wait(for: [exp], timeout: 0.1)
+        wait(for: [exp], timeout: 1.0)
     }
 
     func testSyncWhenActive(){
@@ -235,7 +235,7 @@ class DP3TSDKTests: XCTestCase {
             }
             expStatus.fulfill()
         }
-        wait(for: [expStatus], timeout: 0.1)
+        wait(for: [expStatus], timeout: 1.0)
 
 
         // app comes again in foreground
@@ -261,7 +261,7 @@ class DP3TSDKTests: XCTestCase {
             }
             expStatusAfter.fulfill()
         }
-        wait(for: [expStatusAfter], timeout: 0.1)
+        wait(for: [expStatusAfter], timeout: 1.0)
     }
 
     func testEnableAfterEnableFailure(){

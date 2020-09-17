@@ -178,7 +178,7 @@ extension TrackingState {
         case .unknown, .disabled:
             self = .stopped
         case .bluetoothOff:
-            self = .inactive(error: .bluetoothTurnedOff)
+            self = .inactive(error: .bluetoothTurnedOff(enabled: enabled))
         case .restricted:
             self = .inactive(error: .permissonError)
         case .paused:

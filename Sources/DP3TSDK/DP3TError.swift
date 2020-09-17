@@ -29,7 +29,8 @@ public enum DP3TTracingError: Error {
     case exposureNotificationError(error: Error)
 
     /// Bluetooth device turned off
-    case bluetoothTurnedOff
+    /// The associated boolean indicates if the ENFramework would be enabled
+    case bluetoothTurnedOff(enabled: Bool)
 
     /// Bluetooth permission error
     case permissonError

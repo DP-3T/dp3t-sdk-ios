@@ -82,7 +82,7 @@ class ExposureNotificationTracerTests: XCTestCase {
 
         let ex = expectation(description: "init")
         tracer.addInitialisationCallback {
-            XCTAssertEqual(self.tracer.state, TrackingState.inactive(error: .bluetoothTurnedOff))
+            XCTAssertEqual(self.tracer.state, TrackingState.inactive(error: .bluetoothTurnedOff(enabled: false)))
 
             ex.fulfill()
         }

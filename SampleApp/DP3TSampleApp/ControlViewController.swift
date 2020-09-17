@@ -465,6 +465,17 @@ class ControlViewController: UIViewController {
             segmentedControl.selectedSegmentIndex = 0
             startReceivingButton.isEnabled = false
             startAdvertisingButton.isEnabled = false
+        case .inactive(let error):
+            switch error {
+            case .bluetoothTurnedOff(let enabled) where enabled == true:
+                segmentedControl.selectedSegmentIndex = 0
+                startReceivingButton.isEnabled = false
+                startAdvertisingButton.isEnabled = false
+            default:
+                segmentedControl.selectedSegmentIndex = 1
+                startReceivingButton.isEnabled = true
+                startAdvertisingButton.isEnabled = true
+            }
         default:
             segmentedControl.selectedSegmentIndex = 1
             startReceivingButton.isEnabled = true
@@ -526,7 +537,7 @@ private extension TrackingState {
         case .active:
             return "active"
         case let .inactive(error):
-            return "inactive \(error.localizedDescription)"
+            return "inactive \(error.description)"
         case .stopped:
             return "stopped"
         }
@@ -536,8 +547,8 @@ private extension TrackingState {
 extension DP3TTracingError {
     var description: String {
         switch self {
-        case .bluetoothTurnedOff:
-            return "bluetoothTurnedOff"
+        case .bluetoothTurnedOff(let enabled):
+            return "bluetoothTurnedOff EN:\(enabled ? "enabled" : "disabled")"
         case let .caseSynchronizationError(errors: errors):
             return "caseSynchronizationError \(errors.map { $0.localizedDescription })"
         case let .databaseError(error: error):

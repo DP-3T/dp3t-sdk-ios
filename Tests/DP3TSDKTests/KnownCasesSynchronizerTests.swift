@@ -164,7 +164,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
     func testDontStoreLastSyncMatchingError() {
         let matcher = MockMatcher()
         let service = MockService()
-        matcher.error = DP3TTracingError.bluetoothTurnedOff
+        matcher.error = DP3TTracingError.bluetoothTurnedOff(enabled: false)
         let defaults = MockDefaults()
         let sync = KnownCasesSynchronizer(matcher: matcher,
                                           service: service,
@@ -172,7 +172,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
         let expecation = expectation(description: "syncExpectation")
         sync.sync(now: .init(timeIntervalSinceNow: .hour)) { res in
-            XCTAssertEqual(res, SyncResult.failure(.bluetoothTurnedOff))
+            XCTAssertEqual(res, SyncResult.failure(.bluetoothTurnedOff(enabled: false)))
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
