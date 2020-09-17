@@ -551,8 +551,6 @@ extension DP3TTracingError {
             return "bluetoothTurnedOff EN:\(enabled ? "enabled" : "disabled")"
         case let .caseSynchronizationError(errors: errors):
             return "caseSynchronizationError \(errors.map { $0.localizedDescription })"
-        case let .databaseError(error: error):
-            return "databaseError \(error?.localizedDescription ?? "nil")"
         case let .networkingError(error: error):
             return "networkingError \(error.localizedDescription)"
         case .permissonError:

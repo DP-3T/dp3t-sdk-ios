@@ -21,11 +21,7 @@ public enum DP3TTracingError: Error {
     /// The operation was cancelled
     case cancelled
 
-    /// Database Error
-    case databaseError(error: Error?)
-
     /// Expsure notification framework error
-
     case exposureNotificationError(error: Error)
 
     /// Bluetooth device turned off
