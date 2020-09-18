@@ -31,9 +31,9 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
         XCTAssert(service.requests.contains(DayDate(date: now).dayMin))
-        XCTAssert(!defaults.lastSyncTimestamps.isEmpty)
+        XCTAssertEqual(defaults.lastSyncSinceTimestamp, service.publishedUntil)
     }
 
     func testInitialLoadingFirstBatch() {
@@ -51,8 +51,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
     }
 
     func testOnlyCallingMatcherTwiceADay() {
@@ -119,8 +118,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
+        XCTAssertEqual(defaults.lastSyncSinceTimestamp, service.publishedUntil)
     }
 
     func testInitialLoadingManyBatches() {
@@ -139,7 +138,6 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, defaults.parameters.networking.daysToCheck)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, defaults.parameters.networking.daysToCheck)
     }
 
     func testDontStoreLastSyncNetworkingError() {
@@ -157,8 +155,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
-
-        XCTAssert(defaults.lastSyncTimestamps.isEmpty)
+        XCTAssertEqual(defaults.lastSyncSinceTimestamp, service.publishedUntil)
     }
 
     func testDontStoreLastSyncMatchingError() {
@@ -177,7 +174,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssert(defaults.lastSyncTimestamps.isEmpty)
+        XCTAssert(defaults.lastSyncSinceTimestamp == nil)
     }
 
     func testDontStoreLastSyncSkipped() {
@@ -196,7 +193,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssert(defaults.lastSyncTimestamps.isEmpty)
+        XCTAssert(defaults.lastSyncSinceTimestamp == nil)
     }
 
     func testRepeatingRequestsAfterDay() {
@@ -215,8 +212,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
 
         service.requests = []
 
@@ -227,8 +223,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
+        XCTAssertEqual(defaults.lastSyncSinceTimestamp, service.publishedUntil)
     }
 
     func testCallingSyncMulithreaded() {
@@ -253,8 +249,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
     }
 
     func testCallingSyncMulithreadedWithCancel() {
@@ -284,8 +279,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let exp = expectation(description: "Test after 2 seconds")
         _ = XCTWaiter.wait(for: [exp], timeout: 2.0)
 
-        XCTAssertNotEqual(service.requests.count, 10)
-        XCTAssertNotEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertNotEqual(service.requests.count, 1)
+        XCTAssertEqual(defaults.lastSyncSinceTimestamp, service.publishedUntil)
     }
 
     func testStoringOfSuccessfulDates(){
@@ -305,8 +300,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 5)
+        XCTAssertEqual(service.requests.count, 1)
     }
 
     static var formatter: DateFormatter = {

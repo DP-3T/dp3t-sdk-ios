@@ -21,14 +21,14 @@ class ExposureDetectionTimingManagerTests: XCTestCase {
         }
 
         XCTAssertEqual(manager.getRemainingDetections(), 0)
-        XCTAssertEqual(manager.shouldDetect(lastDetection: .init(timeIntervalSinceNow: -.day)), false)
+        XCTAssertEqual(manager.shouldDetect(), false)
     }
 
     func testRemainingInitial() {
         let defaults = MockDefaults()
         let manager = ExposureDetectionTimingManager(storage: defaults)
         XCTAssertEqual(manager.getRemainingDetections(), ExposureDetectionTimingManager.maxDetections)
-        XCTAssertEqual(manager.shouldDetect(lastDetection: .init(timeIntervalSinceNow: -.day)), true)
+        XCTAssertEqual(manager.shouldDetect(), true)
     }
 
     func testRemainingAfterFirst() {
@@ -36,7 +36,7 @@ class ExposureDetectionTimingManagerTests: XCTestCase {
         let manager = ExposureDetectionTimingManager(storage: defaults)
         manager.addDetection()
         XCTAssertEqual(manager.getRemainingDetections(), ExposureDetectionTimingManager.maxDetections - 1)
-        XCTAssertEqual(manager.shouldDetect(lastDetection: .init(timeIntervalSinceNow: -.day)), true)
+        XCTAssertEqual(manager.shouldDetect(), true)
     }
 
     func testRemainginAfter1Day() {
@@ -46,7 +46,7 @@ class ExposureDetectionTimingManagerTests: XCTestCase {
             manager.addDetection(timestamp: .init(timeIntervalSinceNow: -.day - Double(20 - i) * .hour))
         }
         XCTAssertEqual(manager.getRemainingDetections(), ExposureDetectionTimingManager.maxDetections)
-        XCTAssertEqual(manager.shouldDetect(lastDetection: .init(timeIntervalSinceNow: -.day)), true)
+        XCTAssertEqual(manager.shouldDetect(), true)
     }
 
     func testCleanup() {
@@ -72,36 +72,6 @@ class ExposureDetectionTimingManagerTests: XCTestCase {
             manager.addDetection(timestamp: .init(timeInterval: -.day - Double(20 - i) * .hour, since: now))
         }
         XCTAssertEqual(manager.getRemainingDetections(now: now), ExposureDetectionTimingManager.maxDetections)
-        XCTAssertEqual(manager.shouldDetect(lastDetection: .init(timeIntervalSinceNow: -.day), now: now), true)
+        XCTAssertEqual(manager.shouldDetect(now: now), true)
     }
-
-    func testLastDesiredSyncTimeNoon() {
-        let defaults = MockDefaults()
-        let manager = ExposureDetectionTimingManager(storage: defaults)
-
-        let output = Self.formatter.date(from: "19.05.2020 0\(defaults.parameters.networking.syncHourMorning):00")!
-        XCTAssertEqual(manager.getLastDesiredSyncTime(now: Self.formatter.date(from: "19.05.2020 12:12")!), output)
-    }
-
-    func testLastDesiredSyncTimeYesterday() {
-        let defaults = MockDefaults()
-        let manager = ExposureDetectionTimingManager(storage: defaults)
-
-        let output = Self.formatter.date(from: "18.05.2020 \(defaults.parameters.networking.syncHourEvening):00")!
-        XCTAssertEqual(manager.getLastDesiredSyncTime(now: Self.formatter.date(from: "19.05.2020 05:55")!), output)
-    }
-
-    func testLastDesiredSyncTimeNight() {
-        let defaults = MockDefaults()
-        let manager = ExposureDetectionTimingManager(storage: defaults)
-
-        let output = Self.formatter.date(from: "19.05.2020 \(defaults.parameters.networking.syncHourEvening):00")!
-        XCTAssertEqual(manager.getLastDesiredSyncTime(now: Self.formatter.date(from: "19.05.2020 23:55")!), output)
-    }
-
-    static var formatter: DateFormatter = {
-        let df = DateFormatter()
-        df.dateFormat = "dd.MM.yyyy HH:mm"
-        return df
-    }()
 }
