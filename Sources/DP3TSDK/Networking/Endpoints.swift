@@ -20,7 +20,7 @@ struct ExposeeEndpoint {
     /// - Parameters:
     ///   - baseURL: The base URL of the endpoint
     ///   - version: The version of the API
-    init(baseURL: URL, version: String = "v1") {
+    init(baseURL: URL, version: String = "v2") {
         self.baseURL = baseURL
         self.version = version
     }
@@ -30,20 +30,19 @@ struct ExposeeEndpoint {
         baseURL.appendingPathComponent(version)
     }
 
-    /// Get the URL for the exposed people endpoint at a day for GAEN
+    /// Get the URL for the exposed people endpoint at a day
     /// - Parameters:
-    ///  - batchTimestamp: batchTimestamp
-    ///  - publishedAfter: get results published after the given timestamp
-    func getExposeeGaen(batchTimestamp: Date, publishedAfter: Date? = nil) -> URL {
-        let milliseconds = batchTimestamp.millisecondsSince1970
+    ///  - since: timestamp retreived from last sync
+    func getExposee(since: Date?) -> URL {
         let url = baseURLVersionned.appendingPathComponent("gaen")
             .appendingPathComponent("exposed")
-            .appendingPathComponent(String(milliseconds))
 
         var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
-
-        if let publishedAfter = publishedAfter {
-            urlComponents?.queryItems = [URLQueryItem(name: "publishedAfter", value: String(publishedAfter.millisecondsSince1970))]
+        if let since = since {
+            let milliseconds = since.millisecondsSince1970
+            urlComponents?.queryItems = [
+                URLQueryItem(name: "since", value: String(milliseconds))
+            ]
         }
 
         guard let finalUrl = urlComponents?.url else {
@@ -64,7 +63,7 @@ struct ManagingExposeeEndpoint {
     /// - Parameters:
     ///   - baseURL: The base URL of the endpoint
     ///   - version: The version of the API
-    init(baseURL: URL, version: String = "v1") {
+    init(baseURL: URL, version: String = "v2") {
         self.baseURL = baseURL
         self.version = version
     }

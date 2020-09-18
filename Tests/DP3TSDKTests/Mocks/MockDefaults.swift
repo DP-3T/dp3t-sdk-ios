@@ -12,9 +12,9 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
-    var exposureDetectionDates: [Date] = []
+    var lastSyncSinceTimestamp: Date?
 
-    var lastSyncTimestamps: [Date: Date] = [:]
+    var exposureDetectionDates: [Date] = []
 
     var parameters: DP3TParameters = .init()
 
@@ -26,7 +26,7 @@ class MockDefaults: DefaultStorage {
 
     func reset() {
         exposureDetectionDates = []
-        lastSyncTimestamps = [:]
+        lastSyncSinceTimestamp = nil
         parameters = .init()
         isFirstLaunch = false
         lastSync = nil

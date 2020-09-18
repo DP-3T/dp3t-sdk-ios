@@ -13,14 +13,14 @@ import Foundation
 class ExposureDetectionTimingManager {
     var storage: DefaultStorage
 
-    static let maxDetections = 20
+    static let maxDetections = 6
 
     init(storage: DefaultStorage = Default.shared) {
         self.storage = storage
     }
 
-    func shouldDetect(lastDetection: Date, now: Date = .init()) -> Bool {
-        return getRemainingDetections(now: now) != 0 && lastDetection < getLastDesiredSyncTime(now: now)
+    func shouldDetect(now: Date = .init()) -> Bool {
+        return getRemainingDetections(now: now) != 0
     }
 
     func addDetection(timestamp: Date = .init()) {
@@ -43,17 +43,4 @@ class ExposureDetectionTimingManager {
         return max(Self.maxDetections - inCurrentWindow.count, 0)
     }
 
-
-    func getLastDesiredSyncTime(now: Date = .init()) -> Date {
-        let calendar = Calendar.current
-        let dateComponents = calendar.dateComponents([.hour, .day, .month, .year], from: now)
-        if dateComponents.hour! < storage.parameters.networking.syncHourMorning {
-            let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
-            return calendar.date(bySettingHour: storage.parameters.networking.syncHourEvening, minute: 0, second: 0, of: yesterday)!
-        } else if dateComponents.hour! < storage.parameters.networking.syncHourEvening {
-            return calendar.date(bySettingHour: storage.parameters.networking.syncHourMorning, minute: 0, second: 0, of: now)!
-        } else {
-            return calendar.date(bySettingHour: storage.parameters.networking.syncHourEvening, minute: 0, second: 0, of: now)!
-        }
-    }
 }

@@ -25,9 +25,9 @@ protocol ExposeeServiceClientProtocol: class {
 
     /// Get all exposee for a known day synchronously
     /// - Parameters:
-    ///   - batchTimestamp: The batch timestamp
+    ///  - since: timestamp retreived from last sync
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
+    func getExposee(since: Date?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
 
     /// Adds an exposee
     /// - Parameters:
@@ -105,12 +105,12 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     /// Get all exposee for a known day
     /// - Parameters:
-    ///   - batchTimestamp: The batch timestamp
+    ///  - since: timestamp retreived from last sync
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
-        log.log("getExposeeSynchronously for timestamp %{public}@ -> %lld", batchTimestamp.description, batchTimestamp.millisecondsSince1970)
-        let url: URL = exposeeEndpoint.getExposeeGaen(batchTimestamp: batchTimestamp)
+    func getExposee(since: Date?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
+        log.log("getExposeeSynchronously for timestamp %{public}@ -> %lld", since?.description ?? "nil", since?.millisecondsSince1970 ?? 0)
+        let url: URL = exposeeEndpoint.getExposee(since: since)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/zip", forHTTPHeaderField: "Accept")
