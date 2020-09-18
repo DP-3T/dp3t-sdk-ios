@@ -73,20 +73,6 @@ class DP3TSDKTests: XCTestCase {
                           defaults: defaults)
     }
 
-    func testInitialStatus(){
-        let exp = expectation(description: "status")
-        sdk.status { (result) in
-            switch result {
-            case .failure(_):
-                XCTFail()
-            case let .success(state):
-                XCTAssert(state.trackingState == .initialization)
-            }
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 0.1)
-    }
-
     func testCallEnable(){
         manager.completeActivation()
         let exp = expectation(description: "enable")
@@ -100,6 +86,7 @@ class DP3TSDKTests: XCTestCase {
     func testInfected(){
 
         let stateexp = expectation(description: "stateBefore")
+        manager.completeActivation()
         sdk.status { (result) in
             switch result {
             case .failure(_):
@@ -165,6 +152,7 @@ class DP3TSDKTests: XCTestCase {
             }
             stateExpAfter.fulfill()
         }
+        manager.completeActivation()
         wait(for: [stateExpAfter], timeout: 0.1)
 
 
