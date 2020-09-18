@@ -234,9 +234,18 @@ class DP3TSDK {
 
     /// get the current status of the SDK
     /// - Parameter callback: callback
-    func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
+    func status(callback: @escaping (Result<TracingState, DP3TTracingError>) -> Void) {
         log.trace()
-        callback(.success(state))
+        if self.state.trackingState == .initialization {
+            tracer.addInitialisationCallback { [weak self] in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    callback(.success(self.state))
+                }
+            }
+        } else  {
+            callback(.success(state))
+        }
     }
 
     /// tell the SDK that the user was exposed

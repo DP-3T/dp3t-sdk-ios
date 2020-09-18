@@ -114,7 +114,7 @@ public enum DP3TTracing {
     /// get the current status of the SDK
     /// - Parameter callback: callback
 
-    public static func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
+    public static func status(callback: @escaping (Result<TracingState, DP3TTracingError>) -> Void) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
