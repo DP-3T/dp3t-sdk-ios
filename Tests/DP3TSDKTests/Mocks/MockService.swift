@@ -44,9 +44,9 @@ class MockService: ExposeeServiceClientProtocol {
 
     var exposeeListModel: ExposeeListModel?
 
-    func addExposeeList(_ model: ExposeeListModel, authentication _: ExposeeAuthMethod, completion: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void) {
+    func addExposeeList(_ model: ExposeeListModel, authentication _: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
         exposeeListModel = model
-        completion(.success(.init(authorizationHeader: "xy", dayToPublish: .init(), fake: model.fake)))
+        completion(.success(()))
     }
 
     func addDelayedExposeeList(_: DelayedKeyModel, token _: String?, completion _: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {}

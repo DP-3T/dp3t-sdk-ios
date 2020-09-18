@@ -128,15 +128,6 @@ class DP3TBackgroundTaskManager {
             queue.addOperation(handlerOperation)
         }
 
-        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: keyProvider,
-                                                                      serviceClient: serviceClient,
-                                                                      runningInBackground: true)
-        completionGroup.enter()
-        outstandingPublishOperation.completionBlock = {
-            completionGroup.leave()
-        }
-        queue.addOperation(outstandingPublishOperation)
-
         task.expirationHandler = { [weak self] in
             self?.logger.error("Refresh task expiration handler called")
             queue.cancelAllOperations()

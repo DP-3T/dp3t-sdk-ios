@@ -34,7 +34,7 @@ protocol ExposeeServiceClientProtocol: class {
     ///   - exposees: The exposee list to add
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
-    func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void)
+    func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void)
 
     /// Adds an exposee delayed key
     /// - Parameters:
@@ -226,7 +226,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - exposees: The exposees to add
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
-    func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void) {
+    func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
         log.trace()
         // addExposee endpoint
         let url = managingExposeeEndpoint.addExposedGaen()
@@ -262,11 +262,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 return
             }
 
-            let outstandingPublish = OutstandingPublish(authorizationHeader: httpResponse.value(forHTTPHeaderField: "Authorization"),
-                                                        dayToPublish: exposees.delayedKeyDate.dayMin,
-                                                        fake: exposees.fake)
-
-            completion(.success(outstandingPublish))
+            completion(.success(()))
         })
         task.resume()
     }

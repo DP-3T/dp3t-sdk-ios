@@ -19,8 +19,6 @@ class DP3TSDK {
     /// appId of this instance
     private let applicationDescriptor: ApplicationDescriptor
 
-    private let outstandingPublishesStorage: OutstandingPublishStorage
-
     private let exposureDayStorage: ExposureDayStorage
 
     private var tracer: Tracer
@@ -76,7 +74,6 @@ class DP3TSDK {
             defaults.isFirstLaunch = false
             let keychain = Keychain()
             keychain.delete(for: ExposureDayStorage.key)
-            keychain.delete(for: OutstandingPublishStorage.key)
             defaults.reset()
         }
 
@@ -99,7 +96,6 @@ class DP3TSDK {
                   matcher: matcher,
                   diagnosisKeysProvider: diagnosisKeysProvider,
                   exposureDayStorage: exposureDayStorage,
-                  outstandingPublishesStorage: OutstandingPublishStorage(),
                   service: service,
                   synchronizer: synchronizer,
                   backgroundTaskManager: backgroundTaskManager,
@@ -113,7 +109,6 @@ class DP3TSDK {
          matcher: Matcher,
          diagnosisKeysProvider: DiagnosisKeysProvider,
          exposureDayStorage: ExposureDayStorage,
-         outstandingPublishesStorage: OutstandingPublishStorage,
          service: ExposeeServiceClientProtocol,
          synchronizer: KnownCasesSynchronizer,
          backgroundTaskManager: DP3TBackgroundTaskManager,
@@ -125,7 +120,6 @@ class DP3TSDK {
         self.matcher = matcher
         self.diagnosisKeysProvider = diagnosisKeysProvider
         self.exposureDayStorage = exposureDayStorage
-        self.outstandingPublishesStorage = outstandingPublishesStorage
         self.service = service
         self.synchronizer = synchronizer
         self.backgroundTaskManager = backgroundTaskManager
@@ -177,13 +171,6 @@ class DP3TSDK {
         log.trace()
 
         let group = DispatchGroup()
-
-        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider, serviceClient: service, runningInBackground: runningInBackground)
-        group.enter()
-        outstandingPublishOperation.completionBlock = {
-            group.leave()
-        }
-        OperationQueue().addOperation(outstandingPublishOperation)
 
         let sync = {
             var storedResult: SyncResult?
@@ -296,13 +283,11 @@ class DP3TSDK {
                 self.service.addExposeeList(model, authentication: authentication) { [weak self] result in
                     DispatchQueue.main.async {
                         switch result {
-                        case let .success(outstandingPublish):
+                        case .success:
                             if !isFakeRequest {
                                 self?.state.infectionStatus = .infected
-                                //self?.tracer.setEnabled(false, completionHandler: nil)
+                                self?.tracer.setEnabled(false, completionHandler: nil)
                             }
-
-                            self?.outstandingPublishesStorage.add(outstandingPublish)
 
                             callback(.success(()))
                         case let .failure(error):
@@ -331,7 +316,6 @@ class DP3TSDK {
         log.trace()
         stopTracing()
         defaults.reset()
-        outstandingPublishesStorage.reset()
         exposureDayStorage.reset()
         URLCache.shared.removeAllCachedResponses()
     }

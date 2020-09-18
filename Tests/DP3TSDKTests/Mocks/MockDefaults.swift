@@ -18,8 +18,6 @@ class MockDefaults: DefaultStorage {
 
     var parameters: DP3TParameters = .init()
 
-    var outstandingPublishes: Set<OutstandingPublish> = []
-
     var isFirstLaunch: Bool = false
 
     var lastSync: Date?
@@ -30,7 +28,6 @@ class MockDefaults: DefaultStorage {
         exposureDetectionDates = []
         lastSyncTimestamps = [:]
         parameters = .init()
-        outstandingPublishes = []
         isFirstLaunch = false
         lastSync = nil
         didMarkAsInfected = false

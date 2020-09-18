@@ -82,7 +82,6 @@ class DP3TSDKTests: XCTestCase {
                           matcher: matcher,
                           diagnosisKeysProvider: keyProvider,
                           exposureDayStorage: exposureDayStorage,
-                          outstandingPublishesStorage: OutstandingPublishStorage(keychain: keychain),
                           service: service,
                           synchronizer: KnownCasesSynchronizer(matcher: matcher, service: service, defaults: defaults, descriptor: descriptor),
                           backgroundTaskManager: backgroundTaskManager,
