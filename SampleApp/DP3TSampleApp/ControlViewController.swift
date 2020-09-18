@@ -518,7 +518,7 @@ private extension TrackingState {
         case .active:
             return "active"
         case let .inactive(error):
-            return "inactive \(error.localizedDescription)"
+            return "inactive \(error.description)"
         case .stopped:
             return "stopped"
         }

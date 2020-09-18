@@ -15,5 +15,7 @@ protocol Matcher: class {
     var timingManager: ExposureDetectionTimingManager? { get set }
     
     /// returns true if we found a match
-    func receivedNewData(_ data: Data, now: Date) throws -> Bool 
+    func receivedNewData(_ data: Data, now: Date) throws -> Bool
+
+    func cancel()
 }

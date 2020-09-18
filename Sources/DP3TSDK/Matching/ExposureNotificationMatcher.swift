@@ -23,12 +23,18 @@ class ExposureNotificationMatcher: Matcher {
 
     private let defaults: DefaultStorage
 
+    private var progress: Progress?
+
     let synchronousQueue = DispatchQueue(label: "org.dpppt.matcher")
 
     init(manager: ENManager, exposureDayStorage: ExposureDayStorage, defaults: DefaultStorage = Default.shared) {
         self.manager = manager
         self.exposureDayStorage = exposureDayStorage
         self.defaults = defaults
+    }
+
+    func cancel() {
+
     }
 
     func receivedNewData(_ data: Data, now: Date = .init()) throws -> Bool {
@@ -59,13 +65,9 @@ class ExposureNotificationMatcher: Matcher {
             var exposureDetectionError: Error? = DP3TTracingError.cancelled
 
             logger.log("calling detectExposures")
-            manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: urls) { summary, error in
+            progress = manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: urls) { summary, error in
                 exposureSummary = summary
                 exposureDetectionError = error
-
-                self.manager.getExposureWindows(summary: summary!) { (windows, erro) in
-                    semaphore.signal()
-                }
             }
             
             // Wait for 3min and abort if detectExposures did not return in time
@@ -93,9 +95,13 @@ class ExposureNotificationMatcher: Matcher {
                 return false
             }
 
+            guard !(progress?.isCancelled ?? false) else {
+                throw DP3TTracingError.cancelled
+            }
+
             var exposureWindows: [ENExposureWindow]?
             var exposureWindowsError: Error? = DP3TTracingError.cancelled
-            manager.getExposureWindows(summary: summary) { (windows, error) in
+            progress = manager.getExposureWindows(summary: summary) { (windows, error) in
                 exposureWindows = windows
                 exposureWindowsError = error
                 semaphore.signal()
@@ -115,6 +121,10 @@ class ExposureNotificationMatcher: Matcher {
                 logger.error("ENManager.getExposureWindows failed error: %{public}@", error.localizedDescription)
                 try? urls.forEach(deleteDiagnosisKeyFile(at:))
                 throw DP3TTracingError.exposureNotificationError(error: error)
+            }
+
+            guard !(progress?.isCancelled ?? false) else {
+                throw DP3TTracingError.cancelled
             }
 
             guard let windows = exposureWindows else {

@@ -113,6 +113,7 @@ class KnownCasesSynchronizer {
             self.isCancelled = true
             self.dataTask?.cancel()
             self.dataTask = nil
+            self.matcher?.cancel()
         }
     }
 

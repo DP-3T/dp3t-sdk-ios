@@ -202,7 +202,7 @@ class DP3TSDKTests: XCTestCase {
         manager.isEnabled = true
         manager.completeActivation()
         wait(for: [exp], timeout: 1.0)
-        XCTAssertEqual(service.requests.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
     }
 
     struct MockError: Error, Equatable {

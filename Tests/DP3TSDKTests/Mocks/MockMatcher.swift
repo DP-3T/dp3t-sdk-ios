@@ -12,6 +12,8 @@
 import Foundation
 
 class MockMatcher: Matcher {
+    func cancel() {}
+
     var timingManager: ExposureDetectionTimingManager?
 
     var error: Error?
