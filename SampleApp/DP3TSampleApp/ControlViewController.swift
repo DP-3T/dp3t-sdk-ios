@@ -545,7 +545,9 @@ extension DP3TTracingError {
         case let .networkingError(error: error):
             return "networkingError \(error.localizedDescription)"
         case .permissonError:
-            return "networkingError"
+            return "permissionError"
+        case .authorizationUnknown:
+            return "authorizationUnknown"
         case .userAlreadyMarkedAsInfected:
             return "userAlreadyMarkedAsInfected"
         case let .exposureNotificationError(error: error):
