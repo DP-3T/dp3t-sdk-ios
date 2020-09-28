@@ -34,7 +34,7 @@ class ExposureNotificationMatcher: Matcher {
     }
 
     func cancel() {
-
+        progress?.cancel()
     }
 
     func receivedNewData(_ data: Data, now: Date = .init()) throws -> Bool {
