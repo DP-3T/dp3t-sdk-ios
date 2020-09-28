@@ -23,7 +23,7 @@ jobs:
 
     # Compile project and run tests
     - name: Compile and run tests
-      run: fastlane scan --disable_concurrent_testing true
+      run: fastlane scan --device "iPhone 11 Pro (14.0)" --disable_concurrent_testing true
 
   sampleapp:
     runs-on: macOS-latest
