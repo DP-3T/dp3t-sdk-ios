@@ -94,6 +94,7 @@ class DP3TSDKTests: XCTestCase {
             exp.fulfill()
         }
         wait(for: [exp], timeout: 2.0)
+        sleep(1)
         XCTAssertEqual(tracer.state, TrackingState.active)
     }
 
