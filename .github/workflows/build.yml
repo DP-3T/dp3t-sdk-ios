@@ -17,14 +17,9 @@ jobs:
     - name: Switch to Xcode 12
       run: sudo xcode-select --switch /Applications/Xcode_12.app
 
-    # Generate xcode project
-    - name: Generate xcodeproj
-      run: swift package generate-xcodeproj --xcconfig-overrides Sources/Config.xcconfig
-
-    # Compile project and run tests
-    - name: Compile and run tests
-      run: fastlane scan --device "iPhone 11 Pro (14.0)" --disable_concurrent_testing true --clean --reset_simulator --include_simulator_logs
-
+    - name: Fastlane test
+      run: fastlane test
+      
   sampleapp:
     runs-on: macOS-latest
 

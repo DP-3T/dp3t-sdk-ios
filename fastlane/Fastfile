@@ -1,0 +1,20 @@
+default_platform(:ios)
+
+platform :ios do
+  before_all do
+    spm(
+      command: "generate-xcodeproj",
+      xcconfig: "Sources/Config.xcconfig"
+    )
+  end
+  
+  lane :test do
+
+    multi_scan(
+      try_count: 3,
+      parallel_testrun_count: 1,
+      device: "iPhone 11 Pro iOS 14.0"
+    )
+
+  end
+end
