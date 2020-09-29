@@ -35,14 +35,6 @@ protocol ExposeeServiceClientProtocol: class {
     ///   - completion: The completion block
     ///   - authentication: The authentication to use for the request
     func addExposeeList(_ exposees: ExposeeListModel, authentication: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void)
-
-    /// Adds an exposee delayed key
-    /// - Parameters:
-    ///   - exposees: The exposee list to add
-    ///   - token: authenticationToken
-    ///   - completion: The completion block
-    ///   - authentication: The authentication to use for the request
-    func addDelayedExposeeList(_ model: DelayedKeyModel, token: String?, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void)
 }
 
 /// The client for managing and fetching exposee
@@ -174,53 +166,6 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         return task
     }
 
-    /// Adds an exposee delayed key
-    /// - Parameters:
-    ///   - exposees: The exposee list to add
-    ///   - token: authenticationToken
-    ///   - completion: The completion block
-    ///   - authentication: The authentication to use for the request
-    func addDelayedExposeeList(_ model: DelayedKeyModel, token: String?, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
-        log.trace()
-        // addExposee endpoint
-        let url = managingExposeeEndpoint.addExposedGaenNextDay()
-
-        guard let payload = try? JSONEncoder().encode(model) else {
-            completion(.failure(.couldNotEncodeBody))
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue(String(payload.count), forHTTPHeaderField: "Content-Length")
-        request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
-        if let authentication = token {
-            request.addValue(authentication, forHTTPHeaderField: "Authorization")
-        }
-        request.httpBody = payload
-
-        let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
-            guard error == nil else {
-                completion(.failure(.networkSessionError(error: error!)))
-                return
-            }
-            guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(.notHTTPResponse))
-                return
-            }
-
-            let statusCode = httpResponse.statusCode
-            guard statusCode == 200 else {
-                completion(.failure(.HTTPFailureResponse(status: statusCode, data: data)))
-                return
-            }
-
-            completion(.success(()))
-        })
-        task.resume()
-    }
-
     /// Adds an exposee list
     /// - Parameters:
     ///   - exposees: The exposees to add
@@ -299,28 +244,5 @@ private struct ExposeeClaims: DP3TClaims {
         case contentHash = "content-hash"
         case hashAlg = "hash-alg"
         case iss, iat, exp
-    }
-}
-
-private extension URLSession {
-    func synchronousDataTask(with request: URLRequest) -> (Data?, URLResponse?, Error?) {
-        var data: Data?
-        var response: URLResponse?
-        var error: Error?
-
-        let semaphore = DispatchSemaphore(value: 0)
-
-        let dataTask = self.dataTask(with: request) {
-            data = $0
-            response = $1
-            error = $2
-
-            semaphore.signal()
-        }
-        dataTask.resume()
-
-        _ = semaphore.wait(timeout: .distantFuture)
-
-        return (data, response, error)
     }
 }

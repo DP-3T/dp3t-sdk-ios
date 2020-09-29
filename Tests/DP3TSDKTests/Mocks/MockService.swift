@@ -49,6 +49,4 @@ class MockService: ExposeeServiceClientProtocol {
         exposeeListModel = model
         completion(.success(()))
     }
-
-    func addDelayedExposeeList(_: DelayedKeyModel, token _: String?, completion _: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {}
 }
