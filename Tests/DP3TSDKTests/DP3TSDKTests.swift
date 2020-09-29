@@ -89,7 +89,6 @@ class DP3TSDKTests: XCTestCase {
 
     func testCallEnable(){
         manager.completeActivation()
-        sleep(1)
         let exp = expectation(description: "enable")
         try! sdk.startTracing { (err) in
             exp.fulfill()
