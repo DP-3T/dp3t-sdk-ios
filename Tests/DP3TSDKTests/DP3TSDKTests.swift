@@ -89,12 +89,12 @@ class DP3TSDKTests: XCTestCase {
 
     func testCallEnable(){
         manager.completeActivation()
+        sleep(1)
         let exp = expectation(description: "enable")
         try! sdk.startTracing { (err) in
             exp.fulfill()
         }
         wait(for: [exp], timeout: 2.0)
-        sleep(1)
         XCTAssertEqual(tracer.state, TrackingState.active)
     }
 
