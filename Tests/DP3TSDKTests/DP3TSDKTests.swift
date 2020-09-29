@@ -288,4 +288,37 @@ class DP3TSDKTests: XCTestCase {
 
         XCTAssertEqual(tracer.state, TrackingState.active)
     }
+
+    func testEnableAfterActivationFailure(){
+        MockENManager.authStatus = .unknown
+        let error = MockError(message: "mockError")
+
+        manager.completeActivation(error: error)
+        sleep(1)
+        let exp = expectation(description: "enable")
+        try! sdk.startTracing { (err) in
+            XCTAssert(err != nil)
+            switch (err! as! DP3TTracingError) {
+            case let .exposureNotificationError(error: enError):
+                XCTAssertEqual(enError as! MockError, error)
+            default:
+                XCTFail()
+            }
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1.0)
+        XCTAssertEqual(tracer.state, TrackingState.inactive(error: .exposureNotificationError(error: error)))
+
+
+        // app comes again in foreground
+        tracer.willEnterForeground()
+
+        sleep(1)
+
+        manager.completeActivation()
+
+        sleep(1)
+
+        XCTAssertEqual(tracer.state, TrackingState.active)
+    }
 }
