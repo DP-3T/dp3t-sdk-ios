@@ -74,7 +74,7 @@ DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
 
   ```ruby
 
-  pod 'DP3TSDK', => '1.2.1'
+  pod 'DP3TSDK', => '1.3'
 
   ```
 
@@ -163,6 +163,17 @@ The SDK supports iOS 13 background tasks. It uses the provided `exposure-notific
 ```
 
 If a `DP3TBackgroundHandler` was passed to the SDK on initialisation it will be called on each background task execution by the SDK.
+
+## Apps using the DP3T-SDK for iOS
+Name | Country | Source code | Store | Release-Date
+---- | ----------- | ------------- | ------------- | -------------
+SwissCovid | Switzerland | [Github](https://github.com/DP-3T/dp3t-app-ios-ch) | [AppStore](https://apps.apple.com/ch/app/swisscovid/id1509275381) | 25. Mai 2020
+ASI | Ecuador | [minka.gob.ec](https://minka.gob.ec/asi-ecuador/ios) | [AppStore](https://apps.apple.com/app/id1523594087) | 2. August 2020
+Hoia | Estonia | [koodivaramu.eesti.ee](https://koodivaramu.eesti.ee/tehik/hoia/dp3t-app-ios) | [AppStore](https://apps.apple.com/app/id1515441601) | 19. August 2020
+STAYAWAY COVID | Portugal | [Github](https://github.com/stayawayinesctec/stayaway-app) | [AppStore](https://apps.apple.com/pt/app/id1519479652) | 28. August 2020
+ Radar COVID | Spain | [Github](https://github.com/RadarCOVID/radar-covid-ios) | [AppStore](https://apps.apple.com/es/app/radar-covid/id1520443509) |
+
+If your project/country is not yet listed but uses the DP3T-SDK feel free to send a pull-request to add it to the [README](README).
 
 ## License
 

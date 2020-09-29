@@ -28,7 +28,7 @@ private var instance: DP3TSDK!
 /// DP3TTracing
 public enum DP3TTracing {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "1.2.1"
+    public static let frameworkVersion: String = "1.3"
 
     /// sets global parameter values which are used throughout the sdk
     public static var parameters: DP3TParameters {
@@ -148,6 +148,15 @@ public enum DP3TTracing {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
         try instance.resetExposureDays()
+    }
+
+    /// checks if infection status is resettable
+
+    public static var isInfectionStatusResettable: Bool {
+        guard instance != nil else {
+            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
+        }
+        return instance.isInfectionStatusResettable
     }
 
     /// reset the infection status

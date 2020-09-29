@@ -37,7 +37,7 @@ private class MockManager: DiagnosisKeysProvider {
         }
     }
 
-    func getDiagnosisKeys(onsetDate _: Date?, appDesc _: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
+    func getDiagnosisKeys(onsetDate _: Date?, appDesc _: ApplicationDescriptor, disableExposureNotificationAfterCompletion: Bool, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         realAccessedCount += 1
         if let error = error {
             completionHandler(.failure(error))
@@ -95,11 +95,16 @@ final class OutstandingPublishOperationTests: XCTestCase {
 
         let service = ExposeeServiceClientMock()
 
+        let mockDefaults = MockDefaults()
+        mockDefaults.infectionStatusIsResettable = false
+
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
                                                           storage: storage,
-                                                          runningInBackground: false)
+                                                          runningInBackground: false,
+                                                          defaults: mockDefaults,
+                                                          tracer: MockTracer())
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
@@ -107,6 +112,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 0)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
+        XCTAssertFalse(mockDefaults.infectionStatusIsResettable)
     }
 
     func testPublishBeforeMidnight(){
@@ -120,12 +126,17 @@ final class OutstandingPublishOperationTests: XCTestCase {
         storage.add(OutstandingPublish(authorizationHeader: "ABCD", dayToPublish: dateToPublish, fake: false))
 
         let service = ExposeeServiceClientMock()
+        let mockDefaults = MockDefaults()
+        mockDefaults.infectionStatusIsResettable = false
+
 
         let operationQueue = OperationQueue()
         let operationToTest = MockOutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
                                                           storage: storage,
-                                                          runningInBackground: false)
+                                                          runningInBackground: false,
+                                                          defaults: mockDefaults,
+                                                          tracer: MockTracer())
         operationToTest.mockDate = dateToPublish.addingTimeInterval(22 * .hour + 30 * .minute)
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
@@ -134,6 +145,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 0)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
+        XCTAssertFalse(mockDefaults.infectionStatusIsResettable)
     }
 
 
@@ -149,12 +161,16 @@ final class OutstandingPublishOperationTests: XCTestCase {
         storage.add(OutstandingPublish(authorizationHeader: "ABCD", dayToPublish: dateToPublish, fake: false))
 
         let service = ExposeeServiceClientMock()
+        let mockDefaults = MockDefaults()
+        mockDefaults.infectionStatusIsResettable = false
 
         let operationQueue = OperationQueue()
         let operationToTest = MockOutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
                                                           storage: storage,
-                                                          runningInBackground: false)
+                                                          runningInBackground: false,
+                                                          defaults: mockDefaults,
+                                                          tracer: MockTracer())
         operationToTest.mockDate = dateToPublish.addingTimeInterval(.day + 1)
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
@@ -163,6 +179,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 1)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 1)
+        XCTAssert(mockDefaults.infectionStatusIsResettable)
     }
 
 
@@ -176,12 +193,16 @@ final class OutstandingPublishOperationTests: XCTestCase {
         storage.add(OutstandingPublish(authorizationHeader: "ABCD", dayToPublish: Date(timeIntervalSinceNow: -86500), fake: true))
 
         let service = ExposeeServiceClientMock()
+        let mockDefaults = MockDefaults()
+        mockDefaults.infectionStatusIsResettable = false
 
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
                                                           storage: storage,
-                                                          runningInBackground: false)
+                                                          runningInBackground: false,
+                                                          defaults: mockDefaults,
+                                                          tracer: MockTracer())
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
@@ -189,6 +210,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 1)
         XCTAssertEqual(mockManager.fakeAccessedCount, 1)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
+        XCTAssertFalse(mockDefaults.infectionStatusIsResettable)
     }
 
     func testPublishingReal() {
@@ -210,12 +232,16 @@ final class OutstandingPublishOperationTests: XCTestCase {
         storage.add(OutstandingPublish(authorizationHeader: "ABCD", dayToPublish: Date(timeIntervalSinceNow: 600), fake: false)) // In Future
 
         let service = ExposeeServiceClientMock()
+        let mockDefaults = MockDefaults()
+        mockDefaults.infectionStatusIsResettable = false
 
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
                                                           storage: storage,
-                                                          runningInBackground: false)
+                                                          runningInBackground: false,
+                                                          defaults: mockDefaults,
+                                                          tracer: MockTracer())
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
@@ -223,6 +249,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 2)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 2)
+        XCTAssert(mockDefaults.infectionStatusIsResettable)
     }
 
     func testPublishingDiagnosisKeyProviderError() {
@@ -234,12 +261,16 @@ final class OutstandingPublishOperationTests: XCTestCase {
         storage.add(OutstandingPublish(authorizationHeader: "ABCD", dayToPublish: Date(timeIntervalSinceNow: -88800), fake: false))
 
         let service = ExposeeServiceClientMock()
+        let mockDefaults = MockDefaults()
+        mockDefaults.infectionStatusIsResettable = false
 
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
                                                           storage: storage,
-                                                          runningInBackground: false)
+                                                          runningInBackground: false,
+                                                          defaults: mockDefaults,
+                                                          tracer: MockTracer())
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
@@ -247,6 +278,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 0)
         XCTAssertEqual(mockManager.fakeAccessedCount, 0)
         XCTAssertEqual(mockManager.realAccessedCount, 1)
+        XCTAssert(mockDefaults.infectionStatusIsResettable)
     }
 
     func testPublishingExposeeServiceClientError() {
@@ -261,12 +293,16 @@ final class OutstandingPublishOperationTests: XCTestCase {
 
         let service = ExposeeServiceClientMock()
         service.error = DP3TNetworkingError.couldNotEncodeBody
+        let mockDefaults = MockDefaults()
+        mockDefaults.infectionStatusIsResettable = false
 
         let operationQueue = OperationQueue()
         let operationToTest = OutstandingPublishOperation(keyProvider: mockManager,
                                                           serviceClient: service,
                                                           storage: storage,
-                                                          runningInBackground: false)
+                                                          runningInBackground: false,
+                                                          defaults: mockDefaults,
+                                                          tracer: MockTracer())
 
         operationQueue.addOperations([operationToTest], waitUntilFinished: true)
 
@@ -274,6 +310,7 @@ final class OutstandingPublishOperationTests: XCTestCase {
         XCTAssertEqual(service.addedExposeeListCount, 1)
         XCTAssertEqual(mockManager.fakeAccessedCount, 1)
         XCTAssertEqual(mockManager.realAccessedCount, 0)
+        XCTAssertFalse(mockDefaults.infectionStatusIsResettable)
     }
 
     static var formatter: DateFormatter = {

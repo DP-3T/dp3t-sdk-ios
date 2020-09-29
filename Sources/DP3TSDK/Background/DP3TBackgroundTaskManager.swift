@@ -130,7 +130,8 @@ class DP3TBackgroundTaskManager {
 
         let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: keyProvider,
                                                                       serviceClient: serviceClient,
-                                                                      runningInBackground: true)
+                                                                      runningInBackground: true,
+                                                                      tracer: tracer)
         completionGroup.enter()
         outstandingPublishOperation.completionBlock = {
             completionGroup.leave()

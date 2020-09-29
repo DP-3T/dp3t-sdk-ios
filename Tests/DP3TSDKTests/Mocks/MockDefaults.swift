@@ -26,6 +26,8 @@ class MockDefaults: DefaultStorage {
 
     var didMarkAsInfected: Bool = false
 
+    var infectionStatusIsResettable: Bool = true
+
     func reset() {
         exposureDetectionDates = []
         lastSyncTimestamps = [:]
@@ -34,5 +36,6 @@ class MockDefaults: DefaultStorage {
         isFirstLaunch = false
         lastSync = nil
         didMarkAsInfected = false
+        infectionStatusIsResettable = false
     }
 }
