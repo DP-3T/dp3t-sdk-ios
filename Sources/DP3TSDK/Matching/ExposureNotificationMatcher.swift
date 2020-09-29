@@ -68,6 +68,7 @@ class ExposureNotificationMatcher: Matcher {
             progress = manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: urls) { summary, error in
                 exposureSummary = summary
                 exposureDetectionError = error
+                semaphore.signal()
             }
             
             // Wait for 3min and abort if detectExposures did not return in time
@@ -101,6 +102,7 @@ class ExposureNotificationMatcher: Matcher {
 
             var exposureWindows: [ENExposureWindow]?
             var exposureWindowsError: Error? = DP3TTracingError.cancelled
+            logger.log("calling getExposureWindows")
             progress = manager.getExposureWindows(summary: summary) { (windows, error) in
                 exposureWindows = windows
                 exposureWindowsError = error
