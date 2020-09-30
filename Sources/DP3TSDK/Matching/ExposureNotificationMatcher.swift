@@ -96,6 +96,8 @@ class ExposureNotificationMatcher: Matcher {
     }
 
     private func updateExposureDays(with windows: [ENExposureWindow]) {
+        dispatchPrecondition(condition: .onQueue(synchronousQueue))
+        
         let parameters = defaults.parameters.contactMatching
         let groups = windows.groupByDay
         for (day, windows) in groups {
@@ -114,6 +116,7 @@ class ExposureNotificationMatcher: Matcher {
 
     private func unarchiveData(_ data: Data, into tempDirectory: URL) throws -> [URL] {
         logger.trace()
+        dispatchPrecondition(condition: .onQueue(synchronousQueue))
 
         var urls: [URL] = []
 
@@ -136,6 +139,7 @@ class ExposureNotificationMatcher: Matcher {
     typealias DetectionResult = Result<ENExposureDetectionSummary, Error>
     private func detectExposure(urls: [URL]) -> DetectionResult {
         logger.trace()
+        dispatchPrecondition(condition: .onQueue(synchronousQueue))
 
         let semaphore = DispatchSemaphore(value: 0)
         var exposureSummary: ENExposureDetectionSummary?
@@ -169,6 +173,7 @@ class ExposureNotificationMatcher: Matcher {
     typealias WindowsResult = Result<[ENExposureWindow], Error>
     private func getExposureWindows(summary: ENExposureDetectionSummary) -> WindowsResult {
         logger.trace()
+        dispatchPrecondition(condition: .onQueue(synchronousQueue))
 
         let semaphore = DispatchSemaphore(value: 0)
         var exposureWindows: [ENExposureWindow]?
