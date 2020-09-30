@@ -74,7 +74,7 @@ extension ENManager: DiagnosisKeysProvider {
             } else if let keys = keys {
                 logger.log("received %d keys", keys.count)
 
-                let oldestDate = DayDate(date: Date().addingTimeInterval(-Default.shared.parameters.crypto.maxAgeOfKeyToRetreive)).dayMin
+                let oldestDate = DayDate(date: Date().addingTimeInterval(-Default.shared.parameters.networking.maxAgeOfKeyToRetreive)).dayMin
 
                 // make sure to never retreive keys older than maxNumberOfDaysToRetreive even if the onset date is older
                 var filteredKeys = keys.filter { $0.date > oldestDate }
@@ -91,7 +91,7 @@ extension ENManager: DiagnosisKeysProvider {
                 }
 
                 // never return more than numberOfKeysToSubmit
-                transformedKeys = Array(transformedKeys.prefix(Default.shared.parameters.crypto.numberOfKeysToSubmit))
+                transformedKeys = Array(transformedKeys.prefix(Default.shared.parameters.networking.numberOfKeysToSubmit))
 
                 completionHandler(.success(transformedKeys))
             } else {
@@ -111,7 +111,7 @@ extension ENManager: DiagnosisKeysProvider {
 
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.log("getFakeDiagnosisKeys")
-        completionHandler(.success(getFakeKeys(count: Default.shared.parameters.crypto.numberOfKeysToSubmit, startingFrom: .init(timeIntervalSinceNow: -.day))))
+        completionHandler(.success(getFakeKeys(count: Default.shared.parameters.networking.numberOfKeysToSubmit, startingFrom: .init(timeIntervalSinceNow: -.day))))
     }
 }
 

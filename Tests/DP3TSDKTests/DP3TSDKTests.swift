@@ -77,7 +77,7 @@ class DP3TSDKTests: XCTestCase {
     func testCallEnable(){
         manager.completeActivation()
         let exp = expectation(description: "enable")
-        try! sdk.startTracing { (err) in
+        sdk.startTracing { (err) in
             exp.fulfill()
         }
         wait(for: [exp], timeout: 2.0)
@@ -103,7 +103,7 @@ class DP3TSDKTests: XCTestCase {
         let model = service.exposeeListModel
 
         XCTAssert(model != nil)
-        XCTAssertEqual(model!.gaenKeys.count, defaults.parameters.crypto.numberOfKeysToSubmit)
+        XCTAssertEqual(model!.gaenKeys.count, defaults.parameters.networking.numberOfKeysToSubmit)
         let rollingStartNumbers = Set(model!.gaenKeys.map(\.rollingStartNumber))
         XCTAssertEqual(rollingStartNumbers.count, model!.gaenKeys.count)
         var runningDate: Date?

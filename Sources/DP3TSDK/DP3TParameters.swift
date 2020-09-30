@@ -12,7 +12,7 @@ import CoreBluetooth
 import Foundation
 
 public struct DP3TParameters: Codable {
-    static let parameterVersion: Int = 15
+    static let parameterVersion: Int = 16
 
     let version: Int
 
@@ -33,9 +33,6 @@ public struct DP3TParameters: Codable {
 
         public var numberOfDaysToKeepMatchedContacts = 14
 
-        public var maxAgeOfKeyToRetreive: TimeInterval = .day * 14
-
-        public var numberOfKeysToSubmit: Int = 30
     }
 
     public struct Networking: Codable {
@@ -46,6 +43,14 @@ public struct DP3TParameters: Codable {
         public var syncHourEvening: Int = 18
 
         public var allowedServerTimeDiff: TimeInterval = .minute * 10
+
+        public var maxAgeOfKeyToRetreive: TimeInterval = .day * 14
+
+        public var defaultSinceTimeInterval: TimeInterval = .day * 10
+
+        public var backendBucketSize: TimeInterval = .minute * 10
+
+        public var numberOfKeysToSubmit: Int = 30
     }
 
     public struct ContactMatching: Codable {

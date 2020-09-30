@@ -162,7 +162,7 @@ class NetworkingHelper {
                 }
 
                 var keys = keys?.map(CodableDiagnosisKey.init(key:)) ?? []
-                while keys.count < DP3TTracing.parameters.crypto.numberOfKeysToSubmit {
+                while keys.count < DP3TTracing.parameters.networking.numberOfKeysToSubmit {
                     let ts = Date().timeIntervalSince1970
                     let day = ts - ts.truncatingRemainder(dividingBy: 60 * 60 * 24)
                     keys.append(.init(keyData: Crypto.generateRandomKey(lenght: 16),

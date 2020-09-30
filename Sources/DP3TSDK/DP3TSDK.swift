@@ -266,7 +266,7 @@ class DP3TSDK {
 
                 var mutableKeys = keys
                 // always make sure we fill up the keys to defaults.parameters.crypto.numberOfKeysToSubmit
-                let fakeKeyCount = self.defaults.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count
+                let fakeKeyCount = self.defaults.parameters.networking.numberOfKeysToSubmit - mutableKeys.count
 
                 let oldestRollingStartNumber = keys.min { (a, b) -> Bool in a.rollingStartNumber < b.rollingStartNumber }?.rollingStartNumber ?? DayDate(date: .init(timeIntervalSinceNow: -.day)).period
 
