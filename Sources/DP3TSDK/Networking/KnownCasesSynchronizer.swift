@@ -121,18 +121,7 @@ class KnownCasesSynchronizer {
         logger.trace()
         isCancelled = false
 
-        let since: Date
-        if let storedSince = defaults.lastSyncSinceTimestamp {
-            since = storedSince
-        } else {
-            let bucketSize = defaults.parameters.networking.backendBucketSize
-            // subtract defaultSinceTimeInterval from now
-            let startingTimeStamp = now.addingTimeInterval(-defaults.parameters.networking.defaultSinceTimeInterval).timeIntervalSince1970
-            // round to the backend bucket size
-            let roundendTs = Date(timeIntervalSince1970: startingTimeStamp - startingTimeStamp.truncatingRemainder(dividingBy: bucketSize))
-            since = roundendTs
-            logger.log("falling back to default value since lastSyncSinceTimestamp is nil")
-        }
+        let since = defaults.lastSyncSinceTimestamp
 
         guard descriptor.mode == .test || timingManager.shouldDetect(now: now) else {
             logger.log("skipping sync since shouldDetect returned false")
@@ -150,7 +139,7 @@ class KnownCasesSynchronizer {
                 do {
                     if let data = knownCasesData.data {
                         if let matcher = self.matcher {
-                            self.logger.log("received data(%{public}d bytes) [since: %{public}@]", data.count, since.description)
+                            self.logger.log("received data(%{public}d bytes) [since: %{public}@]", data.count, since?.description ?? "nil")
                             let foundNewMatch = try matcher.receivedNewData(data, now: now)
                             if foundNewMatch {
                                 self.delegate?.didFindMatch()
@@ -159,7 +148,7 @@ class KnownCasesSynchronizer {
                             self.logger.error("matcher not present")
                         }
                     } else {
-                        self.logger.log("received no data [since: %{public}@]", since.description)
+                        self.logger.log("received no data [since: %{public}@]", since?.description ?? "nil")
                     }
 
                     if let newSince = knownCasesData.publishedUntil{

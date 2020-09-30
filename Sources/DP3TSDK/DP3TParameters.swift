@@ -46,10 +46,6 @@ public struct DP3TParameters: Codable {
 
         public var maxAgeOfKeyToRetreive: TimeInterval = .day * 14
 
-        public var defaultSinceTimeInterval: TimeInterval = .day * 10
-
-        public var backendBucketSize: TimeInterval = .hour * 2
-
         public var numberOfKeysToSubmit: Int = 30
     }
 
