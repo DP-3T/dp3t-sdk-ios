@@ -19,6 +19,13 @@ jobs:
 
     - name: Fastlane test
       run: fastlane test
+    
+    - name: Archive logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: logs
+        path: fastlane/test_output
       
   sampleapp:
     runs-on: macOS-latest
