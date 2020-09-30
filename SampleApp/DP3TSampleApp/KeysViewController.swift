@@ -52,6 +52,8 @@ class KeysViewController: UIViewController {
 
     private let nameRegex = try? NSRegularExpression(pattern: "key_export_experiment_([a-zA-Z0-9]+)_(.+)", options: .caseInsensitive)
 
+    private let manager = ENManager()
+
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Keys"
@@ -99,6 +101,12 @@ class KeysViewController: UIViewController {
         let date = roundendTs.addingTimeInterval(60 * 60 * 24)
         datePicker.setDate(date, animated: false)
         loadKeys(for: date)
+
+        manager.activate { error in
+            if let error = error {
+                loggingStorage?.log(error.localizedDescription, type: .error)
+            }
+        }
     }
 
     private func parseZipName(name: String) -> (experimentName: String?, deviceName: String?) {
@@ -178,8 +186,15 @@ class KeysViewController: UIViewController {
 extension KeysViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard let key = dataSource.itemIdentifier(for: indexPath) else { return }
-        let archive = Archive(url: key.localUrl, accessMode: .read)!
+        guard let zip = dataSource.itemIdentifier(for: indexPath) else { return }
+        handleZip(zip)
+    }
+}
+
+extension KeysViewController {
+
+    func unarchiveZip(_ zip: NetworkingHelper.DebugZips) -> [URL] {
+        let archive = Archive(url: zip.localUrl, accessMode: .read)!
         var localUrls: [URL] = []
         for entry in archive {
             let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
@@ -188,48 +203,53 @@ extension KeysViewController: UITableViewDelegate {
             _ = try? archive.extract(entry, to: localURL)
             localUrls.append(localURL)
         }
+        return localUrls
+    }
 
-        let manager = ENManager()
-        manager.activate { error in
-            if let error = error {
-                loggingStorage?.log(error.localizedDescription, type: .error)
-            }
-
-            let configuration: ENExposureConfiguration = .configuration()
-            manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { summary, error in
-                var string = summary?.description ?? error.debugDescription
-                if let summary = summary {
-                    manager.getExposureWindows(summary: summary) { (weakWindows, error) in
-                        if let allWindows = weakWindows {
-                            let parameters = DP3TTracing.parameters.contactMatching
-                            let groups = allWindows.groupByDay
-                            var exposureDays = Set<Date>()
-                            for (day, windows) in groups {
-                                let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
-                                                                                  higherThreshold: parameters.higherThreshold)
-
-                                if attenuationValues.matches(factorLow: parameters.factorLow,
-                                                             factorHigh: parameters.factorHigh,
-                                                             triggerThreshold: parameters.triggerThreshold) {
-                                    exposureDays.insert(day)
-
-                                }
-                            }
-                            print(exposureDays)
-                        }
-
-
-                        let alertController = UIAlertController(title: "Windows", message: "windows: \(weakWindows?.debugDescription ?? "nil")", preferredStyle: .actionSheet)
-                        let actionOk = UIAlertAction(title: "OK",
-                                                     style: .default,
-                                                     handler: nil)
-                        alertController.addAction(actionOk)
-                        self.present(alertController, animated: true, completion: nil)
-                    }
-                }
-            }
+    func detectExposures(localUrls: [URL]) {
+        let configuration: ENExposureConfiguration = .configuration()
+        manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { [weak self] summary, error in
+            guard let self = self else { return }
+            guard let summary = summary else { return }
+            self.getWindows(summary: summary)
         }
     }
+
+    func getWindows(summary: ENExposureDetectionSummary) {
+        manager.getExposureWindows(summary: summary) { (weakWindows, errir) in
+            if let allWindows = weakWindows {
+                let parameters = DP3TTracing.parameters.contactMatching
+                let groups = allWindows.groupByDay
+                var exposureDays = Set<Date>()
+                for (day, windows) in groups {
+                    let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
+                                                                      higherThreshold: parameters.higherThreshold)
+
+                    if attenuationValues.matches(factorLow: parameters.factorLow,
+                                                 factorHigh: parameters.factorHigh,
+                                                 triggerThreshold: parameters.triggerThreshold) {
+                        exposureDays.insert(day)
+
+                    }
+                }
+                print(exposureDays)
+            }
+
+
+            let alertController = UIAlertController(title: "Windows", message: "windows: \(weakWindows?.debugDescription ?? "nil")", preferredStyle: .actionSheet)
+            let actionOk = UIAlertAction(title: "OK",
+                                         style: .default,
+                                         handler: nil)
+            alertController.addAction(actionOk)
+            self.present(alertController, animated: true, completion: nil)
+        }
+    }
+
+    func handleZip(_ zip: NetworkingHelper.DebugZips){
+        let localUrls = unarchiveZip(zip)
+        detectExposures(localUrls: localUrls)
+    }
+
 }
 
 extension ENExposureConfiguration {
