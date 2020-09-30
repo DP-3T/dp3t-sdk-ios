@@ -109,8 +109,8 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
 
         let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
-            guard let self = self else { return }
-            guard error == nil else {
+            guard let self = self,
+                  error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))
                 return
             }
@@ -148,16 +148,14 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             }
 
             // Validate JWT
-            if let verifier = self.jwtVerifier {
-                do {
-                    try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
-                } catch let error as DP3TNetworkingError {
-                    completion(.failure(error))
-                    return
-                } catch {
-                    completion(.failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)")))
-                    return
-                }
+            do {
+                try self.jwtVerifier?.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
+            } catch let error as DP3TNetworkingError {
+                completion(.failure(error))
+                return
+            } catch {
+                completion(.failure(DP3TNetworkingError.jwtSignatureError(code: 200, debugDescription: "Unknown error \(error)")))
+                return
             }
 
             let result = ExposeeSuccess(data: responseData, publishedUntil: publishedUntil)
