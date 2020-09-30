@@ -150,16 +150,17 @@ class DP3TSDK {
     }
 
     /// start tracing
-    func startTracing(completionHandler: ((Error?) -> Void)? = nil) throws {
+    func startTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
         log.trace()
         if case .infected = state.infectionStatus {
-            throw DP3TTracingError.userAlreadyMarkedAsInfected
+            completionHandler?(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
+            return
         }
         tracer.setEnabled(true, completionHandler: completionHandler)
     }
 
     /// stop tracing
-    func stopTracing(completionHandler: ((Error?) -> Void)? = nil) {
+    func stopTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
         log.trace()
         tracer.setEnabled(false, completionHandler: completionHandler)
     }
@@ -167,7 +168,7 @@ class DP3TSDK {
     /// Perform a new sync
     /// - Parameter callback: callback
     /// - Throws: if a error happed
-    func sync(runningInBackground: Bool, callback: ((SyncResult) -> Void)?) {
+    func sync(callback: ((SyncResult) -> Void)?) {
         log.trace()
 
         let group = DispatchGroup()
@@ -188,16 +189,14 @@ class DP3TSDK {
             }
 
             group.notify(queue: .main) { [weak self] in
-                guard let self = self else { return }
-                switch storedResult! {
-                case .success:
+                guard let self = self,
+                      let result = storedResult else { return }
+
+                if result == .success {
                     self.state.lastSync = Date()
-                    callback?(.success)
-                case .skipped:
-                    callback?(.skipped)
-                case let .failure(error):
-                    callback?(.failure(error))
                 }
+
+                callback?(result)
             }
         }
 
@@ -217,10 +216,9 @@ class DP3TSDK {
     }
 
     /// get the current status of the SDK
-    /// - Parameter callback: callback
-    func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
-        log.trace()
-        callback(.success(state))
+    var status: TracingState {
+        log.log("retreiving status from SDK")
+        return state
     }
 
     /// tell the SDK that the user was exposed
@@ -287,14 +285,7 @@ class DP3TSDK {
                         case .success:
                             if !isFakeRequest {
                                 self.state.infectionStatus = .infected
-                                if #available(iOS 13.7, *) {
-                                    // if we are running on iOS > 13.7 we have to keep EN framework running in order to export the key of the last day
-                                    // EN framework will later get disabled
-                                    self.log.log("disable resetting of infection status")
-                                    self.defaults.infectionStatusIsResettable = false
-                                } else {
-                                    self.tracer.setEnabled(false, completionHandler: nil)
-                                }
+                                self.tracer.setEnabled(false, completionHandler: nil)
                             }
 
                             callback(.success(()))
@@ -307,26 +298,19 @@ class DP3TSDK {
         }
     }
 
-    var isInfectionStatusResettable: Bool {
-        defaults.infectionStatusIsResettable
-    }
-
     /// reset exposure days
-    func resetExposureDays() throws {
+    func resetExposureDays() {
         exposureDayStorage.markExposuresAsDeleted()
         state.infectionStatus = InfectionStatus.getInfectionState(from: exposureDayStorage)
     }
 
     /// reset the infection status
-    func resetInfectionStatus() throws {
-        guard defaults.infectionStatusIsResettable else {
-            throw DP3TTracingError.infectionStatusNotResettable
-        }
+    func resetInfectionStatus() {
         state.infectionStatus = .healthy
     }
 
     /// reset the SDK
-    func reset() throws {
+    func reset() {
         state.infectionStatus = .healthy
         log.trace()
         stopTracing()

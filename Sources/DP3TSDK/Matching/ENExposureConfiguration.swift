@@ -15,8 +15,8 @@ extension ENExposureConfiguration {
         let configuration = ENExposureConfiguration()
         configuration.reportTypeNoneMap = .confirmedTest
         configuration.infectiousnessForDaysSinceOnsetOfSymptoms = [ENDaysSinceOnsetOfSymptomsUnknown as NSNumber: ENInfectiousness.high.rawValue as NSNumber]
-        for i in -14...14 {
-            configuration.infectiousnessForDaysSinceOnsetOfSymptoms?[i as NSNumber] = ENInfectiousness.high.rawValue as NSNumber
+        for day in -14...14 {
+            configuration.infectiousnessForDaysSinceOnsetOfSymptoms?[day as NSNumber] = ENInfectiousness.high.rawValue as NSNumber
         }
         return configuration
     }

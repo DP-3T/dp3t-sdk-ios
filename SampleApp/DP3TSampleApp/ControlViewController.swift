@@ -99,14 +99,7 @@ class ControlViewController: UIViewController {
         } else {
             statusLabel.backgroundColor = .lightGray
         }
-        DP3TTracing.status { result in
-            switch result {
-            case let .success(state):
-                self.updateUI(state)
-            case .failure:
-                break
-            }
-        }
+        self.updateUI(DP3TTracing.status)
 
         stackView.addArrangedSubview(statusLabel)
         stackView.addSpacerView(18)
@@ -264,8 +257,7 @@ class ControlViewController: UIViewController {
     }
 
     @objc func sync() {
-        let runningInBackground = UIApplication.shared.applicationState == .background
-        DP3TTracing.sync(runningInBackground: runningInBackground) { [weak self] result in
+        DP3TTracing.sync() { [weak self] result in
             switch result {
             case let .failure(error):
                 let ac = UIAlertController(title: "Error",
@@ -301,14 +293,7 @@ class ControlViewController: UIViewController {
 
     @objc func setExposedFake() {
         DP3TTracing.iWasExposed(onset: Date(), authentication: .none, isFakeRequest: true) { _ in
-            DP3TTracing.status { result in
-                switch result {
-                case let .success(state):
-                    self.updateUI(state)
-                case .failure:
-                    break
-                }
-            }
+            self.updateUI(DP3TTracing.status)
         }
     }
 
@@ -390,36 +375,21 @@ class ControlViewController: UIViewController {
 
     @objc func reset() {
         DP3TTracing.stopTracing()
-        try? DP3TTracing.reset()
+        DP3TTracing.reset()
         NotificationCenter.default.post(name: Notification.Name("ClearData"), object: nil)
 
         initializeSDK()
 
         DP3TTracing.delegate = navigationController?.tabBarController as? DP3TTracingDelegate
-        DP3TTracing.status { result in
-            switch result {
-            case let .success(state):
-                self.updateUI(state)
-            case .failure:
-                break
-            }
-        }
+        self.updateUI(DP3TTracing.status)
     }
 
     @objc func resetInfectionState() {
-        do {
-            try DP3TTracing.resetInfectionStatus()
-        } catch let error as DP3TTracingError {
-            let ac = UIAlertController(title: "Error",
-                                       message: error.description,
-                                       preferredStyle: .alert)
-            ac.addAction(.init(title: "OK", style: .destructive))
-            self.present(ac, animated: true)
-        } catch {}
+        DP3TTracing.resetInfectionStatus()
     }
 
     @objc func resetExposureDays() {
-        try? DP3TTracing.resetExposureDays()
+        DP3TTracing.resetExposureDays()
     }
 
     @objc func segmentedControlChanges() {
@@ -433,14 +403,7 @@ class ControlViewController: UIViewController {
     }
 
     func updateState() {
-        DP3TTracing.status { result in
-            switch result {
-            case let .success(state):
-                self.updateUI(state)
-            case .failure:
-                break
-            }
-        }
+        self.updateUI(DP3TTracing.status)
     }
 
     func updateUI(_ state: TracingState) {
