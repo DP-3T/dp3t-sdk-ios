@@ -12,6 +12,10 @@ import ExposureNotification
 import Foundation
 import ZIPFoundation
 
+enum ExposureNotificationMatcherError: Error {
+    case timeOut
+}
+
 class ExposureNotificationMatcher: Matcher {
     weak var timingManager: ExposureDetectionTimingManager?
 
@@ -52,13 +56,13 @@ class ExposureNotificationMatcher: Matcher {
 
             try? FileManager.default.removeItem(at: tempDirectory)
 
-            if case let DetectionResult.failure(error) = detectionResult {
+            let summary: ENExposureDetectionSummary
+            switch detectionResult {
+            case let .failure(error):
                 logger.error("ENManager.detectExposures failed error: %{public}@", error.localizedDescription)
                 throw DP3TTracingError.exposureNotificationError(error: error)
-            }
-
-            guard case let DetectionResult.success(summary) = detectionResult else {
-                fatalError("This should never happen, EN.detectExposure should either return a error or a summary")
+            case let .success(value):
+                summary = value
             }
 
             guard !(progress?.isCancelled ?? false) else {
@@ -66,14 +70,13 @@ class ExposureNotificationMatcher: Matcher {
             }
 
             let windowsResult = getExposureWindows(summary: summary)
-
-            if case let WindowsResult.failure(error) = windowsResult {
+            let windows: [ENExposureWindow]
+            switch windowsResult {
+            case let .failure(error):
                 logger.error("ENManager.getExposureWindows failed error: %{public}@", error.localizedDescription)
                 throw DP3TTracingError.exposureNotificationError(error: error)
-            }
-
-            guard case let WindowsResult.success(windows) = windowsResult else {
-                fatalError("This should never happen, EN.detectExposure should either return a error or a summary")
+            case let .success(value):
+                windows = value
             }
 
             guard !(progress?.isCancelled ?? false) else {
@@ -160,6 +163,7 @@ class ExposureNotificationMatcher: Matcher {
             // If ENManager would return after 3min, the app gets kill before
             // that because we are only allowed to run for 2.5min in background
             logger.error("ENManager.detectExposures() failed to return in time")
+            return .failure(ExposureNotificationMatcherError.timeOut)
         }
 
         if let error = exposureDetectionError {
@@ -193,6 +197,7 @@ class ExposureNotificationMatcher: Matcher {
             // If ENManager would return after 3min, the app gets kill before
             // that because we are only allowed to run for 2.5min in background
             logger.error("ENManager.getExposureWindows() failed to return in time")
+            return .failure(ExposureNotificationMatcherError.timeOut)
         }
 
         if let error = exposureWindowsError {
