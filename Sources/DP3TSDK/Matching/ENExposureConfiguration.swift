@@ -12,12 +12,12 @@ import ExposureNotification
 
 extension ENExposureConfiguration {
     static var configuration: ENExposureConfiguration {
-        let configuration = ENExposureConfiguration()
-        configuration.reportTypeNoneMap = .confirmedTest
-        configuration.infectiousnessForDaysSinceOnsetOfSymptoms = [ENDaysSinceOnsetOfSymptomsUnknown as NSNumber: ENInfectiousness.high.rawValue as NSNumber]
+        let config = ENExposureConfiguration()
+        config.reportTypeNoneMap = .confirmedTest
+        config.infectiousnessForDaysSinceOnsetOfSymptoms = [ENDaysSinceOnsetOfSymptomsUnknown as NSNumber: ENInfectiousness.high.rawValue as NSNumber]
         for day in -14...14 {
-            configuration.infectiousnessForDaysSinceOnsetOfSymptoms?[day as NSNumber] = ENInfectiousness.high.rawValue as NSNumber
+            config.infectiousnessForDaysSinceOnsetOfSymptoms?[day as NSNumber] = ENInfectiousness.high.rawValue as NSNumber
         }
-        return configuration
+        return config
     }
 }

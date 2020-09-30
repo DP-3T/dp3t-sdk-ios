@@ -40,116 +40,49 @@ class ExposureNotificationMatcher: Matcher {
     func receivedNewData(_ data: Data, now: Date = .init()) throws -> Bool {
         logger.trace()
         return try synchronousQueue.sync {
-            var urls: [URL] = []
-            let tempDirectory = FileManager.default
-                .urls(for: .cachesDirectory, in: .userDomainMask).first!
-                .appendingPathComponent(UUID().uuidString)
-            if let archive = Archive(data: data, accessMode: .read) {
-                logger.debug("unarchived archive")
-                for entry in archive {
-                    let localURL = tempDirectory.appendingPathComponent(entry.path)
-                    do {
-                        _ = try archive.extract(entry, to: localURL)
-                    } catch {
-                        throw DP3TNetworkingError.couldNotParseData(error: error, origin: 1)
-                    }
-                    self.logger.debug("found %@ item in archive", entry.path)
-                    urls.append(localURL)
-                }
-            }
+            let tempDirectory = getTempDirectory()
+
+            let urls: [URL] = try unarchiveData(data, into: tempDirectory)
 
             guard urls.isEmpty == false else { return false }
 
-            let semaphore = DispatchSemaphore(value: 0)
-            var exposureSummary: ENExposureDetectionSummary?
-            var exposureDetectionError: Error? = DP3TTracingError.cancelled
-
-            logger.log("calling detectExposures")
-            progress = manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: urls) { summary, error in
-                exposureSummary = summary
-                exposureDetectionError = error
-                semaphore.signal()
-            }
-            
-            // Wait for 3min and abort if detectExposures did not return in time
-            if semaphore.wait(timeout: .now() + 180) == .timedOut {
-                // This should never be the case but it protects us from errors
-                // in ExposureNotifications.frameworks which cause the completion
-                // handler to never get called.
-                // If ENManager would return after 3min, the app gets kill before
-                // that because we are only allowed to run for 2.5min in background
-                logger.error("ENManager.detectExposures() failed to return in time")
-            }
-
-            if let error = exposureDetectionError {
-                logger.error("ENManager.detectExposures failed error: %{public}@", error.localizedDescription)
-                try? urls.forEach(deleteDiagnosisKeyFile(at:))
-                throw DP3TTracingError.exposureNotificationError(error: error)
-            }
+            let detectionResult = detectExposure(urls: urls)
 
             timingManager?.addDetection(timestamp: now)
 
             try? FileManager.default.removeItem(at: tempDirectory)
 
-            guard let summary = exposureSummary else {
-                assertionFailure("This should never happen, EN.detectExposure should either return a error or a summary")
-                return false
-            }
-
-            guard !(progress?.isCancelled ?? false) else {
-                throw DP3TTracingError.cancelled
-            }
-
-            var exposureWindows: [ENExposureWindow]?
-            var exposureWindowsError: Error? = DP3TTracingError.cancelled
-            logger.log("calling getExposureWindows")
-            progress = manager.getExposureWindows(summary: summary) { (windows, error) in
-                exposureWindows = windows
-                exposureWindowsError = error
-                semaphore.signal()
-            }
-
-            // Wait for 3min and abort if getExposureWindows did not return in time
-            if semaphore.wait(timeout: .now() + 180) == .timedOut {
-                // This should never be the case but it protects us from errors
-                // in ExposureNotifications.frameworks which cause the completion
-                // handler to never get called.
-                // If ENManager would return after 3min, the app gets kill before
-                // that because we are only allowed to run for 2.5min in background
-                logger.error("ENManager.getExposureWindows() failed to return in time")
-            }
-
-            if let error = exposureWindowsError {
-                logger.error("ENManager.getExposureWindows failed error: %{public}@", error.localizedDescription)
-                try? urls.forEach(deleteDiagnosisKeyFile(at:))
+            if case let DetectionResult.failure(error) = detectionResult {
+                logger.error("ENManager.detectExposures failed error: %{public}@", error.localizedDescription)
                 throw DP3TTracingError.exposureNotificationError(error: error)
             }
 
+            guard case let DetectionResult.success(summary) = detectionResult else {
+                fatalError("This should never happen, EN.detectExposure should either return a error or a summary")
+            }
+
             guard !(progress?.isCancelled ?? false) else {
                 throw DP3TTracingError.cancelled
             }
 
-            guard let windows = exposureWindows else {
-                assertionFailure("This should never happen, EN.getExposureWindows should either return a error or windows")
-                return false
+            let windowsResult = getExposureWindows(summary: summary)
+
+            if case let WindowsResult.failure(error) = windowsResult {
+                logger.error("ENManager.getExposureWindows failed error: %{public}@", error.localizedDescription)
+                throw DP3TTracingError.exposureNotificationError(error: error)
             }
 
-            
-            let parameters = defaults.parameters.contactMatching
-            let groups = windows.groupByDay
+            guard case let WindowsResult.success(windows) = windowsResult else {
+                fatalError("This should never happen, EN.detectExposure should either return a error or a summary")
+            }
+
+            guard !(progress?.isCancelled ?? false) else {
+                throw DP3TTracingError.cancelled
+            }
+
             let exposureDays = exposureDayStorage.getDays()
-            for (day, windows) in groups {
-                let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
-                                                                  higherThreshold: parameters.higherThreshold)
 
-                if attenuationValues.matches(factorLow: parameters.factorLow,
-                                             factorHigh: parameters.factorHigh,
-                                             triggerThreshold: parameters.triggerThreshold * 60) {
-                    let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: day, reportDate: Date(), isDeleted: false)
-                    exposureDayStorage.add(day)
-
-                }
-            }
+            updateExposureDays(with: windows)
 
             if exposureDayStorage.getDays() != exposureDays {
                 // a new exposure was found
@@ -162,8 +95,112 @@ class ExposureNotificationMatcher: Matcher {
         }
     }
 
-    func deleteDiagnosisKeyFile(at localURL: URL) throws {
+    private func updateExposureDays(with windows: [ENExposureWindow]) {
+        let parameters = defaults.parameters.contactMatching
+        let groups = windows.groupByDay
+        for (day, windows) in groups {
+            let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
+                                                              higherThreshold: parameters.higherThreshold)
+
+            if attenuationValues.matches(factorLow: parameters.factorLow,
+                                         factorHigh: parameters.factorHigh,
+                                         triggerThreshold: parameters.triggerThreshold * 60) {
+                let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: day, reportDate: Date(), isDeleted: false)
+                exposureDayStorage.add(day)
+
+            }
+        }
+    }
+
+    private func unarchiveData(_ data: Data, into tempDirectory: URL) throws -> [URL] {
         logger.trace()
-        try FileManager.default.removeItem(at: localURL)
+
+        var urls: [URL] = []
+
+        if let archive = Archive(data: data, accessMode: .read) {
+            logger.debug("unarchived archive")
+            for entry in archive {
+                let localURL = tempDirectory.appendingPathComponent(entry.path)
+                do {
+                    _ = try archive.extract(entry, to: localURL)
+                } catch {
+                    throw DP3TNetworkingError.couldNotParseData(error: error, origin: 1)
+                }
+                self.logger.debug("found %@ item in archive", entry.path)
+                urls.append(localURL)
+            }
+        }
+        return urls
+    }
+
+    typealias DetectionResult = Result<ENExposureDetectionSummary, Error>
+    private func detectExposure(urls: [URL]) -> DetectionResult {
+        logger.trace()
+
+        let semaphore = DispatchSemaphore(value: 0)
+        var exposureSummary: ENExposureDetectionSummary?
+        var exposureDetectionError: Error? = DP3TTracingError.cancelled
+
+        logger.log("calling detectExposures")
+        progress = manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: urls) { summary, error in
+            exposureSummary = summary
+            exposureDetectionError = error
+            semaphore.signal()
+        }
+
+        // Wait for 3min and abort if detectExposures did not return in time
+        if semaphore.wait(timeout: .now() + 180) == .timedOut {
+            // This should never be the case but it protects us from errors
+            // in ExposureNotifications.frameworks which cause the completion
+            // handler to never get called.
+            // If ENManager would return after 3min, the app gets kill before
+            // that because we are only allowed to run for 2.5min in background
+            logger.error("ENManager.detectExposures() failed to return in time")
+        }
+
+        if let error = exposureDetectionError {
+            return .failure(error)
+        } else if let summary = exposureSummary {
+            return .success(summary)
+        }
+        fatalError("This should never happen, EN.detectExposure should either return a error or a summary")
+    }
+
+    typealias WindowsResult = Result<[ENExposureWindow], Error>
+    private func getExposureWindows(summary: ENExposureDetectionSummary) -> WindowsResult {
+        logger.trace()
+
+        let semaphore = DispatchSemaphore(value: 0)
+        var exposureWindows: [ENExposureWindow]?
+        var exposureWindowsError: Error? = DP3TTracingError.cancelled
+        logger.log("calling getExposureWindows")
+        progress = manager.getExposureWindows(summary: summary) { (windows, error) in
+            exposureWindows = windows
+            exposureWindowsError = error
+            semaphore.signal()
+        }
+
+        // Wait for 3min and abort if getExposureWindows did not return in time
+        if semaphore.wait(timeout: .now() + 180) == .timedOut {
+            // This should never be the case but it protects us from errors
+            // in ExposureNotifications.frameworks which cause the completion
+            // handler to never get called.
+            // If ENManager would return after 3min, the app gets kill before
+            // that because we are only allowed to run for 2.5min in background
+            logger.error("ENManager.getExposureWindows() failed to return in time")
+        }
+
+        if let error = exposureWindowsError {
+            return .failure(error)
+        } else if let windows = exposureWindows {
+            return .success(windows)
+        }
+        fatalError("This should never happen, EN.getExposureWindows should either return a error or windows")
+    }
+
+    private func getTempDirectory() -> URL {
+        FileManager.default
+            .urls(for: .cachesDirectory, in: .userDomainMask).first!
+            .appendingPathComponent(UUID().uuidString)
     }
 }
