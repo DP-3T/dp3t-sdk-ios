@@ -72,7 +72,7 @@ public enum TrackingState: Equatable {
 }
 
 /// The state of the API
-public struct TracingState {
+public struct TracingState: Equatable {
     /// The tracking state of the bluetooth and the other networking api
     public var trackingState: TrackingState
     /// The last syncronization when the list of infected people was fetched
