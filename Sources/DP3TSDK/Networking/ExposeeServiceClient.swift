@@ -72,7 +72,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         self.urlCache = urlCache
         exposeeEndpoint = ExposeeEndpoint(baseURL: descriptor.bucketBaseUrl)
         managingExposeeEndpoint = ManagingExposeeEndpoint(baseURL: descriptor.reportBaseUrl)
-        if #available(iOS 11.0, *), let jwtPublicKey = descriptor.jwtPublicKey {
+        if let jwtPublicKey = descriptor.jwtPublicKey {
             jwtVerifier = DP3TJWTVerifier(publicKey: jwtPublicKey, jwtTokenHeaderKey: "Signature")
         } else {
             jwtVerifier = nil
@@ -148,7 +148,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             }
 
             // Validate JWT
-            if #available(iOS 11.0, *), let verifier = self.jwtVerifier {
+            if let verifier = self.jwtVerifier {
                 do {
                     try verifier.verify(claimType: ExposeeClaims.self, httpResponse: httpResponse, httpBody: responseData)
                 } catch let error as DP3TNetworkingError {

@@ -199,54 +199,32 @@ extension KeysViewController: UITableViewDelegate {
             manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { summary, error in
                 var string = summary?.description ?? error.debugDescription
                 if let summary = summary {
+                    manager.getExposureWindows(summary: summary) { (weakWindows, error) in
+                        if let allWindows = weakWindows {
+                            let parameters = DP3TTracing.parameters.contactMatching
+                            let groups = allWindows.groupByDay
+                            var exposureDays = Set<Date>()
+                            for (day, windows) in groups {
+                                let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
+                                                                                  higherThreshold: parameters.higherThreshold)
 
-                    if #available(iOS 13.7, *) {
-                        print(EN_FEATURE_GENERAL)
-                        manager.getExposureWindows(summary: summary) { (weakWindows, error) in
-                            if let allWindows = weakWindows {
-                                let parameters = DP3TTracing.parameters.contactMatching
-                                let groups = allWindows.groupByDay
-                                var exposureDays = Set<Date>()
-                                for (day, windows) in groups {
-                                    let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
-                                                                                      higherThreshold: parameters.higherThreshold)
+                                if attenuationValues.matches(factorLow: parameters.factorLow,
+                                                             factorHigh: parameters.factorHigh,
+                                                             triggerThreshold: parameters.triggerThreshold) {
+                                    exposureDays.insert(day)
 
-                                    if attenuationValues.matches(factorLow: parameters.factorLow,
-                                                                 factorHigh: parameters.factorHigh,
-                                                                 triggerThreshold: parameters.triggerThreshold) {
-                                        exposureDays.insert(day)
-
-                                    }
                                 }
-                                print(exposureDays)
                             }
-
-
-                            let alertController = UIAlertController(title: "Windows", message: "windows: \(weakWindows?.debugDescription ?? "nil")", preferredStyle: .actionSheet)
-                            let actionOk = UIAlertAction(title: "OK",
-                                                         style: .default,
-                                                         handler: nil)
-                            alertController.addAction(actionOk)
-                            self.present(alertController, animated: true, completion: nil)
-                        }
-                    } else {
-                        let parameters = DP3TTracing.parameters.contactMatching
-                        let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[1]) * parameters.factorHigh) / 60
-                        string.append("\n--------\n computed Threshold: \(computedThreshold)")
-                        if computedThreshold > Double(parameters.triggerThreshold) {
-                            string.append("\n meets requirement of \(parameters.triggerThreshold)")
-                        } else {
-                            string.append("\n doesn't meet requirement of \(parameters.triggerThreshold)")
+                            print(exposureDays)
                         }
 
-                        loggingStorage?.log(string, type: .info)
-                        let alertController = UIAlertController(title: "Summary", message: string, preferredStyle: .alert)
+
+                        let alertController = UIAlertController(title: "Windows", message: "windows: \(weakWindows?.debugDescription ?? "nil")", preferredStyle: .actionSheet)
                         let actionOk = UIAlertAction(title: "OK",
                                                      style: .default,
                                                      handler: nil)
                         alertController.addAction(actionOk)
                         self.present(alertController, animated: true, completion: nil)
-                        try? localUrls.forEach(FileManager.default.removeItem(at:))
                     }
                 }
             }

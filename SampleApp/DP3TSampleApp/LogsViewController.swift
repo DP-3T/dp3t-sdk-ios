@@ -35,9 +35,7 @@ class LogsViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Logs"
-        if #available(iOS 13.0, *) {
-            tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "list.bullet"), tag: 0)
-        }
+        tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "list.bullet"), tag: 0)
         loadLogs()
         NotificationCenter.default.addObserver(self, selector: #selector(didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
 

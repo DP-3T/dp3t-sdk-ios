@@ -35,9 +35,7 @@ class ControlViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Controls"
-        if #available(iOS 13.0, *) {
-            tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "doc.text"), tag: 0)
-        }
+        tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "doc.text"), tag: 0)
         segmentedControl.selectedSegmentIndex = 1
         segmentedControl.addTarget(self, action: #selector(segmentedControlChanges), for: .valueChanged)
 
@@ -68,11 +66,7 @@ class ControlViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if #available(iOS 13.0, *) {
-            self.view.backgroundColor = .systemBackground
-        } else {
-            view.backgroundColor = .white
-        }
+        self.view.backgroundColor = .systemBackground
         view.addSubview(scrollView)
         scrollView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -94,11 +88,7 @@ class ControlViewController: UIViewController {
         statusLabel.font = .systemFont(ofSize: 18)
         statusLabel.textAlignment = .center
         statusLabel.numberOfLines = 0
-        if #available(iOS 13.0, *) {
-            statusLabel.backgroundColor = .systemGroupedBackground
-        } else {
-            statusLabel.backgroundColor = .lightGray
-        }
+        statusLabel.backgroundColor = .systemGroupedBackground
         self.updateUI(DP3TTracing.status)
 
         stackView.addArrangedSubview(statusLabel)
@@ -115,13 +105,8 @@ class ControlViewController: UIViewController {
 
         do {
             let button = UIButton()
-            if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
+            button.setTitleColor(.systemBlue, for: .normal)
+            button.setTitleColor(.systemGray, for: .highlighted)
             button.setTitle("Reset SDK", for: .normal)
             button.addTarget(self, action: #selector(reset), for: .touchUpInside)
             stackView.addArrangedSubview(button)
@@ -131,13 +116,8 @@ class ControlViewController: UIViewController {
 
         do {
             let button = UIButton()
-            if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
+            button.setTitleColor(.systemBlue, for: .normal)
+            button.setTitleColor(.systemGray, for: .highlighted)
             button.setTitle("Reset Infection Status", for: .normal)
             button.addTarget(self, action: #selector(resetInfectionState), for: .touchUpInside)
             stackView.addArrangedSubview(button)
@@ -147,13 +127,9 @@ class ControlViewController: UIViewController {
 
         do {
             let button = UIButton()
-            if #available(iOS 13.0, *) {
+
                 button.setTitleColor(.systemBlue, for: .normal)
                 button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
             button.setTitle("Reset Exposure Days", for: .normal)
             button.addTarget(self, action: #selector(resetExposureDays), for: .touchUpInside)
             stackView.addArrangedSubview(button)
@@ -163,13 +139,8 @@ class ControlViewController: UIViewController {
 
         do {
             let button = UIButton()
-            if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
+            button.setTitleColor(.systemBlue, for: .normal)
+            button.setTitleColor(.systemGray, for: .highlighted)
             button.setTitle("Set Infected", for: .normal)
             button.addTarget(self, action: #selector(setExposed), for: .touchUpInside)
             stackView.addArrangedSubview(button)
@@ -178,13 +149,8 @@ class ControlViewController: UIViewController {
 
         do {
             let button = UIButton()
-            if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
+            button.setTitleColor(.systemBlue, for: .normal)
+            button.setTitleColor(.systemGray, for: .highlighted)
             button.setTitle("Set Infected Fake", for: .normal)
             button.addTarget(self, action: #selector(setExposedFake), for: .touchUpInside)
             stackView.addArrangedSubview(button)
@@ -193,13 +159,8 @@ class ControlViewController: UIViewController {
 
         do {
             let button = UIButton()
-            if #available(iOS 13.0, *) {
-                button.setTitleColor(.systemBlue, for: .normal)
-                button.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                button.setTitleColor(.blue, for: .normal)
-                button.setTitleColor(.black, for: .highlighted)
-            }
+            button.setTitleColor(.systemBlue, for: .normal)
+            button.setTitleColor(.systemGray, for: .highlighted)
             button.setTitle("Synchronize with Backend", for: .normal)
             button.addTarget(self, action: #selector(sync), for: .touchUpInside)
             stackView.addArrangedSubview(button)
@@ -208,13 +169,8 @@ class ControlViewController: UIViewController {
         stackView.addSpacerView(12)
 
         do {
-            if #available(iOS 13.0, *) {
-                shareButton.setTitleColor(.systemBlue, for: .normal)
-                shareButton.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                shareButton.setTitleColor(.blue, for: .normal)
-                shareButton.setTitleColor(.black, for: .highlighted)
-            }
+            shareButton.setTitleColor(.systemBlue, for: .normal)
+            shareButton.setTitleColor(.systemGray, for: .highlighted)
             shareButton.setTitle("Share Database", for: .normal)
             shareButton.addTarget(self, action: #selector(shareDatabase), for: .touchUpInside)
             stackView.addArrangedSubview(shareButton)
@@ -222,13 +178,8 @@ class ControlViewController: UIViewController {
         stackView.addSpacerView(12)
 
         do {
-            if #available(iOS 13.0, *) {
-                uploadButton.setTitleColor(.systemBlue, for: .normal)
-                uploadButton.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                uploadButton.setTitleColor(.blue, for: .normal)
-                uploadButton.setTitleColor(.black, for: .highlighted)
-            }
+            uploadButton.setTitleColor(.systemBlue, for: .normal)
+            uploadButton.setTitleColor(.systemGray, for: .highlighted)
             uploadButton.setTitle("Upload Database", for: .normal)
             uploadButton.addTarget(self, action: #selector(uploadDatabase), for: .touchUpInside)
             stackView.addArrangedSubview(uploadButton)
@@ -237,13 +188,8 @@ class ControlViewController: UIViewController {
         stackView.addSpacerView(12)
 
         do {
-            if #available(iOS 13.0, *) {
-                uploadKeysButton.setTitleColor(.systemBlue, for: .normal)
-                uploadKeysButton.setTitleColor(.systemGray, for: .highlighted)
-            } else {
-                uploadKeysButton.setTitleColor(.blue, for: .normal)
-                uploadKeysButton.setTitleColor(.black, for: .highlighted)
-            }
+            uploadKeysButton.setTitleColor(.systemBlue, for: .normal)
+            uploadKeysButton.setTitleColor(.systemGray, for: .highlighted)
             uploadKeysButton.setTitle("Upload Keys for Experiment", for: .normal)
             uploadKeysButton.addTarget(self, action: #selector(uploadKeys), for: .touchUpInside)
             stackView.addArrangedSubview(uploadKeysButton)
