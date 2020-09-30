@@ -11,16 +11,30 @@
 import Foundation
 
 class ExposureDetectionTimingManager {
-    var storage: DefaultStorage
+    private var storage: DefaultStorage
+
+    private let logger = Logger(ExposureDetectionTimingManager.self, category: "exposureDetectionTimingManager")
 
     static let maxDetections = 6
+
+    private var minTimeintervalBetweenChecks: TimeInterval {
+        .day / TimeInterval(Self.maxDetections)
+    }
 
     init(storage: DefaultStorage = Default.shared) {
         self.storage = storage
     }
 
     func shouldDetect(now: Date = .init()) -> Bool {
-        return getRemainingDetections(now: now) != 0
+        if getRemainingDetections(now: now) == 0 {
+            logger.log("no detections remaining for today")
+            return false
+        }
+        if timeIntervalSinceLatestDetection(now: now) < minTimeintervalBetweenChecks {
+            logger.log("timeIntervalSinceLatestDetection too small")
+            return false
+        }
+        return true
     }
 
     func addDetection(timestamp: Date = .init()) {
@@ -43,4 +57,10 @@ class ExposureDetectionTimingManager {
         return max(Self.maxDetections - inCurrentWindow.count, 0)
     }
 
+    func timeIntervalSinceLatestDetection(now: Date = .init()) -> TimeInterval {
+        guard let latest = storage.exposureDetectionDates.max(by: <) else {
+            return .infinity
+        }
+        return now.timeIntervalSince(latest)
+    }
 }

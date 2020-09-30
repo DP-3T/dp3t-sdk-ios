@@ -36,7 +36,7 @@ class ExposureDetectionTimingManagerTests: XCTestCase {
         let manager = ExposureDetectionTimingManager(storage: defaults)
         manager.addDetection()
         XCTAssertEqual(manager.getRemainingDetections(), ExposureDetectionTimingManager.maxDetections - 1)
-        XCTAssertEqual(manager.shouldDetect(), true)
+        XCTAssertEqual(manager.shouldDetect(), false)
     }
 
     func testRemainginAfter1Day() {
@@ -73,5 +73,26 @@ class ExposureDetectionTimingManagerTests: XCTestCase {
         }
         XCTAssertEqual(manager.getRemainingDetections(now: now), ExposureDetectionTimingManager.maxDetections)
         XCTAssertEqual(manager.shouldDetect(now: now), true)
+    }
+
+    func testTimeIntervalSinceLastDetectionNow(){
+        let defaults = MockDefaults()
+        let manager = ExposureDetectionTimingManager(storage: defaults)
+        let last = Date()
+        manager.addDetection(timestamp: last)
+        for i in 1 ... 20 {
+            manager.addDetection(timestamp: .init(timeIntervalSinceNow: -.day - Double(20 - i) * .hour))
+        }
+        XCTAssertEqual(manager.timeIntervalSinceLatestDetection(now: last), 0)
+    }
+
+    func testTimeIntervalSinceLastDetectionYesterday(){
+        let defaults = MockDefaults()
+        let manager = ExposureDetectionTimingManager(storage: defaults)
+        let now = Date()
+        let last = now.addingTimeInterval(-.day)
+        manager.addDetection(timestamp: last)
+
+        XCTAssertEqual(manager.timeIntervalSinceLatestDetection(now: now), TimeInterval.day)
     }
 }

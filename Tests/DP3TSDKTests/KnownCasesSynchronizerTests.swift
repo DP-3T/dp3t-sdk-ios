@@ -32,9 +32,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 1)
-        //TODO specify handling
-        //XCTAssert(service.requests.contains(DayDate(date: now).dayMin))
-        //XCTAssertEqual(defaults.lastSyncSinceTimestamp, service.publishedUntil)
+
+        XCTAssertEqual(defaults.lastSyncSinceTimestamp, service.publishedUntil)
     }
 
     func testInitialLoadingFirstBatch() {
@@ -45,6 +44,9 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           service: service,
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+
+        let oldSince = Self.formatter.date(from: "01.05.2020 09:00")!
+        defaults.lastSyncSinceTimestamp = oldSince
         let expecation = expectation(description: "syncExpectation")
         sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
             XCTAssertEqual(res, SyncResult.success)
@@ -53,9 +55,11 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 1)
+        XCTAssertEqual(service.requests.first!, oldSince)
+        XCTAssertEqual(defaults.lastSyncSinceTimestamp, service.publishedUntil)
     }
 
-    /*func testOnlyCallingMatcherTwiceADay() {
+    func testRespectingRateLimitSingleDay() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
@@ -77,8 +81,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             }
             waitForExpectations(timeout: 1)
         }
-        XCTAssertEqual(suceesses, 2)
-        XCTAssertEqual(matcher.timesCalledReceivedNewData, 20)
+        XCTAssertEqual(suceesses, ExposureDetectionTimingManager.maxDetections)
+        XCTAssertEqual(matcher.timesCalledReceivedNewData, ExposureDetectionTimingManager.maxDetections)
     }
 
     func testOnlyCallingMatcherOverMultipleDays() {
@@ -100,8 +104,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             }
             waitForExpectations(timeout: 1)
         }
-        XCTAssertEqual(matcher.timesCalledReceivedNewData, days * 20)
-    }*/
+        XCTAssertEqual(matcher.timesCalledReceivedNewData, days * 6)
+    }
 
     func testStoringLastSyncNoData() {
         let matcher = MockMatcher()

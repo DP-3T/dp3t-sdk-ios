@@ -136,6 +136,7 @@ class KnownCasesSynchronizer {
 
         guard descriptor.mode == .test || timingManager.shouldDetect(now: now) else {
             logger.log("skipping sync since shouldDetect returned false")
+            callback?(.skipped)
             return
         }
 
