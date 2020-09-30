@@ -30,7 +30,7 @@ class DiagnosisKeysProviderTests: XCTestCase {
         manager.keys = [.initialize(rollingStartNumber: day.period)]
 
         let exp = expectation(description: "getDiagnosisKeys")
-        manager.getDiagnosisKeys(onsetDate: onset, appDesc: descriptor) { (result) in
+        manager.getDiagnosisKeys(onsetDate: onset, appDesc: descriptor, disableExposureNotificationAfterCompletion: false) { (result) in
             switch result {
             case .failure(_):
                 XCTFail()
@@ -48,7 +48,7 @@ class DiagnosisKeysProviderTests: XCTestCase {
         manager.keys = [.initialize(rollingStartNumber: day.period)]
 
         let exp = expectation(description: "getDiagnosisKeys")
-        manager.getDiagnosisKeys(onsetDate: onset, appDesc: descriptor) { (result) in
+        manager.getDiagnosisKeys(onsetDate: onset, appDesc: descriptor, disableExposureNotificationAfterCompletion: false) { (result) in
             switch result {
             case .failure(_):
                 XCTFail()
@@ -67,7 +67,7 @@ class DiagnosisKeysProviderTests: XCTestCase {
         manager.keys = [.initialize(rollingStartNumber: day.period)]
 
         let exp = expectation(description: "getDiagnosisKeys")
-        manager.getDiagnosisKeys(onsetDate: onset, appDesc: descriptor) { (result) in
+        manager.getDiagnosisKeys(onsetDate: onset, appDesc: descriptor, disableExposureNotificationAfterCompletion: false) { (result) in
             switch result {
             case .failure(_):
                 XCTFail()

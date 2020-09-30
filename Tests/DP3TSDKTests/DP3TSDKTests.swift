@@ -13,32 +13,14 @@
 import Foundation
 import XCTest
 
-private class MockTracer: Tracer {
-    var isAuthorized: Bool = true
-
-    var delegate: TracerDelegate?
-
-    var state: TrackingState = .active
-
-    var isEnabled = false
-
-    func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?) {
-        isEnabled = enabled
-        completionHandler?(nil)
-    }
-
-    func addInitialisationCallback(callback: @escaping () -> Void) {
-        callback()
-    }
-}
-
 private class MockKeyProvider: DiagnosisKeysProvider {
+
     var keys = [CodableDiagnosisKey]()
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         completionHandler(.success(keys.filter { $0.fake == 1 }))
     }
 
-    func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
+    func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, disableExposureNotificationAfterCompletion: Bool, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         completionHandler(.success(keys.filter { $0.fake == 0 }))
     }
 }
@@ -60,6 +42,7 @@ class DP3TSDKTests: XCTestCase {
     fileprivate var backgroundTaskManager: DP3TBackgroundTaskManager!
     fileprivate var manager: MockENManager!
     fileprivate var exposureDayStorage: ExposureDayStorage!
+    fileprivate var outstandingPublishStorage: OutstandingPublishStorage!
     fileprivate var sdk: DP3TSDK!
 
     override func setUp() {
@@ -76,6 +59,7 @@ class DP3TSDKTests: XCTestCase {
         service = MockService()
         keyProvider = MockKeyProvider()
         backgroundTaskManager = DP3TBackgroundTaskManager(handler: nil, keyProvider: keyProvider, serviceClient: service, tracer: tracer)
+        outstandingPublishStorage = OutstandingPublishStorage(keychain: keychain)
         sdk = DP3TSDK(applicationDescriptor: descriptor,
                           urlSession: MockSession(data: nil, urlResponse: nil, error: nil),
                           tracer: tracer,
@@ -108,7 +92,7 @@ class DP3TSDKTests: XCTestCase {
         try! sdk.startTracing { (err) in
             exp.fulfill()
         }
-        wait(for: [exp], timeout: 1.0)
+        wait(for: [exp], timeout: 2.0)
         XCTAssertEqual(tracer.state, TrackingState.active)
     }
 
@@ -138,6 +122,12 @@ class DP3TSDKTests: XCTestCase {
         }
         wait(for: [exp], timeout: 0.1)
         let model = service.exposeeListModel
+
+        XCTAssertEqual(outstandingPublishStorage.get().count, 1)
+
+        if #available(iOS 13.7, *) {
+            XCTAssertFalse(defaults.infectionStatusIsResettable)
+        }
         XCTAssert(model != nil)
         XCTAssertEqual(model!.gaenKeys.count, defaults.parameters.crypto.numberOfKeysToSubmit)
         let rollingStartNumbers = Set(model!.gaenKeys.map(\.rollingStartNumber))
@@ -166,10 +156,16 @@ class DP3TSDKTests: XCTestCase {
                 default:
                     XCTFail()
                 }
+                if #available(iOS 13.7, *) {
+                    XCTAssertNotEqual(state.trackingState, .stopped)
+                } else {
+                    XCTAssertEqual(state.trackingState, .stopped)
+                }
             }
             stateExpAfter.fulfill()
         }
         wait(for: [stateExpAfter], timeout: 0.1)
+
 
         XCTAssertThrowsError(try sdk.startTracing())
     }
@@ -269,6 +265,7 @@ class DP3TSDKTests: XCTestCase {
 
     func testEnableAfterEnableFailure(){
         manager.enableError = MockError(message: "message")
+        manager.isEnabled = true
         manager.completeActivation()
         let exp = expectation(description: "enable")
         try! sdk.startTracing { (err) in

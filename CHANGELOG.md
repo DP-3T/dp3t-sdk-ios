@@ -1,5 +1,10 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 1.3.0 (29.09.2020)
+- Improve last day TEK export handling for iOS > 13.7 (must not disable EN until the following day)
+- Introduce new tracing error (.authorizationUnknown) to be able to handle users that did not grant (or revoked authorization by disabling exposure notifications in the iOS settings).
+- all apps using this SDK must specify ENDeveloperRegion and ENAPIVersion in their info.plist
+
 ## Version 1.2.1 (31.08.2020)
 - ensures that backgroundtask keeps running until outstandingPublishOperation is finished
 

@@ -31,11 +31,17 @@ public enum DP3TTracingError: Error {
     /// Bluetooth device turned off
     case bluetoothTurnedOff
 
-    /// Bluetooth permission error
+    /// User has not been prompted for authorization yet (using startTracing() will prompt the user).
+    case authorizationUnknown
+
+    /// The user either denied authorization or region is not active
     case permissonError
 
     /// The user was marked as infected
     case userAlreadyMarkedAsInfected
+
+    /// the infection status is not resettable currently
+    case infectionStatusNotResettable
 }
 
 /// A set of networking errors returned from the SDK
