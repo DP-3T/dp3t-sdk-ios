@@ -12,8 +12,7 @@ platform :ios do
 
     multi_scan(
       try_count: 3,
-      parallel_testrun_count: 1,
-      include_simulator_logs: true
+      parallel_testrun_count: 1
     )
 
   end
