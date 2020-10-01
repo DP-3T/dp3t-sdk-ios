@@ -78,6 +78,7 @@ class KeysViewController: UIViewController {
         datePicker.snp.makeConstraints { make in
             make.left.right.bottom.equalTo(self.view.safeAreaLayoutGuide)
             make.top.equalTo(tableView.snp.bottom)
+            make.height.equalTo(50)
         }
 
         datePicker.backgroundColor = .systemBackground
@@ -193,22 +194,28 @@ extension KeysViewController: UITableViewDelegate {
 
 extension KeysViewController {
 
+    private func getTempDirectory() -> URL {
+        FileManager.default
+            .urls(for: .cachesDirectory, in: .userDomainMask).first!
+            .appendingPathComponent(UUID().uuidString)
+    }
+    
     func unarchiveZip(_ zip: NetworkingHelper.DebugZips) -> [URL] {
-        let archive = Archive(url: zip.localUrl, accessMode: .read)!
-        var localUrls: [URL] = []
-        for entry in archive {
-            let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathComponent(entry.path)
-            _ = try? archive.extract(entry, to: localURL)
-            localUrls.append(localURL)
+        var urls: [URL] = []
+        let tempDirectory = self.getTempDirectory()
+
+        if let archive = Archive(url: zip.localUrl, accessMode: .read) {
+            for entry in archive {
+                let localURL = tempDirectory.appendingPathComponent(entry.path)
+                _ = try? archive.extract(entry, to: localURL)
+                urls.append(localURL)
+            }
         }
-        return localUrls
+        return urls
     }
 
     func detectExposures(localUrls: [URL]) {
-        let configuration: ENExposureConfiguration = .configuration()
-        manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { [weak self] summary, error in
+        manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: localUrls) { [weak self] summary, error in
             guard let self = self else { return }
             guard let summary = summary else { return }
             self.getWindows(summary: summary)
@@ -216,6 +223,8 @@ extension KeysViewController {
     }
 
     func getWindows(summary: ENExposureDetectionSummary) {
+        print(summary.description)
+        loggingStorage?.log("summary: \(summary.description)", type: .default)
         manager.getExposureWindows(summary: summary) { (weakWindows, errir) in
             if let allWindows = weakWindows {
                 let parameters = DP3TTracing.parameters.contactMatching
@@ -232,7 +241,7 @@ extension KeysViewController {
 
                     }
                 }
-                print(exposureDays)
+                loggingStorage?.log("exposureDays: \(exposureDays.description)", type: .default)
             }
 
 
@@ -250,18 +259,6 @@ extension KeysViewController {
         detectExposures(localUrls: localUrls)
     }
 
-}
-
-extension ENExposureConfiguration {
-    static func configuration(parameters: DP3TParameters = DP3TTracing.parameters) -> ENExposureConfiguration {
-        let configuration = ENExposureConfiguration()
-        configuration.reportTypeNoneMap = .confirmedTest
-        configuration.infectiousnessForDaysSinceOnsetOfSymptoms = [ENDaysSinceOnsetOfSymptomsUnknown as NSNumber: ENInfectiousness.high.rawValue as NSNumber]
-        for i in -14...14 {
-            configuration.infectiousnessForDaysSinceOnsetOfSymptoms?[i as NSNumber] = ENInfectiousness.high.rawValue as NSNumber
-        }
-        return configuration
-    }
 }
 
 extension NSDiffableDataSourceSnapshot where SectionIdentifierType == KeySection,ItemIdentifierType == NetworkingHelper.DebugZips {
