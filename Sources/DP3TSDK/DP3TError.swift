@@ -21,11 +21,7 @@ public enum DP3TTracingError: Error {
     /// The operation was cancelled
     case cancelled
 
-    /// Database Error
-    case databaseError(error: Error?)
-
     /// Expsure notification framework error
-
     case exposureNotificationError(error: Error)
 
     /// Bluetooth device turned off
@@ -39,9 +35,6 @@ public enum DP3TTracingError: Error {
 
     /// The user was marked as infected
     case userAlreadyMarkedAsInfected
-
-    /// the infection status is not resettable currently
-    case infectionStatusNotResettable
 }
 
 /// A set of networking errors returned from the SDK
@@ -58,8 +51,6 @@ public enum DP3TNetworkingError: Error {
     case couldNotParseData(error: Error, origin: Int)
     /// A body for a request could not be encoded
     case couldNotEncodeBody
-    /// The requested batch time doesn't match the returned one from the server.
-    case batchReleaseTimeMissmatch
     /// Device time differs from server time
     case timeInconsistency(shift: TimeInterval)
     /// JWT signature validation
@@ -79,8 +70,6 @@ public enum DP3TNetworkingError: Error {
             return 400 + origin
         case .couldNotEncodeBody:
             return 500
-        case .batchReleaseTimeMissmatch:
-            return 600
         case .timeInconsistency:
             return 700
         case let .HTTPFailureResponse(status: status, data: _):
