@@ -340,7 +340,7 @@ class ControlViewController: UIViewController {
 
     @objc func segmentedControlChanges() {
         if segmentedControl.selectedSegmentIndex == 0 {
-            try? DP3TTracing.startTracing()
+            DP3TTracing.startTracing()
             Default.shared.tracingMode = .active
         } else {
             DP3TTracing.stopTracing()
