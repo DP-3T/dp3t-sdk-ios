@@ -74,7 +74,7 @@ public enum DP3TTracing {
 
     /// Starts Bluetooth tracing
 
-    public static func startTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) throws {
+    public static func startTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
         }
