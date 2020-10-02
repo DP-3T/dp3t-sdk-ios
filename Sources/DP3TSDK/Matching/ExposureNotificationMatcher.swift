@@ -79,6 +79,8 @@ class ExposureNotificationMatcher: Matcher {
                 windows = value
             }
 
+            logger.log("getExposureWindows returned %{public}d windows", windows.count)
+
             guard !(progress?.isCancelled ?? false) else {
                 throw DP3TTracingError.cancelled
             }
