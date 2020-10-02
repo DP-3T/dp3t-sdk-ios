@@ -26,8 +26,8 @@ public enum InfectionStatus: Equatable {
         }
 
         let matchingDays = storage.getDays()
-        if let newestDay = matchingDays.first {
-            return .exposed(days: [newestDay])
+        if !matchingDays.isEmpty {
+            return .exposed(days: matchingDays)
         } else {
             return .healthy
         }
