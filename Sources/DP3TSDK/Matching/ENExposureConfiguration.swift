@@ -20,7 +20,7 @@ extension ENExposureConfiguration {
         config.durationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         config.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
         config.reportTypeNoneMap = .confirmedTest
-        config.infectiousnessForDaysSinceOnsetOfSymptoms = [ENDaysSinceOnsetOfSymptomsUnknown as NSNumber: ENInfectiousness.high.rawValue as NSNumber]
+        config.infectiousnessForDaysSinceOnsetOfSymptoms = [:]
         for day in -14...14 {
             config.infectiousnessForDaysSinceOnsetOfSymptoms?[day as NSNumber] = ENInfectiousness.high.rawValue as NSNumber
         }
