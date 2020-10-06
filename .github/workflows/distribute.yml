@@ -2,7 +2,7 @@ name: distribute
 
 on:
    push:		
-     branches: [ master, master-alpha, develop ]
+     branches: [ master, master-alpha, develop, feature/en-2 ]
 jobs:
   appcenter:
     runs-on: macOS-latest
