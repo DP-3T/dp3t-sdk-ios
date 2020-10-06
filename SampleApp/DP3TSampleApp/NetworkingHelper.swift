@@ -152,10 +152,14 @@ class NetworkingHelper {
         })
     }
 
+    func uploadMatchingResult(experimentName: String, result: ExposureResult, completionHandler: @escaping (Result<Void, Error>) -> Void){
+
+    }
+
     func uploadDebugKeys(debugName: String, completionHandler: @escaping (Result<Void, Error>) -> Void) {
         let manager = ENManager()
         manager.activate { _ in
-            manager.getTestDiagnosisKeys { keys, error in
+            manager.getDiagnosisKeys { keys, error in
                 guard error == nil else {
                     manager.invalidate()
                     return

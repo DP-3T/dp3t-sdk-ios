@@ -62,6 +62,7 @@ class ExposureNotificationMatcher: Matcher {
                 logger.error("ENManager.detectExposures failed error: %{public}@", error.localizedDescription)
                 throw DP3TTracingError.exposureNotificationError(error: error)
             case let .success(value):
+                logger.log("received summary: %{public}@", value.description)
                 summary = value
             }
 
@@ -76,10 +77,9 @@ class ExposureNotificationMatcher: Matcher {
                 logger.error("ENManager.getExposureWindows failed error: %{public}@", error.localizedDescription)
                 throw DP3TTracingError.exposureNotificationError(error: error)
             case let .success(value):
+                logger.log("received windows: %{public}@", value.description)
                 windows = value
             }
-
-            logger.log("getExposureWindows returned %{public}d windows", windows.count)
 
             guard !(progress?.isCancelled ?? false) else {
                 throw DP3TTracingError.cancelled

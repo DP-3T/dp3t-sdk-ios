@@ -13,6 +13,11 @@ import ExposureNotification
 import UIKit
 import ZIPFoundation
 
+struct ExposureResult {
+    let summary: ENExposureDetectionSummary
+    let windows: [ENExposureWindow]
+}
+
 struct KeySection: Hashable {
     let date: Date
     let experimentName: String?
@@ -188,7 +193,97 @@ extension KeysViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard let zip = dataSource.itemIdentifier(for: indexPath) else { return }
-        handleZip(zip)
+        handleZips([zip]) { [weak self] (result) in
+            guard let self = self else { return }
+            switch result {
+            case .success(let result):
+                self.showMatchingResult(result: result)
+            default:
+                break
+            }
+        }
+    }
+
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return UITableView.automaticDimension
+    }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        guard tableView.numberOfRows(inSection: section) != 0 else { return nil }
+        let button = UIButton()
+        button.setTitleColor(.systemBlue, for: .normal)
+        button.setTitleColor(.systemGray, for: .highlighted)
+        button.tag = section
+        button.setTitle("Match and Upload Experiment Results", for: .normal)
+        button.setTitle("Uplading...", for: .disabled)
+        button.addTarget(self, action: #selector(matchExperiment(sender:)), for: .touchUpInside)
+        return button
+    }
+
+    @objc
+    func matchExperiment(sender:UIButton){
+        sender.isEnabled = false
+        let section = dataSource.snapshot().sectionIdentifiers[sender.tag]
+        guard let experimentName = section.experimentName else {
+            sender.isEnabled = true
+            return
+        }
+        let itemIdentifiers = dataSource.snapshot().itemIdentifiers(inSection: section)
+        handleZips(itemIdentifiers) { [weak self] (result) in
+            guard let self = self else { return }
+            switch result {
+            case .success(let result):
+                self.showMatchingResult(result: result)
+                self.networkingHelper.uploadMatchingResult(experimentName: experimentName, result: result) { _  in
+                }
+            default:
+                break
+            }
+            sender.isEnabled = true
+        }
+    }
+
+    func showMatchingResult(result: ExposureResult){
+        let parameters = DP3TTracing.parameters.contactMatching
+        let groups = result.windows.groupByDay
+        var exposureDays = Set<Date>()
+        var resultString = ""
+
+        resultString.append("summary: \(result.summary.description)")
+        resultString.append("\n\n")
+
+        for (day, windows) in groups {
+            let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
+                                                              higherThreshold: parameters.higherThreshold)
+
+            resultString.append("\(day.description) low: \(attenuationValues.lowerBucket), high: \(attenuationValues.higherBucket)")
+            resultString.append("\n")
+            if attenuationValues.matches(factorLow: parameters.factorLow,
+                                         factorHigh: parameters.factorHigh,
+                                         triggerThreshold: parameters.triggerThreshold) {
+                exposureDays.insert(day)
+
+            }
+        }
+
+        resultString.append("rawWindows: \n")
+        for (day, windows) in groups {
+            resultString.append("date: \(day) \n")
+            for window in windows {
+                for instance in window.scanInstances {
+                    resultString.append("seconds: \(instance.secondsSinceLastScan), typ: \(instance.typicalAttenuation), min: \(instance.minimumAttenuation) \n")
+                }
+            }
+            resultString.append("\n")
+        }
+
+        print(resultString)
+        let alertController = UIAlertController(title: "Result", message: resultString, preferredStyle: .actionSheet)
+        let actionOk = UIAlertAction(title: "OK",
+                                     style: .default,
+                                     handler: nil)
+        alertController.addAction(actionOk)
+        self.present(alertController, animated: true, completion: nil)
     }
 }
 
@@ -214,51 +309,38 @@ extension KeysViewController {
         return urls
     }
 
-    func detectExposures(localUrls: [URL]) {
+    func detectExposures(localUrls: [URL], completion: @escaping (Result<ExposureResult, Error>) -> ()) {
         manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: localUrls) { [weak self] summary, error in
             guard let self = self else { return }
-            guard let summary = summary else { return }
-            self.getWindows(summary: summary)
+            guard let summary = summary else {
+                completion(.failure(error!))
+                return
+            }
+            self.getWindows(summary: summary, completion: completion)
         }
     }
 
-    func getWindows(summary: ENExposureDetectionSummary) {
+    func getWindows(summary: ENExposureDetectionSummary, completion: @escaping (Result<ExposureResult, Error>) -> ()) {
         print(summary.description)
         loggingStorage?.log("summary: \(summary.description)", type: .default)
-        manager.getExposureWindows(summary: summary) { (weakWindows, errir) in
-            if let allWindows = weakWindows {
-                let parameters = DP3TTracing.parameters.contactMatching
-                let groups = allWindows.groupByDay
-                var exposureDays = Set<Date>()
-                for (day, windows) in groups {
-                    let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
-                                                                      higherThreshold: parameters.higherThreshold)
-
-                    if attenuationValues.matches(factorLow: parameters.factorLow,
-                                                 factorHigh: parameters.factorHigh,
-                                                 triggerThreshold: parameters.triggerThreshold) {
-                        exposureDays.insert(day)
-
-                    }
-                }
-                loggingStorage?.log("exposureDays: \(exposureDays.description)", type: .default)
+        manager.getExposureWindows(summary: summary) { (weakWindows, error) in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            guard let windows = weakWindows else {
+                fatalError()
             }
 
-
-            let alertController = UIAlertController(title: "Windows", message: "windows: \(weakWindows?.debugDescription ?? "nil")", preferredStyle: .actionSheet)
-            let actionOk = UIAlertAction(title: "OK",
-                                         style: .default,
-                                         handler: nil)
-            alertController.addAction(actionOk)
-            self.present(alertController, animated: true, completion: nil)
+            completion(.success(.init(summary: summary,
+                                      windows: windows)))
         }
     }
 
-    func handleZip(_ zip: NetworkingHelper.DebugZips){
-        let localUrls = unarchiveZip(zip)
-        detectExposures(localUrls: localUrls)
+    func handleZips(_ zips: [NetworkingHelper.DebugZips], completion: @escaping (Result<ExposureResult, Error>) -> ()){
+        let localUrls = Array(zips.map(unarchiveZip(_:)).joined())
+        detectExposures(localUrls: localUrls, completion: completion)
     }
-
 }
 
 extension NSDiffableDataSourceSnapshot where SectionIdentifierType == KeySection,ItemIdentifierType == NetworkingHelper.DebugZips {
