@@ -14,17 +14,19 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - name: Switch to Xcode 11.7
-      run: sudo xcode-select --switch /Applications/Xcode_11.7.app
+    - name: Switch to Xcode 12
+      run: sudo xcode-select --switch /Applications/Xcode_12.app
 
-    # Generate xcode project
-    - name: Generate xcodeproj
-      run: swift package generate-xcodeproj --xcconfig-overrides Sources/Config.xcconfig
-
-    # Compile project and run tests
-    - name: Compile and run tests
-      run: fastlane scan --disable_concurrent_testing true
-
+    - name: Fastlane test
+      run: fastlane test
+    
+    - name: Archive logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: logs
+        path: fastlane/test_output
+      
   sampleapp:
     runs-on: macOS-latest
 
@@ -32,8 +34,8 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - name: Switch to Xcode 11.7
-      run: sudo xcode-select --switch /Applications/Xcode_11.7.app
+    - name: Switch to Xcode 12
+      run: sudo xcode-select --switch /Applications/Xcode_12.app
 
     # Compile sample app for iOS Simulator (no signing)
     - name: Compile and run tests
