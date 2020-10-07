@@ -9,18 +9,11 @@
  */
 
 import ExposureNotification
-import DP3TSDK
 
 extension ENExposureConfiguration {
     static var configuration: ENExposureConfiguration {
-        let parameters = DP3TTracing.parameters.contactMatching
-
         let config = ENExposureConfiguration()
-        config.attenuationDurationThresholds = [parameters.lowerThreshold as NSNumber,
-                                                parameters.higherThreshold as NSNumber]
         config.reportTypeNoneMap = .confirmedTest
-        config.metadata = ["attenuationDurationThresholds": [parameters.lowerThreshold,
-                                                             parameters.higherThreshold]]
         config.infectiousnessForDaysSinceOnsetOfSymptoms = [:]
         for day in -14...14 {
             config.infectiousnessForDaysSinceOnsetOfSymptoms?[day as NSNumber] = ENInfectiousness.high.rawValue as NSNumber

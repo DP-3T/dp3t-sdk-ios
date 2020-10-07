@@ -197,7 +197,7 @@ extension KeysViewController: UITableViewDelegate {
             guard let self = self else { return }
             switch result {
             case .success(let result):
-                self.showMatchingResult(result: result)
+                self.showMatchingResults(results: [result])
             default:
                 break
             }
@@ -224,57 +224,79 @@ extension KeysViewController: UITableViewDelegate {
     func matchExperiment(sender:UIButton){
         sender.isEnabled = false
         let section = dataSource.snapshot().sectionIdentifiers[sender.tag]
-        guard let experimentName = section.experimentName else {
-            sender.isEnabled = true
-            return
-        }
+        
+        let experimentName = section.experimentName ?? "Single_Device"
+
         let itemIdentifiers = dataSource.snapshot().itemIdentifiers(inSection: section)
-        handleZips(itemIdentifiers) { [weak self] (result) in
+        var results = [String: ExposureResult]()
+        DispatchQueue.init(label: "bg").async { [weak self] in
             guard let self = self else { return }
-            switch result {
-            case .success(let result):
-                self.showMatchingResult(result: result)
-                self.networkingHelper.uploadMatchingResult(experimentName: experimentName, result: result) { _  in
+            let group = DispatchGroup()
+            for itemIdentifier in itemIdentifiers {
+                group.enter()
+                self.handleZips([itemIdentifier]) { (result) in
+                    switch result {
+                    case let .success(result):
+                        results[itemIdentifier.name] = result
+                    case .failure:
+                        break
+                    }
+                    group.leave()
                 }
-            default:
-                break
+                group.wait()
             }
-            sender.isEnabled = true
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.showMatchingResults(results: Array(results.values))
+                var codableDict = [String: CodableDevice]()
+                for (device, result) in results {
+                    codableDict[device] = CodableDevice(exposureWindows: result.windows.map(CodableWindow.init(window:)))
+                }
+                self.networkingHelper.uploadMatchingResult(experimentName: experimentName, results: codableDict) { (_) in
+                }
+
+                sender.isEnabled = true
+            }
         }
+
     }
 
-    func showMatchingResult(result: ExposureResult){
+    func showMatchingResults(results: [ExposureResult]){
         let parameters = DP3TTracing.parameters.contactMatching
-        let groups = result.windows.groupByDay
-        var exposureDays = Set<Date>()
         var resultString = ""
 
-        resultString.append("summary: \(result.summary.description)")
-        resultString.append("\n\n")
+        for result in results {
+            let groups = result.windows.groupByDay
+            var exposureDays = Set<Date>()
 
-        for (day, windows) in groups {
-            let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
-                                                              higherThreshold: parameters.higherThreshold)
+            resultString.append("summary: \(result.summary.description)")
+            resultString.append("\n\n")
 
-            resultString.append("\(day.description) low: \(attenuationValues.lowerBucket), high: \(attenuationValues.higherBucket)")
-            resultString.append("\n")
-            if attenuationValues.matches(factorLow: parameters.factorLow,
-                                         factorHigh: parameters.factorHigh,
-                                         triggerThreshold: parameters.triggerThreshold) {
-                exposureDays.insert(day)
+            for (day, windows) in groups {
+                let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
+                                                                  higherThreshold: parameters.higherThreshold)
 
-            }
-        }
+                resultString.append("\(day.description) low: \(attenuationValues.lowerBucket), high: \(attenuationValues.higherBucket)")
+                resultString.append("\n")
+                if attenuationValues.matches(factorLow: parameters.factorLow,
+                                             factorHigh: parameters.factorHigh,
+                                             triggerThreshold: parameters.triggerThreshold) {
+                    exposureDays.insert(day)
 
-        resultString.append("rawWindows: \n")
-        for (day, windows) in groups {
-            resultString.append("date: \(day) \n")
-            for window in windows {
-                for instance in window.scanInstances {
-                    resultString.append("seconds: \(instance.secondsSinceLastScan), typ: \(instance.typicalAttenuation), min: \(instance.minimumAttenuation) \n")
                 }
             }
-            resultString.append("\n")
+
+            resultString.append("rawWindows: \n")
+            for (day, windows) in groups {
+                resultString.append("date: \(day) \n")
+                for window in windows {
+                    for instance in window.scanInstances {
+                        resultString.append("seconds: \(instance.secondsSinceLastScan), typ: \(instance.typicalAttenuation), min: \(instance.minimumAttenuation) \n")
+                    }
+                }
+                resultString.append("\n")
+            }
         }
 
         print(resultString)
@@ -309,14 +331,52 @@ extension KeysViewController {
         return urls
     }
 
-    func detectExposures(localUrls: [URL], completion: @escaping (Result<ExposureResult, Error>) -> ()) {
+    func detectExposures(localUrls: [URL], previousWindows: [ENExposureWindow], completion: @escaping (Result<ExposureResult, Error>) -> ()) {
         manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: localUrls) { [weak self] summary, error in
             guard let self = self else { return }
             guard let summary = summary else {
                 completion(.failure(error!))
                 return
             }
-            self.getWindows(summary: summary, completion: completion)
+            self.getWindows(summary: summary) { (result) in
+                switch result {
+                case let .success(exposureResult):
+                    let filteredWindows = exposureResult.windows.filter({ (window) -> Bool in
+                        !previousWindows.contains { (previousWindow) -> Bool in
+                            //make sure date is the same
+                            if previousWindow.date != window.date {
+                                return false
+                            }
+
+                            if previousWindow.scanInstances.count != window.scanInstances.count {
+                                return false
+                            }
+
+                            //make sure all scanInstances are equal
+                            for previousInstance in previousWindow.scanInstances {
+                                var found = false
+
+                                for instance in window.scanInstances {
+                                    if previousInstance.secondsSinceLastScan == instance.secondsSinceLastScan,
+                                       previousInstance.typicalAttenuation == instance.typicalAttenuation,
+                                       previousInstance.minimumAttenuation == instance.minimumAttenuation {
+                                        found = true
+                                    }
+                                }
+
+                                if !found {
+                                    return false
+                                }
+                            }
+                            return true
+                        }
+                       })
+                    completion(.success(ExposureResult(summary: exposureResult.summary,
+                                                       windows: filteredWindows)))
+                case let .failure(error):
+                    completion(.failure(error))
+                }
+            }
         }
     }
 
@@ -337,9 +397,49 @@ extension KeysViewController {
         }
     }
 
+    func getPreviousSummary(completion: @escaping (Result<ENExposureDetectionSummary, Error>) -> ()) {
+        manager.detectExposures(configuration: .configuration) { (summary, error) in
+            if let error = error {
+                completion(.failure(error))
+            } else if let summary = summary {
+                completion(.success(summary))
+            } else {
+                fatalError()
+            }
+        }
+    }
+
+    func getPreviousWindows(completion: @escaping (Result<[ENExposureWindow], Error>) -> ()) {
+        getPreviousSummary { [weak self] (result) in
+            guard let self = self else { return }
+            switch result {
+            case let .success(summary):
+                self.manager.getExposureWindows(summary: summary) {(window, error) in
+                    if let error = error {
+                        completion(.failure(error))
+                    } else if let window = window {
+                        completion(.success(window))
+                    } else {
+                        fatalError()
+                    }
+                }
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
     func handleZips(_ zips: [NetworkingHelper.DebugZips], completion: @escaping (Result<ExposureResult, Error>) -> ()){
         let localUrls = Array(zips.map(unarchiveZip(_:)).joined())
-        detectExposures(localUrls: localUrls, completion: completion)
+        getPreviousWindows { [weak self] (result) in
+            guard let self = self else { return }
+            switch result {
+            case let .success(windows):
+                self.detectExposures(localUrls: localUrls, previousWindows: windows, completion: completion)
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
     }
 }
 
