@@ -130,4 +130,9 @@ class ExposureNotificationTracerTests: XCTestCase {
         manager.completeActivation()
         wait(for: [ex], timeout: 1)
     }
+
+    func testInvalidateCallOnDeinit() {
+        tracer = nil
+        XCTAssert(manager.invalidateWasCalled)
+    }
 }

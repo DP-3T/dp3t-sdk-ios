@@ -46,7 +46,6 @@ public enum DP3TTracing {
     ///   - enviroment: enviroment to use
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
     ///   - backgroundHandler: a delegate to perform background tasks
-
     public static func initialize(with applicationDescriptor: ApplicationDescriptor,
                                   urlSession: URLSession = .shared,
                                   backgroundHandler: DP3TBackgroundHandler? = nil) {
@@ -59,7 +58,6 @@ public enum DP3TTracing {
     }
 
     /// The delegate
-
     public static var delegate: DP3TTracingDelegate? {
         set {
             guard instance != nil else {
@@ -72,8 +70,7 @@ public enum DP3TTracing {
         }
     }
 
-    /// Starts Bluetooth tracing
-
+    /// Starts tracing
     public static func startTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -81,8 +78,7 @@ public enum DP3TTracing {
         instance.startTracing(completionHandler: completionHandler)
     }
 
-    /// Stops Bluetooth tracing
-
+    /// Stops tracing
     public static func stopTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
         guard let instance = instance else {
             fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
@@ -122,10 +118,9 @@ public enum DP3TTracing {
     /// tell the SDK that the user was exposed
     /// - Parameters:
     ///   - onset: Start date of the exposure
-    ///   - authString: Authentication string for the exposure change
+    ///   - authentication: Authentication method
     ///   - isFakeRequest: indicates if the request should be a fake one. This method should be called regulary so people sniffing the networking traffic can no figure out if somebody is marking themself actually as exposed
     ///   - callback: callback
-
     public static func iWasExposed(onset: Date,
                                    authentication: ExposeeAuthMethod,
                                    isFakeRequest: Bool = false,

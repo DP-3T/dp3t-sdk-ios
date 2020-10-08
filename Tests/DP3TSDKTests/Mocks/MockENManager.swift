@@ -100,6 +100,12 @@ class MockENManager: ENManager {
     override func getDiagnosisKeys(completionHandler: @escaping ENGetDiagnosisKeysHandler) {
         completionHandler(keys, nil)
     }
+
+    var invalidateWasCalled: Bool = false
+
+    override func invalidate() {
+        invalidateWasCalled = true
+    }
 }
 
 class MockSummary: ENExposureDetectionSummary {

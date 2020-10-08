@@ -38,7 +38,7 @@ public enum DP3TTracingError: Error {
 }
 
 /// A set of networking errors returned from the SDK
-public enum DP3TNetworkingError: Error {
+public enum DP3TNetworkingError: Error, Equatable {
     /// A generic error returned from the OS layer of networking
     case networkSessionError(error: Error)
     /// The response is not an HTTP response
@@ -78,5 +78,9 @@ public enum DP3TNetworkingError: Error {
         case .jwtSignatureError(code: let code, debugDescription: _):
             return 900 + code
         }
+    }
+
+    public static func == (lhs: DP3TNetworkingError, rhs: DP3TNetworkingError) -> Bool {
+        return lhs.errorCode == rhs.errorCode
     }
 }

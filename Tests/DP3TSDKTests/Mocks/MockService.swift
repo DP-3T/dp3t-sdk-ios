@@ -14,7 +14,7 @@ import Foundation
 class MockService: ExposeeServiceClientProtocol {
 
 
-    static var descriptor: ApplicationDescriptor = .init(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
+    static var descriptor: ApplicationDescriptor = .init(appId: "org.dpppt", bucketBaseUrl: URL(string: "https://bucket.dpppt.org")!, reportBaseUrl: URL(string: "https://report.bucket.dpppt.org")!)
 
     var descriptor: ApplicationDescriptor {
         Self.descriptor
