@@ -12,7 +12,7 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
-    var lastPublishedKeyTag: Int64?
+    var lastKeyBundleTag: Int64?
 
     var exposureDetectionDates: [Date] = []
 
@@ -26,7 +26,7 @@ class MockDefaults: DefaultStorage {
 
     func reset() {
         exposureDetectionDates = []
-        lastPublishedKeyTag = nil
+        lastKeyBundleTag = nil
         parameters = .init()
         isFirstLaunch = false
         lastSync = nil

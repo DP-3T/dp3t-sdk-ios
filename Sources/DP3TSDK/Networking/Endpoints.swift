@@ -32,15 +32,15 @@ struct ExposeeEndpoint {
 
     /// Get the URL for the exposed people endpoint at a day
     /// - Parameters:
-    ///  - lastPublishedKeyTag: last published key tag if one is stored
-    func getExposee(lastPublishedKeyTag: Int64?) -> URL {
+    ///  - lastKeyBundleTag: last published key tag if one is stored
+    func getExposee(lastKeyBundleTag: Int64?) -> URL {
         let url = baseURLVersionned.appendingPathComponent("gaen")
             .appendingPathComponent("exposed")
 
         var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        if let lastPublishedKeyTag = lastPublishedKeyTag {
+        if let lastKeyBundleTag = lastKeyBundleTag {
             urlComponents?.queryItems = [
-                URLQueryItem(name: "lastPublishedKeyTag", value: String(lastPublishedKeyTag))
+                URLQueryItem(name: "lastKeyBundleTag", value: String(lastKeyBundleTag))
             ]
         }
 

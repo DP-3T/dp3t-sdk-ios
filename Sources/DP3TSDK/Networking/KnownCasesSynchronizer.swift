@@ -121,7 +121,7 @@ class KnownCasesSynchronizer {
         logger.trace()
         isCancelled = false
 
-        let lastPublishedKeyTag = defaults.lastPublishedKeyTag
+        let lastKeyBundleTag = defaults.lastKeyBundleTag
 
         guard descriptor.mode == .test || timingManager.shouldDetect(now: now) else {
             logger.log("skipping sync since shouldDetect returned false")
@@ -129,7 +129,7 @@ class KnownCasesSynchronizer {
             return
         }
 
-        dataTask = service.getExposee(lastPublishedKeyTag: lastPublishedKeyTag) { [weak self] (result) in
+        dataTask = service.getExposee(lastKeyBundleTag: lastKeyBundleTag) { [weak self] (result) in
             guard let self = self else { return }
             guard self.isCancelled == false else {
                 return
@@ -139,7 +139,7 @@ class KnownCasesSynchronizer {
                 do {
                     if let data = knownCasesData.data {
                         if let matcher = self.matcher {
-                            self.logger.log("received data(%{public}d bytes) [since: %{public}@]", data.count, lastPublishedKeyTag?.description ?? "nil")
+                            self.logger.log("received data(%{public}d bytes) [since: %{public}@]", data.count, lastKeyBundleTag?.description ?? "nil")
                             let foundNewMatch = try matcher.receivedNewData(data, now: now)
                             if foundNewMatch {
                                 self.delegate?.didFindMatch()
@@ -148,12 +148,12 @@ class KnownCasesSynchronizer {
                             self.logger.error("matcher not present")
                         }
                     } else {
-                        self.logger.log("received no data [since: %{public}@]", lastPublishedKeyTag?.description ?? "nil")
+                        self.logger.log("received no data [since: %{public}@]", lastKeyBundleTag?.description ?? "nil")
                     }
 
-                    if let publishedKeyTag = knownCasesData.publishedKeyTag {
+                    if let publishedKeyTag = knownCasesData.keyBundleTag {
                         self.logger.log("storing new since: %{public}@", publishedKeyTag.description)
-                        self.defaults.lastPublishedKeyTag = publishedKeyTag
+                        self.defaults.lastKeyBundleTag = publishedKeyTag
                     }
 
                     DP3TTracing.activityDelegate?.syncCompleted(totalRequest: 1, errors: [])

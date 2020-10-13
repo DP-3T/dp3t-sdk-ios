@@ -14,7 +14,7 @@ import UIKit
 
 struct ExposeeSuccess {
     let data: Data?
-    let publishedKeyTag: Int64?
+    let keyBundleTag: Int64?
 }
 
 protocol ExposeeServiceClientProtocol: class {
@@ -27,7 +27,7 @@ protocol ExposeeServiceClientProtocol: class {
     /// - Parameters:
     ///  - since: last published key tag if one is stored
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(lastPublishedKeyTag: Int64?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
+    func getExposee(lastKeyBundleTag: Int64?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
 
     /// Adds an exposee
     /// - Parameters:
@@ -100,9 +100,9 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///  - since: last published key tag if one is stored
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(lastPublishedKeyTag: Int64?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
-        log.log("getExposeeSynchronously for lastPublishedKeyTag %{public}@", lastPublishedKeyTag?.description ?? "nil")
-        let url: URL = exposeeEndpoint.getExposee(lastPublishedKeyTag: lastPublishedKeyTag)
+    func getExposee(lastKeyBundleTag: Int64?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
+        log.log("getExposeeSynchronously for lastPublishedKeyTag %{public}@", lastKeyBundleTag?.description ?? "nil")
+        let url: URL = exposeeEndpoint.getExposee(lastKeyBundleTag: lastKeyBundleTag)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/zip", forHTTPHeaderField: "Accept")
@@ -124,9 +124,9 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 return
             }
 
-            var publishedKeyTag: Int64?
-            if let publishedKeyTagHeader = httpResponse.value(forHTTPHeaderField: "X-PublishedKeyTag") {
-                publishedKeyTag = try? Int64(value: publishedKeyTagHeader)
+            var keyBundleTag: Int64?
+            if let keyBundleTagHeader = httpResponse.value(forHTTPHeaderField: "X-KeyBundleTag") {
+                keyBundleTag = try? Int64(value: keyBundleTagHeader)
             }
 
             let httpStatus = httpResponse.statusCode
@@ -135,7 +135,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 break
             case 204:
                 // 204 response means there is no data for this day
-                completion(.success(.init(data: nil, publishedKeyTag: publishedKeyTag)))
+                completion(.success(.init(data: nil, keyBundleTag: keyBundleTag)))
                 return
             default:
                 completion(.failure(.HTTPFailureResponse(status: httpStatus, data: data)))
@@ -158,7 +158,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 return
             }
 
-            let result = ExposeeSuccess(data: responseData, publishedKeyTag: publishedKeyTag)
+            let result = ExposeeSuccess(data: responseData, keyBundleTag: keyBundleTag)
             completion(.success(result))
         }
         return task

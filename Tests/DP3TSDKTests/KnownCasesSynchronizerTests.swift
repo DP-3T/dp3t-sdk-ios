@@ -33,7 +33,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         XCTAssertEqual(service.requests.count, 1)
 
-        XCTAssertEqual(defaults.lastPublishedKeyTag, service.publishedKeyTag)
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
     func testInitialLoadingFirstBatch() {
@@ -46,8 +46,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
 
         let oldKeyTag = Self.formatter.date(from: "01.05.2020 09:00")!.millisecondsSince1970
-        defaults.lastPublishedKeyTag = oldKeyTag
-        service.publishedKeyTag = Self.formatter.date(from: "05w.05.2020 09:00")!.millisecondsSince1970
+        defaults.lastKeyBundleTag = oldKeyTag
+        service.keyBundleTag = Self.formatter.date(from: "05.05.2020 09:00")!.millisecondsSince1970
         let expecation = expectation(description: "syncExpectation")
         sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
             XCTAssertEqual(res, SyncResult.success)
@@ -57,7 +57,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         XCTAssertEqual(service.requests.count, 1)
         XCTAssertEqual(service.requests.first!, oldKeyTag)
-        XCTAssertEqual(defaults.lastPublishedKeyTag, service.publishedKeyTag)
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
     func testRespectingRateLimitSingleDay() {
@@ -125,7 +125,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 1)
-        XCTAssertEqual(defaults.lastPublishedKeyTag, service.publishedKeyTag)
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
     func testDontStoreLastSyncNetworkingError() {
@@ -143,7 +143,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
-        XCTAssertEqual(defaults.lastPublishedKeyTag, service.publishedKeyTag)
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
     func testDontStoreLastSyncMatchingError() {
@@ -162,7 +162,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssert(defaults.lastPublishedKeyTag == nil)
+        XCTAssert(defaults.lastKeyBundleTag == nil)
     }
 
     func testRepeatingRequestsAfterDay() {
@@ -193,7 +193,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         waitForExpectations(timeout: 1)
 
         XCTAssertEqual(service.requests.count, 1)
-        XCTAssertEqual(defaults.lastPublishedKeyTag, service.publishedKeyTag)
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
     func testCallingSyncMulithreaded() {
@@ -250,7 +250,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         _ = XCTWaiter.wait(for: [exp], timeout: 2.0)
 
         XCTAssertNotEqual(service.requests.count, 1)
-        XCTAssertEqual(defaults.lastPublishedKeyTag, nil)
+        XCTAssertEqual(defaults.lastKeyBundleTag, nil)
     }
 
     func testStoringOfSuccessfulDates(){
@@ -272,7 +272,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         XCTAssertEqual(service.requests.count, 1)
 
-        XCTAssert(defaults.lastPublishedKeyTag == nil)
+        XCTAssert(defaults.lastKeyBundleTag == nil)
     }
 
     static var formatter: DateFormatter = {

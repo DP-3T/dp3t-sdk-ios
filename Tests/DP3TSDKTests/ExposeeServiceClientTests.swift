@@ -30,8 +30,8 @@ class ExposeeServiceClientTests: XCTestCase {
     }
 
 
-    func testExposeeNolastPublishedKeyTag(){
-        let (request, result) = getExposeeRequest(lastPublishedKeyTag: nil)
+    func testExposeeNolastKeyBundleTag(){
+        let (request, result) = getExposeeRequest(lastKeyBundleTag: nil)
         XCTAssertEqual(request.url!.absoluteString,
                        "https://bucket.dpppt.org/v2/gaen/exposed")
         switch result {
@@ -42,10 +42,10 @@ class ExposeeServiceClientTests: XCTestCase {
         }
     }
 
-    func testExposeeWithlastPublishedKeyTag(){
-        let (request, result) = getExposeeRequest(lastPublishedKeyTag: 1600560000000)
+    func testExposeeWithlastKeyBundleTag(){
+        let (request, result) = getExposeeRequest(lastKeyBundleTag: 1600560000000)
         XCTAssertEqual(request.url!.absoluteString,
-                       "https://bucket.dpppt.org/v2/gaen/exposed?lastPublishedKeyTag=1600560000000")
+                       "https://bucket.dpppt.org/v2/gaen/exposed?lastKeyBundleTag=1600560000000")
         switch result {
         case .success:
             XCTFail()
@@ -64,7 +64,7 @@ class ExposeeServiceClientTests: XCTestCase {
                                               headerFields: [
                                                 "Age": "0",
                                                 "date": HTTPURLResponse.dateFormatter.string(from: date)])
-        let (_, result) = getExposeeRequest(lastPublishedKeyTag: nil)
+        let (_, result) = getExposeeRequest(lastKeyBundleTag: nil)
 
         switch result {
         case .success:
@@ -85,7 +85,7 @@ class ExposeeServiceClientTests: XCTestCase {
                                               headerFields: [
                                                 "Age": "\(Int(age))",
                                                 "date": HTTPURLResponse.dateFormatter.string(from: date)])
-        let (_, result) = getExposeeRequest(lastPublishedKeyTag: nil)
+        let (_, result) = getExposeeRequest(lastKeyBundleTag: nil)
 
         switch result {
         case .success:
@@ -106,7 +106,7 @@ class ExposeeServiceClientTests: XCTestCase {
                                               headerFields: [
                                                 "Age": "\(Int(age))",
                                                 "date": HTTPURLResponse.dateFormatter.string(from: date)])
-        let (_, result) = getExposeeRequest(lastPublishedKeyTag: nil)
+        let (_, result) = getExposeeRequest(lastKeyBundleTag: nil)
 
         switch result {
         case .success:
@@ -122,10 +122,10 @@ class ExposeeServiceClientTests: XCTestCase {
 
 
     // MARK: Helper
-    func getExposeeRequest(lastPublishedKeyTag: Int64?) -> (URLRequest, Result<ExposeeSuccess, DP3TNetworkingError>) {
+    func getExposeeRequest(lastKeyBundleTag: Int64?) -> (URLRequest, Result<ExposeeSuccess, DP3TNetworkingError>) {
         let exp = expectation(description: "exp")
         var result: Result<ExposeeSuccess, DP3TNetworkingError>?
-        let task  = client.getExposee(lastPublishedKeyTag: lastPublishedKeyTag) { (res) in
+        let task  = client.getExposee(lastKeyBundleTag: lastKeyBundleTag) { (res) in
             result = res
             exp.fulfill()
         }
