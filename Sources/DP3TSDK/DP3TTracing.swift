@@ -66,6 +66,11 @@ public enum DP3TTracing {
         }
     }
 
+    public static func setInternationalisationEnabled(_ enabled: Bool) {
+        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instance.setInternationalisationEnabled(enabled)
+    }
+
     /// Starts tracing
     public static func startTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
         precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")

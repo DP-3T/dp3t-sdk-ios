@@ -81,6 +81,8 @@ public struct TracingState: Equatable {
     public var infectionStatus: InfectionStatus
     /// Indicates if the user has enabled backgorundRefresh
     public var backgroundRefreshState: UIBackgroundRefreshStatus
+    /// Indicates if internationalisation is enabled
+    public var internationalisationEnabled: Bool
 }
 
 /// Result of a sync

@@ -149,6 +149,10 @@ class DP3TSDK {
                                                   object: nil)
     }
 
+    func setInternationalisationEnabled(_ enabled: Bool) {
+        state.internationalisationEnabled = enabled
+    }
+
     /// start tracing
     func startTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
         log.trace()
