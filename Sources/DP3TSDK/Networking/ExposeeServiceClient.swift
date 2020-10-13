@@ -125,7 +125,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
             }
 
             var keyBundleTag: Int64?
-            if let keyBundleTagHeader = httpResponse.value(forHTTPHeaderField: "X-KeyBundleTag") {
+            if let keyBundleTagHeader = httpResponse.value(forHTTPHeaderField: "x-key-bundle-tag") {
                 keyBundleTag = try? Int64(value: keyBundleTagHeader)
             }
 
