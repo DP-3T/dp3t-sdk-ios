@@ -17,7 +17,7 @@ protocol DefaultStorage {
     /// Last date a backend sync happend
     var lastSync: Date? { get set }
 
-    var lastSyncSinceTimestamp: Date? { get set }
+    var lastPublishedKeyTag: Int64? { get set }
 
     /// Current infection status
     var didMarkAsInfected: Bool { get set }
@@ -43,8 +43,8 @@ class Default: DefaultStorage {
     @Persisted(userDefaultsKey: "org.dpppt.lastsync", defaultValue: nil)
     var lastSync: Date?
 
-    @Persisted(userDefaultsKey: "org.dpppt.lastSyncSinceTimestamp", defaultValue: nil)
-    var lastSyncSinceTimestamp: Date?
+    @Persisted(userDefaultsKey: "org.dpppt.lastPublishedKeyTag", defaultValue: nil)
+    var lastPublishedKeyTag: Int64?
 
     /// Current infection status
     @KeychainPersisted(key: "org.dpppt.didMarkAsInfected", defaultValue: false)
@@ -107,7 +107,7 @@ class Default: DefaultStorage {
         parameters = .init()
         lastSync = nil
         didMarkAsInfected = false
-        lastSyncSinceTimestamp = nil
+        lastPublishedKeyTag = nil
     }
 }
 

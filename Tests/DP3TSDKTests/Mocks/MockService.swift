@@ -20,25 +20,25 @@ class MockService: ExposeeServiceClientProtocol {
         Self.descriptor
     }
 
-    var requests: [Date?] = []
+    var requests: [Int64?] = []
     let session = MockSession(data: "Data".data(using: .utf8), urlResponse: nil, error: nil)
     let queue = DispatchQueue(label: "synchronous")
     var error: DP3TNetworkingError?
-    var publishedUntil: Date = .init()
+    var publishedKeyTag: Int64? = nil
     var data: Data? = "Data".data(using: .utf8)
     var errorAfter: Int = 0
 
-    func getExposee(since: Date?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
+    func getExposee(lastPublishedKeyTag: Int64?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
         return session.dataTask(with: .init(url: URL(string: "http://www.google.com")!)) { _, _, _ in
             self.queue.sync {
-                self.requests.append(since)
+                self.requests.append(lastPublishedKeyTag)
             }
             
             if let error = self.error, self.errorAfter <= 0 {
                 completion(.failure(error))
             } else {
                 self.errorAfter -= 1
-                completion(.success(.init(data: self.data, publishedUntil: self.publishedUntil)))
+                completion(.success(.init(data: self.data, publishedKeyTag: self.publishedKeyTag)))
             }
         }
     }

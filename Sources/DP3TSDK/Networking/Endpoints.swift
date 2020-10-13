@@ -32,16 +32,15 @@ struct ExposeeEndpoint {
 
     /// Get the URL for the exposed people endpoint at a day
     /// - Parameters:
-    ///  - since: timestamp retreived from last sync
-    func getExposee(since: Date?) -> URL {
+    ///  - lastPublishedKeyTag: last published key tag if one is stored
+    func getExposee(lastPublishedKeyTag: Int64?) -> URL {
         let url = baseURLVersionned.appendingPathComponent("gaen")
             .appendingPathComponent("exposed")
 
         var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        if let since = since {
-            let milliseconds = since.millisecondsSince1970
+        if let lastPublishedKeyTag = lastPublishedKeyTag {
             urlComponents?.queryItems = [
-                URLQueryItem(name: "since", value: String(milliseconds))
+                URLQueryItem(name: "lastPublishedKeyTag", value: String(lastPublishedKeyTag))
             ]
         }
 
@@ -76,10 +75,5 @@ struct ManagingExposeeEndpoint {
     /// Get the add exposed endpoint URL
     func addExposedGaen() -> URL {
         baseURLVersionned.appendingPathComponent("gaen").appendingPathComponent("exposed")
-    }
-
-    /// Get the add exposed next day endpoint URL
-    func addExposedGaenNextDay() -> URL {
-        baseURLVersionned.appendingPathComponent("gaen").appendingPathComponent("exposednextday")
     }
 }
