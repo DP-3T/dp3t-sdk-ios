@@ -47,7 +47,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         let oldKeyTag = Self.formatter.date(from: "01.05.2020 09:00")!.millisecondsSince1970
         defaults.lastPublishedKeyTag = oldKeyTag
-        service.publishedKeyTag = Self.formatter.date(from: "05w.05.2020 09:00")!.millisecondsSince1970
+        service.publishedKeyTag = Self.formatter.date(from: "05.05.2020 09:00")!.millisecondsSince1970
         let expecation = expectation(description: "syncExpectation")
         sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
             XCTAssertEqual(res, SyncResult.success)

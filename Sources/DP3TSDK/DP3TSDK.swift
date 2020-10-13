@@ -54,6 +54,7 @@ class DP3TSDK {
                 defaults.didMarkAsInfected = false
             }
             defaults.lastSync = state.lastSync
+            defaults.internationalisationEnabled = state.internationalisationEnabled
             DispatchQueue.main.async {
                 self.delegate?.DP3TTracingStateChanged(self.state)
             }
@@ -128,7 +129,8 @@ class DP3TSDK {
         self.state = TracingState(trackingState: .initialization,
                                   lastSync: defaults.lastSync,
                                   infectionStatus: InfectionStatus.getInfectionState(from: exposureDayStorage),
-                                  backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus)
+                                  backgroundRefreshState: UIApplication.shared.backgroundRefreshStatus,
+                                  internationalisationEnabled: defaults.internationalisationEnabled)
 
         self.tracer.delegate = self
         self.synchronizer.delegate = self
@@ -150,6 +152,11 @@ class DP3TSDK {
     }
 
     func setInternationalisationEnabled(_ enabled: Bool) {
+        // if internationalisation gets enabled and was previosly disabled we reset the lastPublishedKeyTag
+        // in order to retreive all data on the next sync
+        if enabled && !state.internationalisationEnabled {
+            defaults.lastPublishedKeyTag = nil
+        }
         state.internationalisationEnabled = enabled
     }
 
