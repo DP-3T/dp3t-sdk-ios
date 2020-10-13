@@ -409,36 +409,29 @@ extension KeysViewController {
         }
     }
 
-    func getPreviousWindows(completion: @escaping (Result<[ENExposureWindow], Error>) -> ()) {
+    func getPreviousWindows(completion: @escaping ([ENExposureWindow]) -> ()) {
         getPreviousSummary { [weak self] (result) in
             guard let self = self else { return }
             switch result {
             case let .success(summary):
                 self.manager.getExposureWindows(summary: summary) {(window, error) in
-                    if let error = error {
-                        completion(.failure(error))
-                    } else if let window = window {
-                        completion(.success(window))
+                    if let window = window {
+                        completion(window)
                     } else {
-                        fatalError()
+                        completion([])
                     }
                 }
-            case let .failure(error):
-                completion(.failure(error))
+            case .failure:
+                completion([])
             }
         }
     }
 
     func handleZips(_ zips: [NetworkingHelper.DebugZips], completion: @escaping (Result<ExposureResult, Error>) -> ()){
         let localUrls = Array(zips.map(unarchiveZip(_:)).joined())
-        getPreviousWindows { [weak self] (result) in
+        getPreviousWindows { [weak self] (windows) in
             guard let self = self else { return }
-            switch result {
-            case let .success(windows):
-                self.detectExposures(localUrls: localUrls, previousWindows: windows, completion: completion)
-            case let .failure(error):
-                completion(.failure(error))
-            }
+            self.detectExposures(localUrls: localUrls, previousWindows: windows, completion: completion)
         }
     }
 }
