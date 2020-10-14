@@ -87,7 +87,7 @@ class ExposureNotificationMatcher: Matcher {
 
             let exposureDays = exposureDayStorage.getDays()
 
-            updateExposureDays(with: windows)
+            updateExposureDays(with: windows, now: now)
 
             if exposureDayStorage.getDays() != exposureDays {
                 // a new exposure was found
@@ -100,12 +100,15 @@ class ExposureNotificationMatcher: Matcher {
         }
     }
 
-    private func updateExposureDays(with windows: [ENExposureWindow]) {
+    private func updateExposureDays(with windows: [ENExposureWindow], now: Date) {
         dispatchPrecondition(condition: .onQueue(synchronousQueue))
         
         let parameters = defaults.parameters.contactMatching
         let groups = windows.groupByDay
         for (day, windows) in groups {
+            guard now.timeIntervalSince(day) < defaults.parameters.contactMatching.notificationGenerationTimeSpan else {
+                continue
+            }
             let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
                                                               higherThreshold: parameters.higherThreshold)
 

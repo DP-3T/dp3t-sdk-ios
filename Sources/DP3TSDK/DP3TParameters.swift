@@ -62,5 +62,8 @@ public struct DP3TParameters: Codable {
 
         /// trigger threshold in minutes
         public var triggerThreshold: Int = 15
+
+        /// TimeInterval for which notifications should get generated after a exposure
+        public var notificationGenerationTimeSpan: TimeInterval = .day * 10
     }
 }

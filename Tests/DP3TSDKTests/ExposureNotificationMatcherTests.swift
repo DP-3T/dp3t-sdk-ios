@@ -123,4 +123,29 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         XCTAssert(mockmanager.data.contains(data))
         XCTAssertEqual(foundMatch, true)
     }
+
+
+    func testFilteringOldEntries() {
+        let mockmanager = MockENManager()
+        let storage = ExposureDayStorage(keychain: keychain)
+        let defaults = MockDefaults()
+        let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
+
+        let secondsFirstBucket = Double(defaults.parameters.contactMatching.triggerThreshold * 60) / defaults.parameters.contactMatching.factorLow
+        let window = MockWindow(date: Date(timeIntervalSinceNow: -defaults.parameters.contactMatching.notificationGenerationTimeSpan), scanInstances: [])
+        for _ in 0...Int(ceil(secondsFirstBucket / 180)) {
+            window.scanInstances.append(MockScanInstance(typicalAttenuation: UInt8(defaults.parameters.contactMatching.lowerThreshold - 1), secondsSinceLastScan: 180))
+        }
+        mockmanager.windows.append(window)
+
+        let data = "Some string!".data(using: .utf8)!
+        guard let archive = Archive(accessMode: .create) else { return }
+        try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
+            data.subdata(in: position ..< position + size)
+        })
+        let foundMatch = try! matcher.receivedNewData(archive.data!)
+        XCTAssert(mockmanager.detectExposuresWasCalled)
+        XCTAssert(mockmanager.data.contains(data))
+        XCTAssertEqual(foundMatch, false)
+    }
 }
