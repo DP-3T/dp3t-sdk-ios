@@ -185,16 +185,9 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue(String(payload.count), forHTTPHeaderField: "Content-Length")
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
-
-        switch authentication {
-        case .none:
-            break
-        case let .HTTPAuthorizationHeader(header: header, value: value):
-            request.addValue(value, forHTTPHeaderField: header)
-        case let .HTTPAuthorizationBearer(token: token):
+        if case let ExposeeAuthMethod.HTTPAuthorizationBearer(token: token) = authentication {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-
         request.httpBody = payload
 
         log.log("addExposeeList URL: %{public}@", request.url?.absoluteString ?? "nil")
