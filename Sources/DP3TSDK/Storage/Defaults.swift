@@ -27,6 +27,8 @@ protocol DefaultStorage {
 
     var exposureDetectionDates: [Date] { get set }
 
+    var includeInternationalKeys: Bool { get set }
+
     func reset()
 }
 
@@ -52,6 +54,10 @@ class Default: DefaultStorage {
 
     @Persisted(userDefaultsKey: "org.dpppt.exposureDetectionDates", defaultValue: [])
     var exposureDetectionDates: [Date]
+
+    @KeychainPersisted(key: "org.dpppt.includeInternationalKeys", defaultValue: false)
+    var includeInternationalKeys: Bool
+
 
     /// Parameters
     private func saveParameters(_ parameters: DP3TParameters) {
@@ -107,6 +113,7 @@ class Default: DefaultStorage {
         parameters = .init()
         lastSync = nil
         didMarkAsInfected = false
+        includeInternationalKeys = false
         lastKeyBundleTag = nil
     }
 }
