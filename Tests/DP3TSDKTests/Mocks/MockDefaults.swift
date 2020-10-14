@@ -12,7 +12,6 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
-    var includeInternationalKeys: Bool = false
     var lastKeyBundleTag: Int64?
 
     var exposureDetectionDates: [Date] = []
@@ -27,10 +26,10 @@ class MockDefaults: DefaultStorage {
 
     func reset() {
         exposureDetectionDates = []
+        lastKeyBundleTag = nil
         parameters = .init()
         isFirstLaunch = false
         lastSync = nil
         didMarkAsInfected = false
-        includeInternationalKeys = false
     }
 }

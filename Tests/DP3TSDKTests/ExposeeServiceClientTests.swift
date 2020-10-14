@@ -33,7 +33,7 @@ class ExposeeServiceClientTests: XCTestCase {
     func testExposeeNolastKeyBundleTag(){
         let (request, result) = getExposeeRequest(lastKeyBundleTag: nil)
         XCTAssertEqual(request.url!.absoluteString,
-                       "https://bucket.dpppt.org/v2/gaen/exposed?includeInternationalKeys=true")
+                       "https://bucket.dpppt.org/v2/gaen/exposed")
         switch result {
         case .success:
             XCTFail()
@@ -45,7 +45,7 @@ class ExposeeServiceClientTests: XCTestCase {
     func testExposeeWithlastKeyBundleTag(){
         let (request, result) = getExposeeRequest(lastKeyBundleTag: 1600560000000)
         XCTAssertEqual(request.url!.absoluteString,
-                       "https://bucket.dpppt.org/v2/gaen/exposed?lastKeyBundleTag=1600560000000&includeInternationalKeys=true")
+                       "https://bucket.dpppt.org/v2/gaen/exposed?lastKeyBundleTag=1600560000000")
         switch result {
         case .success:
             XCTFail()
@@ -125,7 +125,7 @@ class ExposeeServiceClientTests: XCTestCase {
     func getExposeeRequest(lastKeyBundleTag: Int64?) -> (URLRequest, Result<ExposeeSuccess, DP3TNetworkingError>) {
         let exp = expectation(description: "exp")
         var result: Result<ExposeeSuccess, DP3TNetworkingError>?
-        let task  = client.getExposee(lastKeyBundleTag: lastKeyBundleTag, includeInternationalKeys: true) { (res) in
+        let task  = client.getExposee(lastKeyBundleTag: lastKeyBundleTag) { (res) in
             result = res
             exp.fulfill()
         }
