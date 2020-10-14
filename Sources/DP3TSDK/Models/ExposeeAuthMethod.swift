@@ -14,8 +14,9 @@ import Foundation
 public enum ExposeeAuthMethod {
     /// No authentication
     case none
-    /// Send the authentication as part the JSON payload
-    case JSONPayload(token: String)
     /// Send the authentication as a HTTP Header Authentication bearer token
+    @available(*, deprecated, renamed: "HTTPAuthorizationHeader")
     case HTTPAuthorizationBearer(token: String)
+    /// Send the authentication as a HTTP Header
+    case HTTPAuthorizationHeader(header: String, value: String)
 }
