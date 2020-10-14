@@ -129,7 +129,7 @@ class KnownCasesSynchronizer {
             return
         }
 
-        dataTask = service.getExposee(lastPublishedKeyTag: lastPublishedKeyTag, internationalisationEnabled: defaults.internationalisationEnabled) { [weak self] (result) in
+        dataTask = service.getExposee(lastPublishedKeyTag: lastPublishedKeyTag, includeInternationalKeys: defaults.includeInternationalKeys) { [weak self] (result) in
             guard let self = self else { return }
             guard self.isCancelled == false else {
                 return

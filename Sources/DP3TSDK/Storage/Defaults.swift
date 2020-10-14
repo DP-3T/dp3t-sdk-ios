@@ -27,7 +27,7 @@ protocol DefaultStorage {
 
     var exposureDetectionDates: [Date] { get set }
 
-    var internationalisationEnabled: Bool { get set }
+    var includeInternationalKeys: Bool { get set }
 
     func reset()
 }
@@ -55,8 +55,8 @@ class Default: DefaultStorage {
     @Persisted(userDefaultsKey: "org.dpppt.exposureDetectionDates", defaultValue: [])
     var exposureDetectionDates: [Date]
 
-    @KeychainPersisted(key: "org.dpppt.internationalisationEnabled", defaultValue: false)
-    var internationalisationEnabled: Bool
+    @KeychainPersisted(key: "org.dpppt.includeInternationalKeys", defaultValue: false)
+    var includeInternationalKeys: Bool
 
 
     /// Parameters
@@ -114,7 +114,7 @@ class Default: DefaultStorage {
         lastSync = nil
         didMarkAsInfected = false
         lastPublishedKeyTag = nil
-        internationalisationEnabled = false
+        includeInternationalKeys = false
     }
 }
 

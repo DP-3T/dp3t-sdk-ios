@@ -33,7 +33,7 @@ class ExposeeServiceClientTests: XCTestCase {
     func testExposeeNolastPublishedKeyTag(){
         let (request, result) = getExposeeRequest(lastPublishedKeyTag: nil)
         XCTAssertEqual(request.url!.absoluteString,
-                       "https://bucket.dpppt.org/v2/gaen/exposed?internationalisationEnabled=true")
+                       "https://bucket.dpppt.org/v2/gaen/exposed?includeInternationalKeys=true")
         switch result {
         case .success:
             XCTFail()
@@ -45,7 +45,7 @@ class ExposeeServiceClientTests: XCTestCase {
     func testExposeeWithlastPublishedKeyTag(){
         let (request, result) = getExposeeRequest(lastPublishedKeyTag: 1600560000000)
         XCTAssertEqual(request.url!.absoluteString,
-                       "https://bucket.dpppt.org/v2/gaen/exposed?lastPublishedKeyTag=1600560000000&internationalisationEnabled=true")
+                       "https://bucket.dpppt.org/v2/gaen/exposed?lastPublishedKeyTag=1600560000000&includeInternationalKeys=true")
         switch result {
         case .success:
             XCTFail()
@@ -125,7 +125,7 @@ class ExposeeServiceClientTests: XCTestCase {
     func getExposeeRequest(lastPublishedKeyTag: Int64?) -> (URLRequest, Result<ExposeeSuccess, DP3TNetworkingError>) {
         let exp = expectation(description: "exp")
         var result: Result<ExposeeSuccess, DP3TNetworkingError>?
-        let task  = client.getExposee(lastPublishedKeyTag: lastPublishedKeyTag, internationalisationEnabled: true) { (res) in
+        let task  = client.getExposee(lastPublishedKeyTag: lastPublishedKeyTag, includeInternationalKeys: true) { (res) in
             result = res
             exp.fulfill()
         }

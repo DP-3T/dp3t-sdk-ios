@@ -28,7 +28,7 @@ class MockService: ExposeeServiceClientProtocol {
     var data: Data? = "Data".data(using: .utf8)
     var errorAfter: Int = 0
 
-    func getExposee(lastPublishedKeyTag: Int64?, internationalisationEnabled: Bool, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
+    func getExposee(lastPublishedKeyTag: Int64?, includeInternationalKeys: Bool, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
         return session.dataTask(with: .init(url: URL(string: "http://www.google.com")!)) { _, _, _ in
             self.queue.sync {
                 self.requests.append(lastPublishedKeyTag)

@@ -66,9 +66,9 @@ public enum DP3TTracing {
         }
     }
 
-    public static func setInternationalisationEnabled(_ enabled: Bool) {
+    public static func includeInternationalKeys(_ include: Bool) {
         precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
-        instance.setInternationalisationEnabled(enabled)
+        instance.includeInternationalKeys(include)
     }
 
     /// Starts tracing

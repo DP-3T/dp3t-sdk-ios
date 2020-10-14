@@ -27,7 +27,7 @@ protocol ExposeeServiceClientProtocol: class {
     /// - Parameters:
     ///  - since: last published key tag if one is stored
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(lastPublishedKeyTag: Int64?, internationalisationEnabled: Bool, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
+    func getExposee(lastPublishedKeyTag: Int64?, includeInternationalKeys: Bool, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
 
     /// Adds an exposee
     /// - Parameters:
@@ -100,9 +100,9 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///  - since: last published key tag if one is stored
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(lastPublishedKeyTag: Int64?, internationalisationEnabled: Bool, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
+    func getExposee(lastPublishedKeyTag: Int64?, includeInternationalKeys: Bool, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
         log.log("getExposeeSynchronously for lastPublishedKeyTag %{public}@", lastPublishedKeyTag?.description ?? "nil")
-        let url: URL = exposeeEndpoint.getExposee(lastPublishedKeyTag: lastPublishedKeyTag, internationalisationEnabled: internationalisationEnabled)
+        let url: URL = exposeeEndpoint.getExposee(lastPublishedKeyTag: lastPublishedKeyTag, includeInternationalKeys: includeInternationalKeys)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/zip", forHTTPHeaderField: "Accept")

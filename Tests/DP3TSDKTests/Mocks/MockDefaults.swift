@@ -13,7 +13,7 @@ import Foundation
 
 class MockDefaults: DefaultStorage {
     
-    var internationalisationEnabled: Bool = false
+    var includeInternationalKeys: Bool = false
 
     var lastPublishedKeyTag: Int64?
 
@@ -34,6 +34,6 @@ class MockDefaults: DefaultStorage {
         isFirstLaunch = false
         lastSync = nil
         didMarkAsInfected = false
-        internationalisationEnabled = false
+        includeInternationalKeys = false
     }
 }

@@ -82,7 +82,7 @@ public struct TracingState: Equatable {
     /// Indicates if the user has enabled backgorundRefresh
     public var backgroundRefreshState: UIBackgroundRefreshStatus
     /// Indicates if internationalisation is enabled
-    public var internationalisationEnabled: Bool
+    public var includeInternationalKeys: Bool
 }
 
 /// Result of a sync
