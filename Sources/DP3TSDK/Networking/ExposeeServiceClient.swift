@@ -101,13 +101,14 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
     func getExposee(lastKeyBundleTag: Int64?, includeInternationalKeys: Bool, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
-        log.log("getExposeeSynchronously for lastKeyBundleTag %{public}@", lastKeyBundleTag?.description ?? "nil")
+        log.log("getExposee for lastKeyBundleTag %{public}@", lastKeyBundleTag?.description ?? "nil")
         let url: URL = exposeeEndpoint.getExposee(lastKeyBundleTag: lastKeyBundleTag, includeInternationalKeys: includeInternationalKeys)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/zip", forHTTPHeaderField: "Accept")
         request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
 
+        log.log("getExposee URL: %{public}@", request.url?.absoluteString ?? "nil")
         let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
             guard let self = self,
                   error == nil else {
@@ -196,6 +197,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
         request.httpBody = payload
 
+        log.log("addExposeeList URL: %{public}@", request.url?.absoluteString ?? "nil")
         let task = urlSession.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
                 completion(.failure(.networkSessionError(error: error!)))
