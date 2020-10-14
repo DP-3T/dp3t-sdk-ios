@@ -62,13 +62,10 @@ struct ExposeeListModel: Encodable {
         // Encode key
         try container.encode(gaenKeys, forKey: .gaenKeys)
         try container.encode(fake ? 1 : 0, forKey: .fake)
-        let ts = Date().timeIntervalSince1970
-        let day = ts - ts.truncatingRemainder(dividingBy: 60 * 60 * 24)
-        try container.encode(Int(day / 600), forKey: .delayedKeyDate)
     }
 
     enum CodingKeys: CodingKey {
-        case gaenKeys, fake, delayedKeyDate
+        case gaenKeys, fake
     }
 }
 

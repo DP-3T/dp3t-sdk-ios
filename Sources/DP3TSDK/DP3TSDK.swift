@@ -286,8 +286,7 @@ class DP3TSDK {
                 mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: fakeKeyCount, startingFrom: startingFrom))
 
                 let model = ExposeeListModel(gaenKeys: mutableKeys,
-                                             fake: isFakeRequest,
-                                             delayedKeyDate: DayDate())
+                                             fake: isFakeRequest)
 
                 self.service.addExposeeList(model, authentication: authentication) { [weak self] result in
                     guard let self = self else { return }
