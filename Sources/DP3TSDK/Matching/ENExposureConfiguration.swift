@@ -11,6 +11,8 @@
 import ExposureNotification
 
 extension ENExposureConfiguration {
+    /// This configuration only sets values needed to get ExposureWindows from the EN Framework
+    /// DP3T does not use the risk calculation of the EN framework. It only uses ExposureWindows and ScanInstances to gather information about a exposures.
     static var configuration: ENExposureConfiguration {
         let config = ENExposureConfiguration()
         config.reportTypeNoneMap = .confirmedTest
@@ -19,6 +21,5 @@ extension ENExposureConfiguration {
             config.infectiousnessForDaysSinceOnsetOfSymptoms?[day as NSNumber] = ENInfectiousness.high.rawValue as NSNumber
         }
         return config
-
     }
 }
