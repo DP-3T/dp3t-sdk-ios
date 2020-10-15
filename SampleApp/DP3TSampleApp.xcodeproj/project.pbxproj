@@ -14,6 +14,7 @@
 		F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC5A243E02AF005F26AE /* ParametersViewController.swift */; };
 		F8287D15246A78570022CFD9 /* DP3TSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F8287D14246A78570022CFD9 /* DP3TSDK */; };
 		F8287D19246ADCA00022CFD9 /* LogsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8287D18246ADCA00022CFD9 /* LogsViewController.swift */; };
+		F82FF76A25388C290028DA12 /* TimeInterval+const.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82FF76925388C290028DA12 /* TimeInterval+const.swift */; };
 		F830799324929039005D3C65 /* LoggingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F830799224929039005D3C65 /* LoggingStorage.swift */; };
 		F83079972492909A005D3C65 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = F83079962492909A005D3C65 /* SQLite */; };
 		F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83BE139242DDC450043FA1E /* AppDelegate.swift */; };
@@ -34,6 +35,7 @@
 		F812AC5A243E02AF005F26AE /* ParametersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParametersViewController.swift; sourceTree = "<group>"; };
 		F8287D18246ADCA00022CFD9 /* LogsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogsViewController.swift; sourceTree = "<group>"; };
 		F82F4BEB2462F5E100F7F9FA /* Entitlements.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = Entitlements.entitlements; sourceTree = "<group>"; };
+		F82FF76925388C290028DA12 /* TimeInterval+const.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "TimeInterval+const.swift"; path = "../../../Sources/DP3TSDK/utils/TimeInterval+const.swift"; sourceTree = "<group>"; };
 		F830799224929039005D3C65 /* LoggingStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingStorage.swift; sourceTree = "<group>"; };
 		F83BE136242DDC450043FA1E /* DP3TSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DP3TSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83BE139242DDC450043FA1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -67,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				F88A3BDD2508AB4A001DDE5B /* ENExposureConfiguration.swift */,
+				F82FF76925388C290028DA12 /* TimeInterval+const.swift */,
 				F80B17E82507BB4000A5D880 /* ExposureWindow.swift */,
 			);
 			path = SDKReferences;
@@ -212,6 +215,7 @@
 				F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */,
 				F812AC56243DF459005F26AE /* RootViewController.swift in Sources */,
 				F8287D19246ADCA00022CFD9 /* LogsViewController.swift in Sources */,
+				F82FF76A25388C290028DA12 /* TimeInterval+const.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
