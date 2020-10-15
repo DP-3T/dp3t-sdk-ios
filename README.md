@@ -10,7 +10,7 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
 
 
 ## Introduction
-This is the implementation of the DP-3T protocol using the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework of Apple/Google. Only approved government public health authorities can access the APIs. Therefore, using this SDK will result in an API error unless you were granted the `com.apple.developer.exposure-notification` entitlement by Apple. The ExposureNotification.framework is available starting with iOS 13.5.
+This is the implementation of the DP-3T protocol using the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework of Apple/Google. Only approved government public health authorities can access the APIs. Therefore, using this SDK will result in an API error unless you were granted the `com.apple.developer.exposure-notification` entitlement by Apple. We are using [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework version 2, and the deployment target is therefore set to 13.7.
 
 Our prestandard solution that is not using the Apple/Google framework can be found under the [tag prestandard](https://github.com/DP-3T/dp3t-sdk-ios/tree/prestandard).
 
@@ -85,7 +85,11 @@ This version points to the HEAD of the `develop` branch and will always fetch th
 In order to use the SDK with iOS 14 you need to specify the region for which the app works and the version of the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework which should be used. 
 
 This is done by adding [`ENDeveloperRegion`](https://developer.apple.com/documentation/bundleresources/information_property_list/endeveloperregion) as an `Info.plist` property with the according ISO 3166-1 country code as its value.
-The SDK currently works with EN Framework version 1 and therefore we need to specify [`ENAPIVersion`](https://developer.apple.com/documentation/bundleresources/information_property_list/enapiversion) with a value of 1 in the `Info.plist`.
+The SDK works with EN Framework version 2 and therefore we need to specify [`ENAPIVersion`](https://developer.apple.com/documentation/bundleresources/information_property_list/enapiversion) with a value of 2 in the `Info.plist`.
+
+### Backend
+
+Starting with DP3T SDK version 2.0 the required [backend](https://github.com/DP-3T/dp3t-sdk-backend) version is 2.0.
 
 ### Initialization
 
