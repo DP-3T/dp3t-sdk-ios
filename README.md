@@ -44,12 +44,12 @@ init | Initializes the SDK and configures it | `initialize(applicationDescriptor
 ### Methods 
 Name | Description | Function Name
 ---- | ----------- | -------------
-startTracing | Starts EN tracing | `func startTracing(completionHandler: )throws` 
+startTracing | Starts EN tracing | `func startTracing(completionHandler:)` 
 stopTracing | Stops EN tracing | `func stopTracing(completionHandler:)` 
 sync | Pro-actively triggers sync with backend to refresh exposed list | `func sync(callback:)` 
 status | Returns a TracingState-Object describing the current state. This contains:<br/>- `numberOfHandshakes` : `Int` <br /> - `trackingState` : `TrackingState` <br /> - `lastSync` : `Date` <br /> - `infectionStatus`:`InfectionStatus`<br /> - `backgroundRefreshState`:`UIBackgroundRefreshStatus ` | `func status(callback:)` 
 iWasExposed | This method must be called upon positive test. | `func iWasExposed(onset:authentication:isFakeRequest:callback:)` 
-reset | Removes all SDK related data | `func reset() throws`
+reset | Removes all SDK related data | `func reset()`
 
 
 ## Installation
@@ -93,9 +93,9 @@ In your AppDelegate in the `didFinishLaunchingWithOptions` function you have to 
 
 ```swift
 let url = URL(string: "https://example.com/your/api/")!
-try! DP3TTracing.initialize(with: .init(appId: "com.example.your.app", 
-                                        bucketBaseUrl: url, 
-                                        reportBaseUrl: url))
+DP3TTracing.initialize(with: .init(appId: "com.example.your.app", 
+                                   bucketBaseUrl: url, 
+                                   reportBaseUrl: url))
 ```
 
 ##### 
@@ -107,13 +107,13 @@ The SDK accepts a `URLSession` as an optional argument to the initializer. This 
 ### Start / Stop tracing
 To start and stop tracing use
 ```swift
-try DP3TTracing.startTracing()
+DP3TTracing.startTracing()
 DP3TTracing.stopTracing()
 ```
 
 ### Checking the current tracing status
 ```swift
-DP3TTracing.status(callback: (Result<TracingState, DP3TTracingErrors>) -> Void)
+let status = DP3TTracing.status
 ```
 The `TracingState` object contains all information regarding the current tracing status.
 

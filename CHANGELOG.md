@@ -7,6 +7,7 @@
 - ENAPIVersion has to be set to 2 in the Info.plist for this update to work
 - increases the deployment target to 13.7
 - outdated SDK methods have been removed
+- the SDK now exposes all exposure dates not only the most recent one
 
 ## Version 1.3.0 (29.09.2020)
 - Improve last day TEK export handling for iOS > 13.7 (must not disable EN until the following day)
