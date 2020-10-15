@@ -51,10 +51,10 @@ public struct DP3TParameters: Codable {
 
     public struct ContactMatching: Codable {
         /// threshold for putting attenuation durations in the lower bucker
-        public var lowerThreshold: Int = 50
+        public var lowerThreshold: Int = 55
 
         /// threshold for putting attenuation durations in the upper bucket
-        public var higherThreshold: Int = 55
+        public var higherThreshold: Int = 63
 
         /// factor for attenuation values in lower bucket
         public var factorLow: Double = 1.0
