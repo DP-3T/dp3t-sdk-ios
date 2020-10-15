@@ -115,7 +115,7 @@ class ParametersViewController: UIViewController {
 
         do {
             let label = UILabel()
-            label.text = "Set Attenuation Factor High"
+            label.text = "Set Attenuation trigger Threshold"
             stackView.addArrangedSubview(label)
 
             attenuationtriggerThreshold.text = "\(params.contactMatching.triggerThreshold)"
