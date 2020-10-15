@@ -17,7 +17,7 @@ protocol DefaultStorage {
     /// Last date a backend sync happend
     var lastSync: Date? { get set }
 
-    var lastKeyBundleTag: Int64? { get set }
+    var lastKeyBundleTag: String? { get set }
 
     /// Current infection status
     var didMarkAsInfected: Bool { get set }
@@ -44,7 +44,7 @@ class Default: DefaultStorage {
     var lastSync: Date?
 
     @KeychainPersisted(key: "org.dpppt.lastPublishedKeyTag", defaultValue: nil)
-    var lastKeyBundleTag: Int64?
+    var lastKeyBundleTag: String?
 
     /// Current infection status
     @KeychainPersisted(key: "org.dpppt.didMarkAsInfected", defaultValue: false)

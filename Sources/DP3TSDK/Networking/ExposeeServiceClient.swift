@@ -14,7 +14,7 @@ import UIKit
 
 struct ExposeeSuccess {
     let data: Data?
-    let keyBundleTag: Int64?
+    let keyBundleTag: String?
 }
 
 protocol ExposeeServiceClientProtocol: class {
@@ -23,11 +23,11 @@ protocol ExposeeServiceClientProtocol: class {
 
     var descriptor: ApplicationDescriptor { get }
 
-    /// Get all exposee for a known day synchronously
+    /// Get all exposee for a known lastKeyBundleTag
     /// - Parameters:
     ///  - since: last published key tag if one is stored
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(lastKeyBundleTag: Int64?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
+    func getExposee(lastKeyBundleTag: String?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask
 
     /// Adds an exposee
     /// - Parameters:
@@ -100,8 +100,8 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     ///  - since: last published key tag if one is stored
     ///   - completion: The completion block
     /// - returns: array of objects or nil if they were already cached
-    func getExposee(lastKeyBundleTag: Int64?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
-        log.log("getExposeeSynchronously for lastPublishedKeyTag %{public}@", lastKeyBundleTag?.description ?? "nil")
+    func getExposee(lastKeyBundleTag: String?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
+        log.log("getExposeeSynchronously for lastPublishedKeyTag %{public}@", lastKeyBundleTag ?? "nil")
         let url: URL = exposeeEndpoint.getExposee(lastKeyBundleTag: lastKeyBundleTag)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
@@ -125,10 +125,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 return
             }
 
-            var keyBundleTag: Int64?
-            if let keyBundleTagHeader = httpResponse.value(forHTTPHeaderField: "x-key-bundle-tag") {
-                keyBundleTag = try? Int64(value: keyBundleTagHeader)
-            }
+            let keyBundleTag = httpResponse.value(forHTTPHeaderField: "x-key-bundle-tag")
 
             let httpStatus = httpResponse.statusCode
             switch httpStatus {

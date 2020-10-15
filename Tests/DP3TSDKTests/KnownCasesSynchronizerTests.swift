@@ -45,9 +45,9 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
 
-        let oldKeyTag = Self.formatter.date(from: "01.05.2020 09:00")!.millisecondsSince1970
+        let oldKeyTag = "oldKeyTag"
         defaults.lastKeyBundleTag = oldKeyTag
-        service.keyBundleTag = Self.formatter.date(from: "05.05.2020 09:00")!.millisecondsSince1970
+        service.keyBundleTag = "newKeyTag"
         let expecation = expectation(description: "syncExpectation")
         sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
             XCTAssertEqual(res, SyncResult.success)

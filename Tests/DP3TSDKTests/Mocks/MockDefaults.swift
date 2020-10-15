@@ -12,7 +12,7 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
-    var lastKeyBundleTag: Int64?
+    var lastKeyBundleTag: String?
 
     var exposureDetectionDates: [Date] = []
 

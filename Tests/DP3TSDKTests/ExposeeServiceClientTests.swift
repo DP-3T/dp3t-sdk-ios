@@ -43,7 +43,7 @@ class ExposeeServiceClientTests: XCTestCase {
     }
 
     func testExposeeWithlastKeyBundleTag(){
-        let (request, result) = getExposeeRequest(lastKeyBundleTag: 1600560000000)
+        let (request, result) = getExposeeRequest(lastKeyBundleTag: "1600560000000")
         XCTAssertEqual(request.url!.absoluteString,
                        "https://bucket.dpppt.org/v2/gaen/exposed?lastKeyBundleTag=1600560000000")
         switch result {
@@ -122,7 +122,7 @@ class ExposeeServiceClientTests: XCTestCase {
 
 
     // MARK: Helper
-    func getExposeeRequest(lastKeyBundleTag: Int64?) -> (URLRequest, Result<ExposeeSuccess, DP3TNetworkingError>) {
+    func getExposeeRequest(lastKeyBundleTag: String?) -> (URLRequest, Result<ExposeeSuccess, DP3TNetworkingError>) {
         let exp = expectation(description: "exp")
         var result: Result<ExposeeSuccess, DP3TNetworkingError>?
         let task  = client.getExposee(lastKeyBundleTag: lastKeyBundleTag) { (res) in

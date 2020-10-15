@@ -139,7 +139,7 @@ class KnownCasesSynchronizer {
                 do {
                     if let data = knownCasesData.data {
                         if let matcher = self.matcher {
-                            self.logger.log("received data(%{public}d bytes) [since: %{public}@]", data.count, lastKeyBundleTag?.description ?? "nil")
+                            self.logger.log("received data(%{public}d bytes) [since: %{public}@]", data.count, lastKeyBundleTag ?? "nil")
                             let foundNewMatch = try matcher.receivedNewData(data, now: now)
                             if foundNewMatch {
                                 self.delegate?.didFindMatch()
@@ -148,7 +148,7 @@ class KnownCasesSynchronizer {
                             self.logger.error("matcher not present")
                         }
                     } else {
-                        self.logger.log("received no data [since: %{public}@]", lastKeyBundleTag?.description ?? "nil")
+                        self.logger.log("received no data [since: %{public}@]", lastKeyBundleTag ?? "nil")
                     }
 
                     if let publishedKeyTag = knownCasesData.keyBundleTag {
