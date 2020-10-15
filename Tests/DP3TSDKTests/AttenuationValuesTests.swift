@@ -14,12 +14,17 @@ import XCTest
 
 class AttenuationsValuesTests: XCTestCase {
     func testMatching() {
-        let attenuationValues = AttenuationValues(lowerBucket: 101, higherBucket: 101)
-        XCTAssert(attenuationValues.matches(factorLow: 0, factorHigh: 1, triggerThreshold: 100))
-        XCTAssert(attenuationValues.matches(factorLow: 0, factorHigh: 0.5, triggerThreshold: 50))
+        let attenuationValues = AttenuationValues(lowerBucket: 120, higherBucket: 120)
 
-        XCTAssertFalse(attenuationValues.matches(factorLow: 0, factorHigh: 0, triggerThreshold: 100))
-        XCTAssertFalse(attenuationValues.matches(factorLow: 0, factorHigh: 1, triggerThreshold: 102))
-        XCTAssertFalse(attenuationValues.matches(factorLow: 1, factorHigh: 0, triggerThreshold: 102))
+        XCTAssert(attenuationValues.matches(factorLow: 0, factorHigh: 1, triggerThreshold: 2))
+        XCTAssert(attenuationValues.matches(factorLow: 1, factorHigh: 0, triggerThreshold: 2))
+        XCTAssertFalse(attenuationValues.matches(factorLow: 0, factorHigh: 0, triggerThreshold: 1))
+        XCTAssertFalse(attenuationValues.matches(factorLow: 0, factorHigh: 0.5, triggerThreshold: 2))
+        XCTAssertFalse(attenuationValues.matches(factorLow: 0.5, factorHigh: 0, triggerThreshold: 2))
+    }
+
+    func testRoundingMinutesUp(){
+        let attenuationValues = AttenuationValues(lowerBucket: 59, higherBucket: 0)
+        XCTAssert(attenuationValues.matches(factorLow: 1, factorHigh: 0, triggerThreshold: 1))
     }
 }

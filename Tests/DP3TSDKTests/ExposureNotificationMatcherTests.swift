@@ -148,4 +148,30 @@ final class ExposureNotificationMatcherTests: XCTestCase {
         XCTAssert(mockmanager.data.contains(data))
         XCTAssertEqual(foundMatch, false)
     }
+
+    func testExposureNotLongEnough(){
+        let mockmanager = MockENManager()
+        let storage = ExposureDayStorage(keychain: keychain)
+        let defaults = MockDefaults()
+        let matcher = ExposureNotificationMatcher(manager: mockmanager, exposureDayStorage: storage, defaults: defaults)
+
+        let window = MockWindow(date: .init(), scanInstances: [])
+        for _ in 0..<5 {
+            window.scanInstances.append(MockScanInstance(typicalAttenuation: 50, secondsSinceLastScan: 120))
+        }
+        for _ in 0..<4 {
+            window.scanInstances.append(MockScanInstance(typicalAttenuation: 60, secondsSinceLastScan: 120))
+        }
+        mockmanager.windows.append(window)
+
+        let data = "Some string!".data(using: .utf8)!
+        guard let archive = Archive(accessMode: .create) else { return }
+        try! archive.addEntry(with: "inMemory.bin", type: .file, uncompressedSize: 12, bufferSize: 4, provider: { (position, size) -> Data in
+            data.subdata(in: position ..< position + size)
+        })
+        let foundMatch = try! matcher.receivedNewData(archive.data!)
+        XCTAssert(mockmanager.detectExposuresWasCalled)
+        XCTAssert(mockmanager.data.contains(data))
+        XCTAssertEqual(foundMatch, false)
+    }
 }

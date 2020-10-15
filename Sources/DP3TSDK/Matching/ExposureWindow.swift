@@ -28,15 +28,17 @@ struct AttenuationValues {
 }
 
 extension AttenuationValues {
-    /// Checks if the AttenuationValues match given the parameters (all values are provided in seconds)
+    /// Checks if the AttenuationValues match given the parameters, buckets are rounded up to the next minute.
     /// - Parameters:
-    ///   - factorLow: the factor to multiply the lower bucket with
-    ///   - factorHigh: the factor to multiply the upper bucket with
-    ///   - triggerThreshold: the threshold which has to be reached
+    ///   - factorLow: the factor to multiply the lower bucket with (in seconds)
+    ///   - factorHigh: the factor to multiply the upper bucket with (in seconds)
+    ///   - triggerThreshold: the threshold which has to be reached in minutes
     /// - Returns: Boolean if matches the triggerThreshold
     func matches(factorLow: Double, factorHigh: Double, triggerThreshold: Int) -> Bool {
-        let computedThreshold: Double = (Double(lowerBucket) * factorLow + Double(higherBucket) * factorHigh)
-        return computedThreshold > Double(triggerThreshold)
+        let roundedMinutesLowerBucket = ceil(Double(lowerBucket) / TimeInterval.minute)
+        let roundedMinutesHigherBucket = ceil(Double(higherBucket) / TimeInterval.minute)
+        let computedThreshold: Double = (roundedMinutesLowerBucket * factorLow + roundedMinutesHigherBucket * factorHigh)
+        return computedThreshold >= Double(triggerThreshold)
     }
 }
 

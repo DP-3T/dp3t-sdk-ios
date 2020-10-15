@@ -114,7 +114,7 @@ class ExposureNotificationMatcher: Matcher {
 
             if attenuationValues.matches(factorLow: parameters.factorLow,
                                          factorHigh: parameters.factorHigh,
-                                         triggerThreshold: parameters.triggerThreshold * 60) {
+                                         triggerThreshold: parameters.triggerThreshold) {
                 let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: day, reportDate: Date(), isDeleted: false)
                 exposureDayStorage.add(day)
 
