@@ -1,5 +1,5 @@
 # ExposureNotification API usage
-This document outlines the interaction of the SDK with the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework by Apple.
+This document outlines the interaction of the SDK with the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework version 2 by Apple.
 
 ## Enabling Exposure Notifications
 
@@ -26,7 +26,7 @@ The [ENExposureConfiguration](https://developer.apple.com/documentation/exposure
 
 #### Diagnosis key URLs
 
-We need to unzip the file which we got from our backend, store the key file (.bin) and signature file (.sig) locally and pass the local urls to the EN API. Unlike Android, on iOS we can't just pass the difference from last detection but we have to pass every key of a day every time we do a detection.
+We need to unzip the file which we got from our backend, store the key file (.bin) and signature file (.sig) locally and pass the local urls to the EN API.
 
 #### Completion Handler
 
@@ -40,11 +40,11 @@ Here we pass the previously obtained [ENExposureDetectionSummary](https://develo
 
 #### Completion Handler
 
-The completion handler is called with [[ENExposureWindow]](https://developer.apple.com/documentation/exposurenotification/enexposurewindow). 
+The completion handler is called with [[ENExposureWindow]](https://developer.apple.com/documentation/exposurenotification/enexposurewindow).
 
 A [ENExposureWindow](https://developer.apple.com/documentation/exposurenotification/enexposurewindow) is a set of Bluetooth scan events from observed beacons within a timespan. A window contains multiple [ENScanInstance](https://developer.apple.com/documentation/exposurenotification/enscaninstance) which are aggregations of attenuation of beacons during a scan.
 
-By grouping the ENExposureWindows by day and then adding up all seconds which lie between our defines attenuation thresholds we can compose the buckets.
+By grouping the ENExposureWindows by day and then adding up all seconds which lie between our defined attenuation thresholds we can compose the buckets.
 
 The thresholds for the attenuation buckets are loaded from our [config server](https://github.com/DP-3T/dp3t-config-backend-ch/blob/master/dpppt-config-backend/src/main/java/org/dpppt/switzerland/backend/sdk/config/ws/model/GAENSDKConfig.java).
 
