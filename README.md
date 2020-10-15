@@ -24,6 +24,12 @@ Our prestandard solution that is not using the Apple/Google framework can be fou
 ## Further Documentation
 The full set of documents for DP3T is at https://github.com/DP-3T/documents. Please refer to the technical documents and whitepapers for a description of the implementation.
 
+## DP3T Exposure Score Calculation
+
+The in-depth technical specification of the methodology used for the score calculation can be found [here](https://github.com/admin-ch/PT-System-Documents/blob/master/SwissCovid-ExposureScore.pdf).
+
+A description of the usage of the Apple Exposure Notification API can be found [here](https://github.com/DP-3T/dp3t-sdk-ios/blob/master/EXPOSURE_NOTIFICATION_API_USAGE.md).
+
 ## Calibration App
 Included in this repository is a Calibration App that can run, debug and test the SDK directly without implementing it in a new app first. Various parameters of the SDK are exposed and can be changed at runtime. Additionally it provides an overview of how to use the SDK.
 
