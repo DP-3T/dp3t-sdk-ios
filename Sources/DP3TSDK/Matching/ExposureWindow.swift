@@ -13,32 +13,39 @@ import ExposureNotification
 
 
 extension Array where Element: ENExposureWindow {
-
     /// Groups windows by Date
     var groupByDay: [Date: [ENExposureWindow]] {
         reduce(into: [Date: [ENExposureWindow]]()) { result, window in
             result[window.date, default: []].append(window)
         }
     }
-
 }
 
+/// object holding the lower and upper bucket (all values are in seconds)
 struct AttenuationValues {
     let lowerBucket: Int
     let higherBucket: Int
 }
 
 extension AttenuationValues {
-
+    /// Checks if the AttenuationValues match given the parameters (all values are provided in seconds)
+    /// - Parameters:
+    ///   - factorLow: the factor to multiply the lower bucket with
+    ///   - factorHigh: the factor to multiply the upper bucket with
+    ///   - triggerThreshold: the threshold which has to be reached
+    /// - Returns: Boolean if matches the triggerThreshold
     func matches(factorLow: Double, factorHigh: Double, triggerThreshold: Int) -> Bool {
         let computedThreshold: Double = (Double(lowerBucket) * factorLow + Double(higherBucket) * factorHigh)
         return computedThreshold > Double(triggerThreshold)
     }
-
 }
 
 extension Array where Element == ENExposureWindow {
-
+    /// Get Seconds of ScanInstances with a typical attenuation between to given values
+    /// - Parameters:
+    ///   - above: typicalAttenuation greater than or equal to
+    ///   - below: typicalAttenuation less than
+    /// - Returns: the number of seconds
     func getSeconds(above: Int = 0, below: Int) -> Int {
         reduce(into: 0) { (result, window) in
             result += window.scanInstances.reduce(into: 0) { (result, scanInstance) in
@@ -49,9 +56,15 @@ extension Array where Element == ENExposureWindow {
         }
     }
 
+    /// Get an AttenuationValues object containing:
+    ///     - seconds below the lower threshold
+    ///     - seoncds between the lower threshold and higher threshold
+    /// - Parameters:
+    ///   - lowerThreshold: typicalAttenuation for lower bucket
+    ///   - higherThreshold: typicalAttenuation for upper bucket
+    /// - Returns: the 2 buckets
     func attenuationValues(lowerThreshold: Int, higherThreshold: Int) -> AttenuationValues {
         return AttenuationValues(lowerBucket:  getSeconds(above: 0,              below: lowerThreshold),
                                  higherBucket: getSeconds(above: lowerThreshold, below: higherThreshold))
     }
-
 }
