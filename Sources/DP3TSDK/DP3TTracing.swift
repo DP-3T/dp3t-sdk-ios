@@ -55,10 +55,14 @@ public enum DP3TTracing {
                                backgroundHandler: backgroundHandler)
     }
 
+    private static func instancePrecondition(){
+        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+    }
+
     /// The delegate
     public static var delegate: DP3TTracingDelegate? {
         set {
-            precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+            instancePrecondition()
             instance.delegate = newValue
         }
         get {
@@ -68,20 +72,20 @@ public enum DP3TTracing {
 
     /// Starts tracing
     public static func startTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
-        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instancePrecondition()
         instance.startTracing(completionHandler: completionHandler)
     }
 
     /// Stops tracing
     public static func stopTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
-        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instancePrecondition()
         instance.stopTracing(completionHandler: completionHandler)
     }
 
     /// Triggers sync with the backend to refresh the exposed list
     /// - Parameter callback: callback
     public static func sync(callback: ((SyncResult) -> Void)?) {
-        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instancePrecondition()
         instance.sync() { result in
             DispatchQueue.main.async {
                 callback?(result)
@@ -91,13 +95,13 @@ public enum DP3TTracing {
 
     /// Cancel any ongoing snyc
     public static func cancelSync() {
-        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instancePrecondition()
         instance.cancelSync()
     }
 
     /// get the current status of the SDK
     public static var status: TracingState {
-        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instancePrecondition()
         return instance.status
     }
 
@@ -111,7 +115,7 @@ public enum DP3TTracing {
                                    authentication: ExposeeAuthMethod,
                                    isFakeRequest: Bool = false,
                                    callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
-        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instancePrecondition()
         instance.iWasExposed(onset: onset,
                              authentication: authentication,
                              isFakeRequest: isFakeRequest,
@@ -121,21 +125,21 @@ public enum DP3TTracing {
     /// reset exposure days
 
     public static func resetExposureDays() {
-        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instancePrecondition()
         instance.resetExposureDays()
     }
 
     /// reset the infection status
 
     public static func resetInfectionStatus() {
-        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instancePrecondition()
         instance.resetInfectionStatus()
     }
 
     /// reset the SDK
 
     public static func reset() {
-        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+        instancePrecondition()
         instance.reset()
         instance = nil
     }
