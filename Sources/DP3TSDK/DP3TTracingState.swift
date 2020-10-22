@@ -12,7 +12,7 @@ import Foundation
 import UIKit.UIApplication
 
 /// The infection status of the user
-public enum InfectionStatus {
+public enum InfectionStatus: Equatable {
     /// The user is healthy and had no contact with any infected person
     case healthy
     /// The user was in contact with a person that was flagged as infected
@@ -26,10 +26,22 @@ public enum InfectionStatus {
         }
 
         let matchingDays = storage.getDays()
-        if let newestDay = matchingDays.first {
-            return .exposed(days: [newestDay])
+        if !matchingDays.isEmpty {
+            return .exposed(days: matchingDays)
         } else {
             return .healthy
+        }
+    }
+
+    public static func == (lhs: InfectionStatus, rhs: InfectionStatus) -> Bool {
+        switch (lhs, rhs) {
+        case (.healthy, .healthy): fallthrough
+        case (.infected, .infected):
+            return true
+        case let (.exposed(lhsDays), .exposed(rhsDays)):
+            return lhsDays == rhsDays
+        default:
+            return false
         }
     }
 }
@@ -60,7 +72,7 @@ public enum TrackingState: Equatable {
 }
 
 /// The state of the API
-public struct TracingState {
+public struct TracingState: Equatable {
     /// The tracking state of the bluetooth and the other networking api
     public var trackingState: TrackingState
     /// The last syncronization when the list of infected people was fetched

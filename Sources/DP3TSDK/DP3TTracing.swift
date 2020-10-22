@@ -46,25 +46,23 @@ public enum DP3TTracing {
     ///   - enviroment: enviroment to use
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
     ///   - backgroundHandler: a delegate to perform background tasks
-
     public static func initialize(with applicationDescriptor: ApplicationDescriptor,
                                   urlSession: URLSession = .shared,
-                                  backgroundHandler: DP3TBackgroundHandler? = nil) throws {
-        guard instance == nil else {
-            fatalError("DP3TSDK already initialized")
-        }
-        instance = try DP3TSDK(applicationDescriptor: applicationDescriptor,
+                                  backgroundHandler: DP3TBackgroundHandler? = nil) {
+        precondition(instance == nil, "DP3TSDK already initialized")
+        instance = DP3TSDK(applicationDescriptor: applicationDescriptor,
                                urlSession: urlSession,
                                backgroundHandler: backgroundHandler)
     }
 
-    /// The delegate
+    private static func instancePrecondition(){
+        precondition(instance != nil, "DP3TSDK not initialized call `initialize(with:delegate:)`")
+    }
 
+    /// The delegate
     public static var delegate: DP3TTracingDelegate? {
         set {
-            guard instance != nil else {
-                fatalError("DP3TSDK not initialized")
-            }
+            instancePrecondition()
             instance.delegate = newValue
         }
         get {
@@ -72,31 +70,23 @@ public enum DP3TTracing {
         }
     }
 
-    /// Starts Bluetooth tracing
-
-    public static func startTracing(completionHandler: ((Error?) -> Void)? = nil) throws {
-        guard let instance = instance else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
-        try instance.startTracing(completionHandler: completionHandler)
+    /// Starts tracing
+    public static func startTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
+        instancePrecondition()
+        instance.startTracing(completionHandler: completionHandler)
     }
 
-    /// Stops Bluetooth tracing
-
-    public static func stopTracing(completionHandler: ((Error?) -> Void)? = nil) {
-        guard let instance = instance else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
+    /// Stops tracing
+    public static func stopTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
+        instancePrecondition()
         instance.stopTracing(completionHandler: completionHandler)
     }
 
     /// Triggers sync with the backend to refresh the exposed list
     /// - Parameter callback: callback
-    public static func sync(runningInBackground: Bool, callback: ((SyncResult) -> Void)?) {
-        guard let instance = instance else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
-        instance.sync(runningInBackground: runningInBackground) { result in
+    public static func sync(callback: ((SyncResult) -> Void)?) {
+        instancePrecondition()
+        instance.sync() { result in
             DispatchQueue.main.async {
                 callback?(result)
             }
@@ -105,36 +95,27 @@ public enum DP3TTracing {
 
     /// Cancel any ongoing snyc
     public static func cancelSync() {
-        guard let instance = instance else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
+        instancePrecondition()
         instance.cancelSync()
     }
 
     /// get the current status of the SDK
-    /// - Parameter callback: callback
-
-    public static func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
-        guard let instance = instance else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
-        instance.status(callback: callback)
+    public static var status: TracingState {
+        instancePrecondition()
+        return instance.status
     }
 
     /// tell the SDK that the user was exposed
     /// - Parameters:
     ///   - onset: Start date of the exposure
-    ///   - authString: Authentication string for the exposure change
+    ///   - authentication: Authentication method
     ///   - isFakeRequest: indicates if the request should be a fake one. This method should be called regulary so people sniffing the networking traffic can no figure out if somebody is marking themself actually as exposed
     ///   - callback: callback
-
     public static func iWasExposed(onset: Date,
                                    authentication: ExposeeAuthMethod,
                                    isFakeRequest: Bool = false,
                                    callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
-        guard let instance = instance else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
+        instancePrecondition()
         instance.iWasExposed(onset: onset,
                              authentication: authentication,
                              isFakeRequest: isFakeRequest,
@@ -143,38 +124,23 @@ public enum DP3TTracing {
 
     /// reset exposure days
 
-    public static func resetExposureDays() throws {
-        guard instance != nil else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
-        try instance.resetExposureDays()
-    }
-
-    /// checks if infection status is resettable
-
-    public static var isInfectionStatusResettable: Bool {
-        guard instance != nil else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
-        return instance.isInfectionStatusResettable
+    public static func resetExposureDays() {
+        instancePrecondition()
+        instance.resetExposureDays()
     }
 
     /// reset the infection status
 
-    public static func resetInfectionStatus() throws {
-        guard instance != nil else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
-        try instance.resetInfectionStatus()
+    public static func resetInfectionStatus() {
+        instancePrecondition()
+        instance.resetInfectionStatus()
     }
 
     /// reset the SDK
 
-    public static func reset() throws {
-        guard instance != nil else {
-            fatalError("DP3TSDK not initialized call `initialize(with:delegate:)`")
-        }
-        try instance.reset()
+    public static func reset() {
+        instancePrecondition()
+        instance.reset()
         instance = nil
     }
 

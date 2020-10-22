@@ -23,7 +23,7 @@ func initializeSDK() {
         loggingStorage = try? .init()
         DP3TTracing.loggingDelegate = loggingStorage
     }
-    try! DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: baseUrl, reportBaseUrl: baseUrl, mode: .test))
+    DP3TTracing.initialize(with: .init(appId: "org.dpppt.demo", bucketBaseUrl: baseUrl, reportBaseUrl: baseUrl, mode: .test))
 }
 
 @UIApplicationMain
@@ -42,7 +42,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         case .none:
             break
         case .active:
-            try? DP3TTracing.startTracing()
+            DP3TTracing.startTracing()
         }
 
         return true

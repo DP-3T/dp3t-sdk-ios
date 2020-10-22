@@ -129,7 +129,7 @@ class ExposureNotificationTracer: Tracer {
                            enabled: self.manager.exposureNotificationEnabled)
     }
 
-    func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?) {
+    func setEnabled(_ enabled: Bool, completionHandler: ((TracingEnableResult) -> Void)?) {
         logger.log("calling ENMananger.setExposureNotificationEnabled %{public}@", enabled ? "true" : "false")
 
         guard self.isActivated else {
@@ -138,9 +138,9 @@ class ExposureNotificationTracer: Tracer {
             
             // use stored error if available
             if case let TrackingState.inactive(error: error) = state {
-                completionHandler?(error)
+                completionHandler?(.failure(error))
             } else {
-                completionHandler?(DP3TTracingError.permissonError)
+                completionHandler?(.failure(DP3TTracingError.permissonError))
             }
             return
         }
@@ -153,11 +153,12 @@ class ExposureNotificationTracer: Tracer {
                 self.logger.error("ENMananger.setExposureNotificationEnabled failed error: %{public}@", error.localizedDescription)
                 self.deferredEnable = enabled
                 self.state = .inactive(error: .exposureNotificationError(error: error))
+                completionHandler?(.failure(.exposureNotificationError(error: error)))
             } else {
                 self.deferredEnable = nil
                 self.updateState()
+                completionHandler?(.success(()))
             }
-            completionHandler?(error)
         }
     }
 }

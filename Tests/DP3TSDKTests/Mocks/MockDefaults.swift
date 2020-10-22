@@ -12,13 +12,11 @@
 import Foundation
 
 class MockDefaults: DefaultStorage {
+    var lastKeyBundleTag: String?
+
     var exposureDetectionDates: [Date] = []
 
-    var lastSyncTimestamps: [Date: Date] = [:]
-
     var parameters: DP3TParameters = .init()
-
-    var outstandingPublishes: Set<OutstandingPublish> = []
 
     var isFirstLaunch: Bool = false
 
@@ -26,16 +24,12 @@ class MockDefaults: DefaultStorage {
 
     var didMarkAsInfected: Bool = false
 
-    var infectionStatusIsResettable: Bool = true
-
     func reset() {
         exposureDetectionDates = []
-        lastSyncTimestamps = [:]
+        lastKeyBundleTag = nil
         parameters = .init()
-        outstandingPublishes = []
         isFirstLaunch = false
         lastSync = nil
         didMarkAsInfected = false
-        infectionStatusIsResettable = false
     }
 }

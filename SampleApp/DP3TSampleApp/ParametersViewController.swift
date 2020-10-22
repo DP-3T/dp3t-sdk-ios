@@ -23,9 +23,7 @@ class ParametersViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Parameters"
-        if #available(iOS 13.0, *) {
-            tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "wrench.fill"), tag: 0)
-        }
+        tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "wrench.fill"), tag: 0)
     }
 
     required init?(coder _: NSCoder) {
@@ -34,11 +32,7 @@ class ParametersViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if #available(iOS 13.0, *) {
-            self.view.backgroundColor = .systemBackground
-        } else {
-            view.backgroundColor = .white
-        }
+        self.view.backgroundColor = .systemBackground
         view.addSubview(stackView)
         stackView.snp.makeConstraints { make in
             make.left.right.bottom.equalTo(self.view.layoutMarginsGuide)
@@ -121,7 +115,7 @@ class ParametersViewController: UIViewController {
 
         do {
             let label = UILabel()
-            label.text = "Set Attenuation Factor High"
+            label.text = "Set Attenuation trigger Threshold"
             stackView.addArrangedSubview(label)
 
             attenuationtriggerThreshold.text = "\(params.contactMatching.triggerThreshold)"

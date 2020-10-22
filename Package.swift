@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "DP3TSDK",
     platforms: [
-        .iOS("13.5"),
+        .iOS("13.7"),
     ],
     products: [
         .library(

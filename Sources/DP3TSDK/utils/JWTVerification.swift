@@ -11,7 +11,6 @@
 import Foundation
 import SwiftJWT
 
-@available(iOS 11.0, *)
 /// A class or structure conforming to the standard JWT content required by DP3T SDK
 public protocol DP3TClaims: Claims {
     /// (Issuer) Claim
@@ -39,7 +38,6 @@ public class DP3TJWTVerifier {
     /// - Parameters:
     ///   - publicKey: The public key to verify the JWT signiture
     ///   - jwtTokenHeaderKey: The HTTP Header field key of the JWT Token
-    @available(iOS 11.0, *)
     public init(publicKey: Data, jwtTokenHeaderKey: String) {
         jwtVerifier = JWTVerifier.es256(publicKey: publicKey)
         self.jwtTokenHeaderKey = jwtTokenHeaderKey
@@ -57,7 +55,6 @@ public class DP3TJWTVerifier {
     ///   - claimsLeeway: The time in seconds that the JWT can be invalid but still accepted to account for clock differences.
     /// - Throws: `DP3TNetworkingError` in case of validation failures
     /// - Returns: The verified claims
-    @available(iOS 11.0, *)
     @discardableResult
     public func verify<ClaimType: DP3TClaims>(claimType: ClaimType.Type, httpResponse: HTTPURLResponse, httpBody: Data, claimsLeeway _: TimeInterval = 10) throws -> ClaimType {
         guard let jwtString = httpResponse.value(forHTTPHeaderField: jwtTokenHeaderKey) else {

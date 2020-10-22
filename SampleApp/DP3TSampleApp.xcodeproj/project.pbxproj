@@ -8,11 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = DF07D0A52451E59200CFD431 /* Alamofire */; };
+		F80B17EA2507BB4000A5D880 /* ExposureWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80B17E82507BB4000A5D880 /* ExposureWindow.swift */; };
 		F812AC56243DF459005F26AE /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC55243DF459005F26AE /* RootViewController.swift */; };
 		F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC58243E02A1005F26AE /* ControlViewController.swift */; };
 		F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC5A243E02AF005F26AE /* ParametersViewController.swift */; };
 		F8287D15246A78570022CFD9 /* DP3TSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F8287D14246A78570022CFD9 /* DP3TSDK */; };
 		F8287D19246ADCA00022CFD9 /* LogsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8287D18246ADCA00022CFD9 /* LogsViewController.swift */; };
+		F82FF76A25388C290028DA12 /* TimeInterval+const.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82FF76925388C290028DA12 /* TimeInterval+const.swift */; };
 		F830799324929039005D3C65 /* LoggingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F830799224929039005D3C65 /* LoggingStorage.swift */; };
 		F83079972492909A005D3C65 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = F83079962492909A005D3C65 /* SQLite */; };
 		F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83BE139242DDC450043FA1E /* AppDelegate.swift */; };
@@ -21,16 +23,19 @@
 		F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = F83BE14F242DDFF60043FA1E /* SnapKit */; };
 		F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85D4F3F243EFC6A00529168 /* Defaults.swift */; };
 		F85D4F42243F0D8B00529168 /* StackView+Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */; };
+		F88A3BDE2508AB4A001DDE5B /* ENExposureConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F88A3BDD2508AB4A001DDE5B /* ENExposureConfiguration.swift */; };
 		F89B452424731DD40011AD07 /* KeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F89B452324731DD40011AD07 /* KeysViewController.swift */; };
 		F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F80B17E82507BB4000A5D880 /* ExposureWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExposureWindow.swift; path = ../../../Sources/DP3TSDK/Matching/ExposureWindow.swift; sourceTree = "<group>"; };
 		F812AC55243DF459005F26AE /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		F812AC58243E02A1005F26AE /* ControlViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlViewController.swift; sourceTree = "<group>"; };
 		F812AC5A243E02AF005F26AE /* ParametersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParametersViewController.swift; sourceTree = "<group>"; };
 		F8287D18246ADCA00022CFD9 /* LogsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogsViewController.swift; sourceTree = "<group>"; };
 		F82F4BEB2462F5E100F7F9FA /* Entitlements.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = Entitlements.entitlements; sourceTree = "<group>"; };
+		F82FF76925388C290028DA12 /* TimeInterval+const.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "TimeInterval+const.swift"; path = "../../../Sources/DP3TSDK/utils/TimeInterval+const.swift"; sourceTree = "<group>"; };
 		F830799224929039005D3C65 /* LoggingStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingStorage.swift; sourceTree = "<group>"; };
 		F83BE136242DDC450043FA1E /* DP3TSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DP3TSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83BE139242DDC450043FA1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -40,6 +45,7 @@
 		F83BE17C242DE1BF0043FA1E /* covid-tracing-ios-sdk */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "covid-tracing-ios-sdk"; path = ..; sourceTree = "<group>"; };
 		F85D4F3F243EFC6A00529168 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
 		F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StackView+Spacing.swift"; sourceTree = "<group>"; };
+		F88A3BDD2508AB4A001DDE5B /* ENExposureConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ENExposureConfiguration.swift; path = ../../../Sources/DP3TSDK/Matching/ENExposureConfiguration.swift; sourceTree = "<group>"; };
 		F89B452324731DD40011AD07 /* KeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysViewController.swift; sourceTree = "<group>"; };
 		F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkingHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -59,6 +65,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F80B17E62507BB0D00A5D880 /* SDKReferences */ = {
+			isa = PBXGroup;
+			children = (
+				F88A3BDD2508AB4A001DDE5B /* ENExposureConfiguration.swift */,
+				F82FF76925388C290028DA12 /* TimeInterval+const.swift */,
+				F80B17E82507BB4000A5D880 /* ExposureWindow.swift */,
+			);
+			path = SDKReferences;
+			sourceTree = "<group>";
+		};
 		F83BE12D242DDC450043FA1E = {
 			isa = PBXGroup;
 			children = (
@@ -90,6 +106,7 @@
 				F89B452324731DD40011AD07 /* KeysViewController.swift */,
 				F812AC5A243E02AF005F26AE /* ParametersViewController.swift */,
 				F85D4F41243F0D8B00529168 /* StackView+Spacing.swift */,
+				F80B17E62507BB0D00A5D880 /* SDKReferences */,
 				F83BE142242DDC460043FA1E /* Assets.xcassets */,
 				F83BE144242DDC460043FA1E /* LaunchScreen.storyboard */,
 				F83BE147242DDC460043FA1E /* Info.plist */,
@@ -138,7 +155,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = Ubique;
 				TargetAttributes = {
 					F83BE135242DDC450043FA1E = {
@@ -188,6 +205,8 @@
 			files = (
 				F89B452424731DD40011AD07 /* KeysViewController.swift in Sources */,
 				F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */,
+				F88A3BDE2508AB4A001DDE5B /* ENExposureConfiguration.swift in Sources */,
+				F80B17EA2507BB4000A5D880 /* ExposureWindow.swift in Sources */,
 				F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */,
 				F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */,
 				F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */,
@@ -196,6 +215,7 @@
 				F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */,
 				F812AC56243DF459005F26AE /* RootViewController.swift in Sources */,
 				F8287D19246ADCA00022CFD9 /* LogsViewController.swift in Sources */,
+				F82FF76A25388C290028DA12 /* TimeInterval+const.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,6 +260,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -284,15 +305,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XPL89PTG92;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = ch.admin.bag.covid19.demo;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.admin.bag.dp3t.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "COVID19 Exposure Demo";
+				PROVISIONING_PROFILE_SPECIFIER = "dep-3t DEV Deveopment";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -326,6 +347,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -364,15 +386,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XPL89PTG92;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = ch.admin.bag.covid19.demo;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.admin.bag.dp3t.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "COVID19 Exposure Demo";
+				PROVISIONING_PROFILE_SPECIFIER = "dep-3t DEV Deveopment";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

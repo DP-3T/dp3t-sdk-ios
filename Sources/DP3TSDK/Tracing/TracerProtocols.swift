@@ -14,6 +14,8 @@ protocol TracerDelegate: AnyObject {
     func stateDidChange()
 }
 
+public typealias TracingEnableResult = Result<Void, DP3TTracingError>
+
 protocol Tracer {
     var delegate: TracerDelegate? { get set }
 
@@ -21,7 +23,7 @@ protocol Tracer {
 
     var isAuthorized: Bool { get }
 
-    func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?)
+    func setEnabled(_ enabled: Bool, completionHandler: ((TracingEnableResult) -> Void)?)
     
     func addInitialisationCallback(callback: @escaping  ()-> Void )
 }

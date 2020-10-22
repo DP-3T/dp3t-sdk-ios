@@ -13,7 +13,7 @@ import Foundation
 class SyncOperation: Operation {
     override func main() {
         let semaphore = DispatchSemaphore(value: 0)
-        DP3TTracing.sync(runningInBackground: true) { result in
+        DP3TTracing.sync() { result in
             switch result {
             case .failure:
                 self.cancel()

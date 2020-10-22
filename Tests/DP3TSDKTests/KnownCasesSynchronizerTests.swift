@@ -31,9 +31,9 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssert(service.requests.contains(DayDate(date: now).dayMin))
-        XCTAssert(!defaults.lastSyncTimestamps.isEmpty)
+        XCTAssertEqual(service.requests.count, 1)
+
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
     func testInitialLoadingFirstBatch() {
@@ -44,6 +44,10 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           service: service,
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
+
+        let oldKeyTag = "oldKeyTag"
+        defaults.lastKeyBundleTag = oldKeyTag
+        service.keyBundleTag = "newKeyTag"
         let expecation = expectation(description: "syncExpectation")
         sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { res in
             XCTAssertEqual(res, SyncResult.success)
@@ -51,11 +55,12 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
+        XCTAssertEqual(service.requests.first!, oldKeyTag)
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
-    func testOnlyCallingMatcherTwiceADay() {
+    func testRespectingRateLimitSingleDay() {
         let matcher = MockMatcher()
         let service = MockService()
         let defaults = MockDefaults()
@@ -77,8 +82,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             }
             waitForExpectations(timeout: 1)
         }
-        XCTAssertEqual(suceesses, 2)
-        XCTAssertEqual(matcher.timesCalledReceivedNewData, 20)
+        XCTAssertEqual(suceesses, ExposureDetectionTimingManager.maxDetections)
+        XCTAssertEqual(matcher.timesCalledReceivedNewData, ExposureDetectionTimingManager.maxDetections)
     }
 
     func testOnlyCallingMatcherOverMultipleDays() {
@@ -100,7 +105,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             }
             waitForExpectations(timeout: 1)
         }
-        XCTAssertEqual(matcher.timesCalledReceivedNewData, days * 20)
+        XCTAssertEqual(matcher.timesCalledReceivedNewData, days * 6)
     }
 
     func testStoringLastSyncNoData() {
@@ -119,27 +124,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
-    }
-
-    func testInitialLoadingManyBatches() {
-        let matcher = MockMatcher()
-        let service = MockService()
-        let defaults = MockDefaults()
-        let sync = KnownCasesSynchronizer(matcher: matcher,
-                                          service: service,
-                                          defaults: defaults,
-                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
-        let expecation = expectation(description: "syncExpectation")
-        sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!.addingTimeInterval(.day * 15)) { res in
-            XCTAssertEqual(res, SyncResult.success)
-            expecation.fulfill()
-        }
-        waitForExpectations(timeout: 1)
-
-        XCTAssertEqual(service.requests.count, defaults.parameters.networking.daysToCheck)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, defaults.parameters.networking.daysToCheck)
+        XCTAssertEqual(service.requests.count, 1)
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
     func testDontStoreLastSyncNetworkingError() {
@@ -157,8 +143,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             expecation.fulfill()
         }
         waitForExpectations(timeout: 1)
-
-        XCTAssert(defaults.lastSyncTimestamps.isEmpty)
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
     func testDontStoreLastSyncMatchingError() {
@@ -177,26 +162,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssert(defaults.lastSyncTimestamps.isEmpty)
-    }
-
-    func testDontStoreLastSyncSkipped() {
-        let matcher = MockMatcher()
-        let service = MockService()
-        let defaults = MockDefaults()
-        let sync = KnownCasesSynchronizer(matcher: matcher,
-                                          service: service,
-                                          defaults: defaults,
-                                          descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
-        let expecation = expectation(description: "syncExpectation")
-        let now = Self.formatter.date(from: "19.05.2020 01:00")!
-        sync.sync(now: now) { res in
-            XCTAssertEqual(res, SyncResult.skipped)
-            expecation.fulfill()
-        }
-        waitForExpectations(timeout: 1)
-
-        XCTAssert(defaults.lastSyncTimestamps.isEmpty)
+        XCTAssert(defaults.lastKeyBundleTag == nil)
     }
 
     func testRepeatingRequestsAfterDay() {
@@ -215,8 +181,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
 
         service.requests = []
 
@@ -227,8 +192,8 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
+        XCTAssertEqual(defaults.lastKeyBundleTag, service.keyBundleTag)
     }
 
     func testCallingSyncMulithreaded() {
@@ -253,8 +218,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
 
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertEqual(service.requests.count, 1)
     }
 
     func testCallingSyncMulithreadedWithCancel() {
@@ -266,6 +230,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
                                           defaults: defaults,
                                           descriptor: .init(appId: "ch.dpppt", bucketBaseUrl: URL(string: "http://www.google.de")!, reportBaseUrl: URL(string: "http://www.google.de")!))
 
+        let exp = expectation(description: "Test after 2 seconds")
         sync.sync(now: Self.formatter.date(from: "19.05.2020 09:00")!) { result in
             switch result {
             case let .failure(error):
@@ -278,14 +243,14 @@ final class KnownCasesSynchronizerTests: XCTestCase {
             default:
                 XCTFail()
             }
+            exp.fulfill()
         }
         sync.cancelSync()
 
-        let exp = expectation(description: "Test after 2 seconds")
         _ = XCTWaiter.wait(for: [exp], timeout: 2.0)
 
-        XCTAssertNotEqual(service.requests.count, 10)
-        XCTAssertNotEqual(defaults.lastSyncTimestamps.count, 10)
+        XCTAssertNotEqual(service.requests.count, 1)
+        XCTAssertEqual(defaults.lastKeyBundleTag, nil)
     }
 
     func testStoringOfSuccessfulDates(){
@@ -293,7 +258,7 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         let service = MockService()
         let defaults = MockDefaults()
         service.error = .HTTPFailureResponse(status: 400, data: nil)
-        service.errorAfter = 5
+        service.errorAfter = 0
         let sync = KnownCasesSynchronizer(matcher: matcher,
                                           service: service,
                                           defaults: defaults,
@@ -305,8 +270,9 @@ final class KnownCasesSynchronizerTests: XCTestCase {
         }
         waitForExpectations(timeout: 1)
 
-        XCTAssertEqual(service.requests.count, 10)
-        XCTAssertEqual(defaults.lastSyncTimestamps.count, 5)
+        XCTAssertEqual(service.requests.count, 1)
+
+        XCTAssert(defaults.lastKeyBundleTag == nil)
     }
 
     static var formatter: DateFormatter = {

@@ -58,9 +58,9 @@ class MockUrlCache: URLCache {
 }
 
 class MockSession: URLSession {
-    let data: Data?
-    let urlResponse: URLResponse?
-    let error: Error?
+    var data: Data?
+    var urlResponse: URLResponse?
+    var error: Error?
 
     var requests: [URLRequest] = []
 
