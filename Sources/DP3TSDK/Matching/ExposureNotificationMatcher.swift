@@ -112,12 +112,23 @@ class ExposureNotificationMatcher: Matcher {
             let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
                                                               higherThreshold: parameters.higherThreshold)
 
+            logger.log("day: %{public}@ lowerBucket: %{public}d upperBucket: %{public}d (lowerThreshold: %{public}d, higherThreshold: %{public}d)",
+                       day.description,
+                       attenuationValues.lowerBucket,
+                       attenuationValues.higherBucket,
+                       parameters.lowerThreshold,
+                       parameters.higherThreshold)
+
             if attenuationValues.matches(factorLow: parameters.factorLow,
                                          factorHigh: parameters.factorHigh,
                                          triggerThreshold: parameters.triggerThreshold) {
+                logger.log("day %{public}@ meets requriemnts with factorLow: %{public}f factorHigh: %{public}f, triggerThreshold: %{public}d",
+                           day.description,
+                           parameters.factorLow,
+                           parameters.factorHigh,
+                           parameters.triggerThreshold)
                 let day: ExposureDay = ExposureDay(identifier: UUID(), exposedDate: day, reportDate: Date(), isDeleted: false)
                 exposureDayStorage.add(day)
-
             }
         }
     }
