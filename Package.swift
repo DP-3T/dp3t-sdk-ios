@@ -14,7 +14,6 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
         .package(url: "https://github.com/IBM-Swift/Swift-JWT.git", from: "3.6.1"),
         .package(url: "https://github.com/weichsel/ZIPFoundation/", .upToNextMajor(from: "0.9.0")),
     ],
@@ -25,7 +24,7 @@ let package = Package(
         ),
         .testTarget(
             name: "DP3TSDKTests",
-            dependencies: ["DP3TSDK", "SwiftProtobuf"]
+            dependencies: ["DP3TSDK"]
         ),
     ]
 )
