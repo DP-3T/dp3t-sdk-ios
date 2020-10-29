@@ -1,6 +1,6 @@
 # Changelog for DP3T-SDK iOS
 
-##
+## Version 2.0.0 (29.10.2020)
 - 'Bearer' is not added as a prefix to auth key if using HTTPAuthorizationHeader auth method. 
 - HTTPAuthorizationBearer auth method is deprecated
 - updates to Exposure Notification Framework version 2
