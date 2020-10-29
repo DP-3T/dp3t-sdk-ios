@@ -80,7 +80,7 @@ DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
 
   ```ruby
 
-  pod 'DP3TSDK', => '1.3'
+  pod 'DP3TSDK', => '2.0.0'
 
   ```
 
