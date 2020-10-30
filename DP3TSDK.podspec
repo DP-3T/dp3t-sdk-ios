@@ -17,7 +17,7 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
 
   spec.author             = { "DP^3T" => "dp3t@ubique.ch" }
 
-  spec.platform     = :ios, "13.5"
+  spec.platform     = :ios, "13.7"
 
   spec.swift_versions = "5.2"
 
