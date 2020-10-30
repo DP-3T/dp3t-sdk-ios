@@ -72,7 +72,7 @@ class InfectionStatusTests: XCTestCase {
         }
     }
 
-    func testExposedReturnNewestDay() {
+    func testExposedReturnAllsDays() {
         let storage = ExposureDayStorage(keychain: keychain)
         let day1 = Self.formatter.date(from: "19.01.2020 17:23")!
         let day2 = Self.formatter.date(from: "20.01.2020 17:23")!
@@ -85,8 +85,11 @@ class InfectionStatusTests: XCTestCase {
         let state = InfectionStatus.getInfectionState(from: storage, defaults: mockDefaults)
         switch state {
         case let .exposed(days):
-            XCTAssertEqual(days.count, 1)
-            XCTAssertEqual(DayDate(date: days.first!.exposedDate), DayDate(date: day3))
+            XCTAssertEqual(days.count, 3)
+            let daysDate = days.map(\.exposedDate)
+            XCTAssert(daysDate.contains(DayDate(date: day1).dayMin))
+            XCTAssert(daysDate.contains(DayDate(date: day2).dayMin))
+            XCTAssert(daysDate.contains(DayDate(date: day3).dayMin))
         default:
             XCTFail()
         }

@@ -13,6 +13,11 @@ import ExposureNotification
 import UIKit
 import ZIPFoundation
 
+struct ExposureResult {
+    let summary: ENExposureDetectionSummary
+    let windows: [ENExposureWindow]
+}
+
 struct KeySection: Hashable {
     let date: Date
     let experimentName: String?
@@ -52,6 +57,8 @@ class KeysViewController: UIViewController {
 
     private let nameRegex = try? NSRegularExpression(pattern: "key_export_experiment_([a-zA-Z0-9]+)_(.+)", options: .caseInsensitive)
 
+    private let manager = ENManager()
+
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Keys"
@@ -76,6 +83,7 @@ class KeysViewController: UIViewController {
         datePicker.snp.makeConstraints { make in
             make.left.right.bottom.equalTo(self.view.safeAreaLayoutGuide)
             make.top.equalTo(tableView.snp.bottom)
+            make.height.equalTo(50)
         }
 
         datePicker.backgroundColor = .systemBackground
@@ -99,6 +107,12 @@ class KeysViewController: UIViewController {
         let date = roundendTs.addingTimeInterval(60 * 60 * 24)
         datePicker.setDate(date, animated: false)
         loadKeys(for: date)
+
+        manager.activate { error in
+            if let error = error {
+                loggingStorage?.log(error.localizedDescription, type: .error)
+            }
+        }
     }
 
     private func parseZipName(name: String) -> (experimentName: String?, deviceName: String?) {
@@ -168,6 +182,7 @@ class KeysViewController: UIViewController {
                 )
 
                 cell.textLabel?.text = zip.name
+                cell.textLabel?.numberOfLines = 0
                 return cell
             }
         )
@@ -177,61 +192,247 @@ class KeysViewController: UIViewController {
 extension KeysViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard let key = dataSource.itemIdentifier(for: indexPath) else { return }
-        let archive = Archive(url: key.localUrl, accessMode: .read)!
-        var localUrls: [URL] = []
-        for entry in archive {
-            let localURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathComponent(entry.path)
-            _ = try? archive.extract(entry, to: localURL)
-            localUrls.append(localURL)
-        }
-
-        let manager = ENManager()
-        manager.activate { error in
-            if let error = error {
-                loggingStorage?.log(error.localizedDescription, type: .error)
-            }
-
-            let configuration: ENExposureConfiguration = .configuration()
-            manager.detectExposures(configuration: configuration, diagnosisKeyURLs: localUrls) { summary, error in
-                var string = summary?.description ?? error.debugDescription
-                if let summary = summary {
-                    let parameters = DP3TTracing.parameters.contactMatching
-                    let computedThreshold: Double = (Double(truncating: summary.attenuationDurations[0]) * parameters.factorLow + Double(truncating: summary.attenuationDurations[1]) * parameters.factorHigh) / 60
-                    string.append("\n--------\n computed Threshold: \(computedThreshold)")
-                    if computedThreshold > Double(parameters.triggerThreshold) {
-                        string.append("\n meets requirement of \(parameters.triggerThreshold)")
-                    } else {
-                        string.append("\n doesn't meet requirement of \(parameters.triggerThreshold)")
-                    }
-                }
-
-                loggingStorage?.log(string, type: .info)
-                let alertController = UIAlertController(title: "Summary", message: string, preferredStyle: .alert)
-                let actionOk = UIAlertAction(title: "OK",
-                                             style: .default,
-                                             handler: nil)
-                alertController.addAction(actionOk)
-                self.present(alertController, animated: true, completion: nil)
-                try? localUrls.forEach(FileManager.default.removeItem(at:))
+        guard let zip = dataSource.itemIdentifier(for: indexPath) else { return }
+        handleZips([zip]) { [weak self] (result) in
+            guard let self = self else { return }
+            switch result {
+            case .success(let result):
+                self.showMatchingResults(results: [result])
+            default:
+                break
             }
         }
     }
+
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return UITableView.automaticDimension
+    }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        guard tableView.numberOfRows(inSection: section) != 0 else { return nil }
+        let button = UIButton()
+        button.setTitleColor(.systemBlue, for: .normal)
+        button.setTitleColor(.systemGray, for: .highlighted)
+        button.tag = section
+        button.setTitle("Match and Upload Experiment Results", for: .normal)
+        button.setTitle("Uplading...", for: .disabled)
+        button.addTarget(self, action: #selector(matchExperiment(sender:)), for: .touchUpInside)
+        return button
+    }
+
+    @objc
+    func matchExperiment(sender:UIButton){
+        sender.isEnabled = false
+        let section = dataSource.snapshot().sectionIdentifiers[sender.tag]
+        
+        let experimentName = section.experimentName ?? "Single_Device"
+
+        let itemIdentifiers = dataSource.snapshot().itemIdentifiers(inSection: section)
+        var results = [String: ExposureResult]()
+        DispatchQueue.init(label: "bg").async { [weak self] in
+            guard let self = self else { return }
+            let group = DispatchGroup()
+            for itemIdentifier in itemIdentifiers {
+                group.enter()
+                self.handleZips([itemIdentifier]) { (result) in
+                    switch result {
+                    case let .success(result):
+                        results[itemIdentifier.name] = result
+                    case .failure:
+                        break
+                    }
+                    group.leave()
+                }
+                group.wait()
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.showMatchingResults(results: Array(results.values))
+                var codableDict = [String: CodableDevice]()
+                for (device, result) in results {
+                    codableDict[device] = CodableDevice(exposureWindows: result.windows.map(CodableWindow.init(window:)))
+                }
+                self.networkingHelper.uploadMatchingResult(experimentName: experimentName, results: codableDict) { (_) in
+                }
+
+                sender.isEnabled = true
+            }
+        }
+
+    }
+
+    func showMatchingResults(results: [ExposureResult]){
+        let parameters = DP3TTracing.parameters.contactMatching
+        var resultString = ""
+
+        for result in results {
+            let groups = result.windows.groupByDay
+            var exposureDays = Set<Date>()
+
+            resultString.append("summary: \(result.summary.description)")
+            resultString.append("\n\n")
+
+            for (day, windows) in groups {
+                let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
+                                                                  higherThreshold: parameters.higherThreshold)
+
+                resultString.append("\(day.description) low: \(attenuationValues.lowerBucket), high: \(attenuationValues.higherBucket)")
+                resultString.append("\n")
+                if attenuationValues.matches(factorLow: parameters.factorLow,
+                                             factorHigh: parameters.factorHigh,
+                                             triggerThreshold: parameters.triggerThreshold) {
+                    exposureDays.insert(day)
+
+                }
+            }
+
+            resultString.append("rawWindows: \n")
+            for (day, windows) in groups {
+                resultString.append("date: \(day) \n")
+                for window in windows {
+                    for instance in window.scanInstances {
+                        resultString.append("seconds: \(instance.secondsSinceLastScan), typ: \(instance.typicalAttenuation), min: \(instance.minimumAttenuation) \n")
+                    }
+                }
+                resultString.append("\n")
+            }
+        }
+
+        print(resultString)
+        let alertController = UIAlertController(title: "Result", message: resultString, preferredStyle: .actionSheet)
+        let actionOk = UIAlertAction(title: "OK",
+                                     style: .default,
+                                     handler: nil)
+        alertController.addAction(actionOk)
+        self.present(alertController, animated: true, completion: nil)
+    }
 }
 
-extension ENExposureConfiguration {
-    static func configuration(parameters: DP3TParameters = DP3TTracing.parameters) -> ENExposureConfiguration {
-        let configuration = ENExposureConfiguration()
-        configuration.minimumRiskScore = 0
-        configuration.attenuationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.daysSinceLastExposureLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.durationLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.transmissionRiskLevelValues = [1, 2, 3, 4, 5, 6, 7, 8]
-        configuration.metadata = ["attenuationDurationThresholds": [parameters.contactMatching.lowerThreshold,
-                                                                    parameters.contactMatching.higherThreshold]]
-        return configuration
+extension KeysViewController {
+
+    private func getTempDirectory() -> URL {
+        FileManager.default
+            .urls(for: .cachesDirectory, in: .userDomainMask).first!
+            .appendingPathComponent(UUID().uuidString)
+    }
+    
+    func unarchiveZip(_ zip: NetworkingHelper.DebugZips) -> [URL] {
+        var urls: [URL] = []
+        let tempDirectory = self.getTempDirectory()
+
+        if let archive = Archive(url: zip.localUrl, accessMode: .read) {
+            for entry in archive {
+                let localURL = tempDirectory.appendingPathComponent(entry.path)
+                _ = try? archive.extract(entry, to: localURL)
+                urls.append(localURL)
+            }
+        }
+        return urls
+    }
+
+    func detectExposures(localUrls: [URL], previousWindows: [ENExposureWindow], completion: @escaping (Result<ExposureResult, Error>) -> ()) {
+        manager.detectExposures(configuration: .configuration, diagnosisKeyURLs: localUrls) { [weak self] summary, error in
+            guard let self = self else { return }
+            guard let summary = summary else {
+                completion(.failure(error!))
+                return
+            }
+            self.getWindows(summary: summary) { (result) in
+                switch result {
+                case let .success(exposureResult):
+                    let filteredWindows = exposureResult.windows.filter({ (window) -> Bool in
+                        !previousWindows.contains { (previousWindow) -> Bool in
+                            //make sure date is the same
+                            if previousWindow.date != window.date {
+                                return false
+                            }
+
+                            if previousWindow.scanInstances.count != window.scanInstances.count {
+                                return false
+                            }
+
+                            //make sure all scanInstances are equal
+                            for previousInstance in previousWindow.scanInstances {
+                                var found = false
+
+                                for instance in window.scanInstances {
+                                    if previousInstance.secondsSinceLastScan == instance.secondsSinceLastScan,
+                                       previousInstance.typicalAttenuation == instance.typicalAttenuation,
+                                       previousInstance.minimumAttenuation == instance.minimumAttenuation {
+                                        found = true
+                                    }
+                                }
+
+                                if !found {
+                                    return false
+                                }
+                            }
+                            return true
+                        }
+                       })
+                    completion(.success(ExposureResult(summary: exposureResult.summary,
+                                                       windows: filteredWindows)))
+                case let .failure(error):
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+
+    func getWindows(summary: ENExposureDetectionSummary, completion: @escaping (Result<ExposureResult, Error>) -> ()) {
+        print(summary.description)
+        loggingStorage?.log("summary: \(summary.description)", type: .default)
+        manager.getExposureWindows(summary: summary) { (weakWindows, error) in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            guard let windows = weakWindows else {
+                fatalError()
+            }
+
+            completion(.success(.init(summary: summary,
+                                      windows: windows)))
+        }
+    }
+
+    func getPreviousSummary(completion: @escaping (Result<ENExposureDetectionSummary, Error>) -> ()) {
+        manager.detectExposures(configuration: .configuration) { (summary, error) in
+            if let error = error {
+                completion(.failure(error))
+            } else if let summary = summary {
+                completion(.success(summary))
+            } else {
+                fatalError()
+            }
+        }
+    }
+
+    func getPreviousWindows(completion: @escaping ([ENExposureWindow]) -> ()) {
+        getPreviousSummary { [weak self] (result) in
+            guard let self = self else { return }
+            switch result {
+            case let .success(summary):
+                self.manager.getExposureWindows(summary: summary) {(window, error) in
+                    if let window = window {
+                        completion(window)
+                    } else {
+                        completion([])
+                    }
+                }
+            case .failure:
+                completion([])
+            }
+        }
+    }
+
+    func handleZips(_ zips: [NetworkingHelper.DebugZips], completion: @escaping (Result<ExposureResult, Error>) -> ()){
+        let localUrls = Array(zips.map(unarchiveZip(_:)).joined())
+        getPreviousWindows { [weak self] (windows) in
+            guard let self = self else { return }
+            self.detectExposures(localUrls: localUrls, previousWindows: windows, completion: completion)
+        }
     }
 }
 

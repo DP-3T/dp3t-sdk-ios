@@ -11,16 +11,30 @@
 import Foundation
 
 class ExposureDetectionTimingManager {
-    var storage: DefaultStorage
+    private var storage: DefaultStorage
 
-    static let maxDetections = 20
+    private let logger = Logger(ExposureDetectionTimingManager.self, category: "exposureDetectionTimingManager")
+
+    static let maxDetections = 6
+
+    private var minTimeintervalBetweenChecks: TimeInterval {
+        .day / TimeInterval(Self.maxDetections)
+    }
 
     init(storage: DefaultStorage = Default.shared) {
         self.storage = storage
     }
 
-    func shouldDetect(lastDetection: Date, now: Date = .init()) -> Bool {
-        return getRemainingDetections(now: now) != 0 && lastDetection < getLastDesiredSyncTime(now: now)
+    func shouldDetect(now: Date = .init()) -> Bool {
+        if getRemainingDetections(now: now) == 0 {
+            logger.log("no detections remaining for today")
+            return false
+        }
+        if timeIntervalSinceLatestDetection(now: now) < minTimeintervalBetweenChecks {
+            logger.log("timeIntervalSinceLatestDetection too small")
+            return false
+        }
+        return true
     }
 
     func addDetection(timestamp: Date = .init()) {
@@ -43,17 +57,10 @@ class ExposureDetectionTimingManager {
         return max(Self.maxDetections - inCurrentWindow.count, 0)
     }
 
-
-    func getLastDesiredSyncTime(now: Date = .init()) -> Date {
-        let calendar = Calendar.current
-        let dateComponents = calendar.dateComponents([.hour, .day, .month, .year], from: now)
-        if dateComponents.hour! < storage.parameters.networking.syncHourMorning {
-            let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
-            return calendar.date(bySettingHour: storage.parameters.networking.syncHourEvening, minute: 0, second: 0, of: yesterday)!
-        } else if dateComponents.hour! < storage.parameters.networking.syncHourEvening {
-            return calendar.date(bySettingHour: storage.parameters.networking.syncHourMorning, minute: 0, second: 0, of: now)!
-        } else {
-            return calendar.date(bySettingHour: storage.parameters.networking.syncHourEvening, minute: 0, second: 0, of: now)!
+    func timeIntervalSinceLatestDetection(now: Date = .init()) -> TimeInterval {
+        guard let latest = storage.exposureDetectionDates.max(by: <) else {
+            return .infinity
         }
+        return now.timeIntervalSince(latest)
     }
 }

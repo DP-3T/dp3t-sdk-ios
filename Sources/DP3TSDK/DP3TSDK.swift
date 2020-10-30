@@ -19,8 +19,6 @@ class DP3TSDK {
     /// appId of this instance
     private let applicationDescriptor: ApplicationDescriptor
 
-    private let outstandingPublishesStorage: OutstandingPublishStorage
-
     private let exposureDayStorage: ExposureDayStorage
 
     private var tracer: Tracer
@@ -69,14 +67,13 @@ class DP3TSDK {
     ///   - backgroundHandler: handler which gets called on background execution
     convenience init(applicationDescriptor: ApplicationDescriptor,
                      urlSession: URLSession,
-                     backgroundHandler: DP3TBackgroundHandler?) throws {
+                     backgroundHandler: DP3TBackgroundHandler?) {
         // reset keychain on first launch
         let defaults = Default.shared
         if defaults.isFirstLaunch {
             defaults.isFirstLaunch = false
             let keychain = Keychain()
             keychain.delete(for: ExposureDayStorage.key)
-            keychain.delete(for: OutstandingPublishStorage.key)
             defaults.reset()
         }
 
@@ -99,7 +96,6 @@ class DP3TSDK {
                   matcher: matcher,
                   diagnosisKeysProvider: diagnosisKeysProvider,
                   exposureDayStorage: exposureDayStorage,
-                  outstandingPublishesStorage: OutstandingPublishStorage(),
                   service: service,
                   synchronizer: synchronizer,
                   backgroundTaskManager: backgroundTaskManager,
@@ -113,7 +109,6 @@ class DP3TSDK {
          matcher: Matcher,
          diagnosisKeysProvider: DiagnosisKeysProvider,
          exposureDayStorage: ExposureDayStorage,
-         outstandingPublishesStorage: OutstandingPublishStorage,
          service: ExposeeServiceClientProtocol,
          synchronizer: KnownCasesSynchronizer,
          backgroundTaskManager: DP3TBackgroundTaskManager,
@@ -125,7 +120,6 @@ class DP3TSDK {
         self.matcher = matcher
         self.diagnosisKeysProvider = diagnosisKeysProvider
         self.exposureDayStorage = exposureDayStorage
-        self.outstandingPublishesStorage = outstandingPublishesStorage
         self.service = service
         self.synchronizer = synchronizer
         self.backgroundTaskManager = backgroundTaskManager
@@ -156,16 +150,17 @@ class DP3TSDK {
     }
 
     /// start tracing
-    func startTracing(completionHandler: ((Error?) -> Void)? = nil) throws {
+    func startTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
         log.trace()
         if case .infected = state.infectionStatus {
-            throw DP3TTracingError.userAlreadyMarkedAsInfected
+            completionHandler?(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
+            return
         }
         tracer.setEnabled(true, completionHandler: completionHandler)
     }
 
     /// stop tracing
-    func stopTracing(completionHandler: ((Error?) -> Void)? = nil) {
+    func stopTracing(completionHandler: ((TracingEnableResult) -> Void)? = nil) {
         log.trace()
         tracer.setEnabled(false, completionHandler: completionHandler)
     }
@@ -173,20 +168,10 @@ class DP3TSDK {
     /// Perform a new sync
     /// - Parameter callback: callback
     /// - Throws: if a error happed
-    func sync(runningInBackground: Bool, callback: ((SyncResult) -> Void)?) {
+    func sync(callback: ((SyncResult) -> Void)?) {
         log.trace()
 
         let group = DispatchGroup()
-
-        let outstandingPublishOperation = OutstandingPublishOperation(keyProvider: diagnosisKeysProvider,
-                                                                      serviceClient: service,
-                                                                      runningInBackground: runningInBackground,
-                                                                      tracer: tracer)
-        group.enter()
-        outstandingPublishOperation.completionBlock = {
-            group.leave()
-        }
-        OperationQueue().addOperation(outstandingPublishOperation)
 
         let sync = {
             var storedResult: SyncResult?
@@ -204,16 +189,14 @@ class DP3TSDK {
             }
 
             group.notify(queue: .main) { [weak self] in
-                guard let self = self else { return }
-                switch storedResult! {
-                case .success:
+                guard let self = self,
+                      let result = storedResult else { return }
+
+                if result == .success {
                     self.state.lastSync = Date()
-                    callback?(.success)
-                case .skipped:
-                    callback?(.skipped)
-                case let .failure(error):
-                    callback?(.failure(error))
                 }
+
+                callback?(result)
             }
         }
 
@@ -233,10 +216,9 @@ class DP3TSDK {
     }
 
     /// get the current status of the SDK
-    /// - Parameter callback: callback
-    func status(callback: (Result<TracingState, DP3TTracingError>) -> Void) {
-        log.trace()
-        callback(.success(state))
+    var status: TracingState {
+        log.log("retreiving status from SDK")
+        return state
     }
 
     /// tell the SDK that the user was exposed
@@ -284,7 +266,7 @@ class DP3TSDK {
 
                 var mutableKeys = keys
                 // always make sure we fill up the keys to defaults.parameters.crypto.numberOfKeysToSubmit
-                let fakeKeyCount = self.defaults.parameters.crypto.numberOfKeysToSubmit - mutableKeys.count
+                let fakeKeyCount = self.defaults.parameters.networking.numberOfKeysToSubmit - mutableKeys.count
 
                 let oldestRollingStartNumber = keys.min { (a, b) -> Bool in a.rollingStartNumber < b.rollingStartNumber }?.rollingStartNumber ?? DayDate(date: .init(timeIntervalSinceNow: -.day)).period
 
@@ -293,27 +275,17 @@ class DP3TSDK {
                 mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: fakeKeyCount, startingFrom: startingFrom))
 
                 let model = ExposeeListModel(gaenKeys: mutableKeys,
-                                             fake: isFakeRequest,
-                                             delayedKeyDate: DayDate())
+                                             fake: isFakeRequest)
 
                 self.service.addExposeeList(model, authentication: authentication) { [weak self] result in
                     guard let self = self else { return }
                     DispatchQueue.main.async {
                         switch result {
-                        case let .success(outstandingPublish):
+                        case .success:
                             if !isFakeRequest {
                                 self.state.infectionStatus = .infected
-                                if #available(iOS 13.7, *) {
-                                    // if we are running on iOS > 13.7 we have to keep EN framework running in order to export the key of the last day
-                                    // EN framework will later get disabled
-                                    self.log.log("disable resetting of infection status")
-                                    self.defaults.infectionStatusIsResettable = false
-                                } else {
-                                    self.tracer.setEnabled(false, completionHandler: nil)
-                                }
+                                self.tracer.setEnabled(false, completionHandler: nil)
                             }
-
-                            self.outstandingPublishesStorage.add(outstandingPublish)
 
                             callback(.success(()))
                         case let .failure(error):
@@ -325,31 +297,23 @@ class DP3TSDK {
         }
     }
 
-    var isInfectionStatusResettable: Bool {
-        defaults.infectionStatusIsResettable
-    }
-
     /// reset exposure days
-    func resetExposureDays() throws {
+    func resetExposureDays() {
         exposureDayStorage.markExposuresAsDeleted()
         state.infectionStatus = InfectionStatus.getInfectionState(from: exposureDayStorage)
     }
 
     /// reset the infection status
-    func resetInfectionStatus() throws {
-        guard defaults.infectionStatusIsResettable else {
-            throw DP3TTracingError.infectionStatusNotResettable
-        }
+    func resetInfectionStatus() {
         state.infectionStatus = .healthy
     }
 
     /// reset the SDK
-    func reset() throws {
+    func reset() {
         state.infectionStatus = .healthy
         log.trace()
         stopTracing()
         defaults.reset()
-        outstandingPublishesStorage.reset()
         exposureDayStorage.reset()
         URLCache.shared.removeAllCachedResponses()
     }

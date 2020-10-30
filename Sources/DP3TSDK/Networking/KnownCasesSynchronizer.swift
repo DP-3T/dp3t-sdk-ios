@@ -42,13 +42,9 @@ class KnownCasesSynchronizer {
 
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
-    private var dataTasks: [URLSessionDataTask] = []
+    private var dataTask: URLSessionDataTask?
 
     private var isCancelled: Bool = false
-
-    private var tasksRunning: Int = 0
-
-    private let dispatchGroup = DispatchGroup()
 
     private let timingManager: ExposureDetectionTimingManager
 
@@ -115,144 +111,73 @@ class KnownCasesSynchronizer {
         queue.async { [weak self] in
             guard let self = self else { return }
             self.isCancelled = true
-
-            for task in self.dataTasks {
-                task.cancel()
-            }
-            self.dataTasks.removeAll()
-
-            for _ in 0 ..< self.tasksRunning {
-                self.dispatchGroup.leave()
-            }
-            self.tasksRunning = 0
+            self.dataTask?.cancel()
+            self.dataTask = nil
+            self.matcher?.cancel()
         }
     }
 
     private func internalSync(now: Date = Date(), callback: Callback?) {
         logger.trace()
-
         isCancelled = false
 
-        let todayDate = DayDate(date: now).dayMin
+        let lastKeyBundleTag = defaults.lastKeyBundleTag
 
-        let minimumDate = todayDate.addingTimeInterval(-.day * Double(defaults.parameters.networking.daysToCheck - 1))
-
-        var calendar = Calendar.current
-        calendar.timeZone = Default.shared.parameters.crypto.timeZone
-        let components = calendar.dateComponents([.day], from: minimumDate, to: todayDate)
-
-        let daysToFetch = components.day ?? 0
-
-        // cleanup old published after
-
-        var lastSyncStore = defaults.lastSyncTimestamps
-        for date in lastSyncStore.keys {
-            if date < minimumDate {
-                lastSyncStore.removeValue(forKey: date)
-            }
+        guard descriptor.mode == .test || timingManager.shouldDetect(now: now) else {
+            logger.log("skipping sync since shouldDetect returned false")
+            callback?(.skipped)
+            return
         }
 
-        var occuredErrors: [DP3TTracingError] = []
-        var totalNumberOfRequests: Int = 0
-
-        var matchfound: Bool = false
-
-        for day in 0 ... daysToFetch {
-            guard let currentKeyDate = calendar.date(byAdding: .day, value: day, to: minimumDate) else {
-                continue
-            }
-
-            // To avoid syncing more than 2 times a day, we set the value of last sync to the desired hour minus 1 millisecond
-            guard let preferredHour = Calendar.current.date(bySettingHour: defaults.parameters.networking.syncHourMorning, minute: 0, second: 0, of: now),
-                let initialHour = Calendar.current.date(byAdding: .nanosecond, value: -1000, to: preferredHour) else {
-                fatalError()
-            }
-
-            let lastSync = lastSyncStore[currentKeyDate] ?? initialHour
-
-            guard descriptor.mode == .test || timingManager.shouldDetect(lastDetection: lastSync, now: now) else {
-                logger.log("skipping %{public}@ since shouldDetect returned false", currentKeyDate.description)
-                continue
-            }
-
-            totalNumberOfRequests += 1
-            dispatchGroup.enter()
-            tasksRunning += 1
-            let task = service.getExposee(batchTimestamp: currentKeyDate) { [weak self] result in
-                guard let self = self else { return }
-                self.queue.sync {
-                    guard self.isCancelled == false else {
-                        return
-                    }
-                    switch result {
-                    case let .failure(error):
-                        occuredErrors.append(.networkingError(error: error))
-                    case let .success(knownCasesData):
-                        do {
-                            if let data = knownCasesData.data {
-                                if let matcher = self.matcher {
-                                    self.logger.log("received data(%{public}d bytes) for %{public}@", data.count, currentKeyDate.description)
-                                    let foundNewMatch = try matcher.receivedNewData(data, keyDate: currentKeyDate, now: now)
-                                    matchfound = matchfound || foundNewMatch
-                                }else {
-                                    self.logger.error("matcher not present")
-                                }
-                            } else {
-                                self.logger.log("received no data for %{public}@", currentKeyDate.description)
-                            }
-
-                            lastSyncStore[currentKeyDate] = now
-
-                        } catch let error as DP3TNetworkingError {
-                            self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
-                            occuredErrors.append(.networkingError(error: error))
-                        } catch let error as DP3TTracingError {
-                            self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
-                            occuredErrors.append(error)
-                        } catch {
-                            self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
-                            occuredErrors.append(.caseSynchronizationError(errors: [error]))
-                        }
-                    }
-                    self.dispatchGroup.leave()
-                    self.tasksRunning -= 1
-                }
-            }
-            dataTasks.append(task)
-        }
-
-        dataTasks.forEach { $0.resume() }
-
-        dispatchGroup.notify(queue: .global(qos: .userInitiated)) { [weak self] in
+        dataTask = service.getExposee(lastKeyBundleTag: lastKeyBundleTag) { [weak self] (result) in
             guard let self = self else { return }
-
-            self.dataTasks.removeAll()
-
-            if matchfound {
-                self.delegate?.didFindMatch()
-            }
-
             guard self.isCancelled == false else {
-                callback?(.failure(.cancelled))
-                self.logger.error("sync got cancelled")
                 return
             }
+            switch result {
+            case let .success(knownCasesData):
+                do {
+                    if let data = knownCasesData.data {
+                        if let matcher = self.matcher {
+                            self.logger.log("received data(%{public}d bytes) [since: %{public}@]", data.count, lastKeyBundleTag ?? "nil")
+                            let foundNewMatch = try matcher.receivedNewData(data, now: now)
+                            if foundNewMatch {
+                                self.delegate?.didFindMatch()
+                            }
+                        }else {
+                            self.logger.error("matcher not present")
+                        }
+                    } else {
+                        self.logger.log("received no data [since: %{public}@]", lastKeyBundleTag ?? "nil")
+                    }
 
-            self.defaults.lastSyncTimestamps = lastSyncStore
+                    if let publishedKeyTag = knownCasesData.keyBundleTag {
+                        self.logger.log("storing new since: %{public}@", publishedKeyTag.description)
+                        self.defaults.lastKeyBundleTag = publishedKeyTag
+                    }
 
-            if let lastError = occuredErrors.last {
-                self.logger.error("finishing sync with error: %{public}@", lastError.localizedDescription)
-                callback?(.failure(lastError))
-            } else {
-                self.logger.log("finishing sync successful")
-                if totalNumberOfRequests != 0 {
+                    DP3TTracing.activityDelegate?.syncCompleted(totalRequest: 1, errors: [])
+
                     callback?(.success)
-                } else {
-                    callback?(.skipped)
+                } catch let error as DP3TNetworkingError {
+                    self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
+                    DP3TTracing.activityDelegate?.syncCompleted(totalRequest: 1, errors: [.networkingError(error: error)])
+                    callback?(.failure(.networkingError(error: error)))
+                } catch let error as DP3TTracingError {
+                    self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
+                    DP3TTracing.activityDelegate?.syncCompleted(totalRequest: 1, errors: [error])
+                    callback?(.failure(error))
+                } catch {
+                    self.logger.error("matcher receive error: %{public}@", error.localizedDescription)
+                    DP3TTracing.activityDelegate?.syncCompleted(totalRequest: 1, errors: [.caseSynchronizationError(errors: [error])])
+                    callback?(.failure(.caseSynchronizationError(errors: [error])))
                 }
+            case let .failure(error):
+                self.logger.error("could not get exposeeList from backend: %{public}@", error.localizedDescription)
+                DP3TTracing.activityDelegate?.syncCompleted(totalRequest: 1, errors: [.networkingError(error: error)])
+                callback?(.failure(.networkingError(error: error)))
             }
-            
-            DP3TTracing.activityDelegate?.syncCompleted(totalRequest: totalNumberOfRequests, errors: occuredErrors)
         }
+        dataTask?.resume()
     }
 }

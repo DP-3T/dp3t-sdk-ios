@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>ENAPIVersion</key>
-	<string>1</string>
-	<key>ENDeveloperRegion</key>
-	<string>CH</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>org.dpppt.exposure-notification</string>
@@ -27,6 +23,10 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ENAPIVersion</key>
+	<string>2</string>
+	<key>ENDeveloperRegion</key>
+	<string>TEST_CH_2</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>

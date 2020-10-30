@@ -13,41 +13,40 @@ import Foundation
 
 class MockService: ExposeeServiceClientProtocol {
 
-    static var descriptor: ApplicationDescriptor = .init(appId: "org.dpppt", bucketBaseUrl: URL(string: "http://google.com")!, reportBaseUrl: URL(string: "http://google.com")!)
+
+    static var descriptor: ApplicationDescriptor = .init(appId: "org.dpppt", bucketBaseUrl: URL(string: "https://bucket.dpppt.org")!, reportBaseUrl: URL(string: "https://report.bucket.dpppt.org")!)
 
     var descriptor: ApplicationDescriptor {
         Self.descriptor
     }
 
-    var requests: [Date] = []
+    var requests: [String?] = []
     let session = MockSession(data: "Data".data(using: .utf8), urlResponse: nil, error: nil)
     let queue = DispatchQueue(label: "synchronous")
     var error: DP3TNetworkingError?
-    var publishedUntil: Date = .init()
+    var keyBundleTag: String? = nil
     var data: Data? = "Data".data(using: .utf8)
     var errorAfter: Int = 0
 
-    func getExposee(batchTimestamp: Date, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
+    func getExposee(lastKeyBundleTag: String?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
         return session.dataTask(with: .init(url: URL(string: "http://www.google.com")!)) { _, _, _ in
             self.queue.sync {
-                self.requests.append(batchTimestamp)
+                self.requests.append(lastKeyBundleTag)
             }
             
             if let error = self.error, self.errorAfter <= 0 {
                 completion(.failure(error))
             } else {
                 self.errorAfter -= 1
-                completion(.success(.init(data: self.data, publishedUntil: self.publishedUntil)))
+                completion(.success(.init(data: self.data, keyBundleTag: self.keyBundleTag)))
             }
         }
     }
 
     var exposeeListModel: ExposeeListModel?
 
-    func addExposeeList(_ model: ExposeeListModel, authentication _: ExposeeAuthMethod, completion: @escaping (Result<OutstandingPublish, DP3TNetworkingError>) -> Void) {
+    func addExposeeList(_ model: ExposeeListModel, authentication _: ExposeeAuthMethod, completion: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {
         exposeeListModel = model
-        completion(.success(.init(authorizationHeader: "xy", dayToPublish: .init(), fake: model.fake)))
+        completion(.success(()))
     }
-
-    func addDelayedExposeeList(_: DelayedKeyModel, token _: String?, completion _: @escaping (Result<Void, DP3TNetworkingError>) -> Void) {}
 }

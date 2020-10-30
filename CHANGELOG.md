@@ -1,5 +1,17 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 2.0.0 (29.10.2020)
+- 'Bearer' is not added as a prefix to auth key if using HTTPAuthorizationHeader auth method. 
+- HTTPAuthorizationBearer auth method is deprecated
+- updates to Exposure Notification Framework version 2
+- ENAPIVersion has to be set to 2 in the Info.plist for this update to work
+- increases the deployment target to 13.7
+- outdated SDK methods have been removed
+- the SDK now exposes all exposure dates not only the most recent one
+- updated defaults for attenuationBucketThresholds, new values are 55 and 63
+- adds parameter "notificationGenerationTimeSpan" which specifies timespan notifications should get generated after an exposure
+- renamed several parameters to make their usage more clear
+
 ## Version 1.3.0 (29.09.2020)
 - Improve last day TEK export handling for iOS > 13.7 (must not disable EN until the following day)
 - Introduce new tracing error (.authorizationUnknown) to be able to handle users that did not grant (or revoked authorization by disabling exposure notifications in the iOS settings).

@@ -20,9 +20,9 @@ class MockTracer: Tracer {
 
     var isEnabled = false
 
-    func setEnabled(_ enabled: Bool, completionHandler: ((Error?) -> Void)?) {
+    func setEnabled(_ enabled: Bool, completionHandler: ((TracingEnableResult) -> Void)?) {
         isEnabled = enabled
-        completionHandler?(nil)
+        completionHandler?(.success(()))
     }
 
     func addInitialisationCallback(callback: @escaping () -> Void) {

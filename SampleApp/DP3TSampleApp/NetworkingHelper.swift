@@ -23,6 +23,36 @@ struct CodableDiagnosisKey: Codable, Equatable, Hashable {
     let fake: UInt8
 }
 
+struct CodableDevice: Codable {
+    let exposureWindows: [CodableWindow]
+}
+
+struct CodableWindow: Codable {
+    let dateMillisSinceEpoch: Int
+    let reportType: Int
+    let scanInstances: [CodableScanInstance]
+
+    init(window: ENExposureWindow) {
+        dateMillisSinceEpoch = Int(window.date.millisecondsSince1970)
+        reportType = Int(window.diagnosisReportType.rawValue)
+        scanInstances = window.scanInstances.map(CodableScanInstance.init(scanInstance: ))
+    }
+
+}
+
+struct CodableScanInstance: Codable{
+    let minAttenuationDB: Int
+    let typicalAttenuationDB: Int
+    let secondsSinceLastScan: Int
+
+    init(scanInstance: ENScanInstance) {
+        minAttenuationDB = Int(scanInstance.minimumAttenuation)
+        typicalAttenuationDB = Int(scanInstance.typicalAttenuation)
+        secondsSinceLastScan = scanInstance.secondsSinceLastScan
+    }
+}
+
+
 struct ExposeeListModel: Encodable {
     let gaenKeys: [CodableDiagnosisKey]
     let fake: Bool
@@ -32,13 +62,10 @@ struct ExposeeListModel: Encodable {
         // Encode key
         try container.encode(gaenKeys, forKey: .gaenKeys)
         try container.encode(fake ? 1 : 0, forKey: .fake)
-        let ts = Date().timeIntervalSince1970
-        let day = ts - ts.truncatingRemainder(dividingBy: 60 * 60 * 24)
-        try container.encode(Int(day / 600), forKey: .delayedKeyDate)
     }
 
     enum CodingKeys: CodingKey {
-        case gaenKeys, fake, delayedKeyDate
+        case gaenKeys, fake
     }
 }
 
@@ -152,17 +179,61 @@ class NetworkingHelper {
         })
     }
 
+    private func getTempDirectory() -> URL {
+        FileManager.default
+            .urls(for: .cachesDirectory, in: .userDomainMask).first!
+            .appendingPathComponent(UUID().uuidString)
+    }
+
+    enum UploadError: Error {
+        case encodingError
+    }
+
+    func uploadMatchingResult(experimentName: String,
+                              results: [String: CodableDevice],
+                              completionHandler: @escaping (Result<Void, Error>) -> Void){
+        let url = URL(string: "https://dp3tdemoupload.azurewebsites.net/upload")!
+
+        let encoder = JSONEncoder()
+
+        guard let json = try? encoder.encode(results) else {
+            completionHandler(.failure(UploadError.encodingError))
+            return
+        }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "YYY-MM-dd"
+        let fileName = "result_experiment_\(experimentName)_\(dateFormatter.string(from: .init()))_device.json"
+
+        AF.upload(multipartFormData: { multipartFormData in
+            multipartFormData.append(json, withName: "file", fileName: fileName, mimeType: "application/sqlite")
+        }, to: url)
+        .response { response in
+            if let responseData = response.data {
+                if let _ = String(data: responseData, encoding: .utf8) {
+                    completionHandler(.success(()))
+                } else {
+                    completionHandler(.failure(UploadServerError(error: "Upload Error",
+                                                                 message: "Unknown error",
+                                                                 path: "",
+                                                                 status: 400,
+                                                                 timestamp: Date().timeIntervalSince1970)))
+                }
+            }
+        }
+
+    }
+
     func uploadDebugKeys(debugName: String, completionHandler: @escaping (Result<Void, Error>) -> Void) {
         let manager = ENManager()
         manager.activate { _ in
-            manager.getTestDiagnosisKeys { keys, error in
+            manager.getDiagnosisKeys { keys, error in
                 guard error == nil else {
                     manager.invalidate()
                     return
                 }
 
                 var keys = keys?.map(CodableDiagnosisKey.init(key:)) ?? []
-                while keys.count < DP3TTracing.parameters.crypto.numberOfKeysToSubmit {
+                while keys.count < DP3TTracing.parameters.networking.numberOfKeysToSubmit {
                     let ts = Date().timeIntervalSince1970
                     let day = ts - ts.truncatingRemainder(dividingBy: 60 * 60 * 24)
                     keys.append(.init(keyData: Crypto.generateRandomKey(lenght: 16),

@@ -10,7 +10,7 @@ DP-3T is a free-standing effort started at EPFL and ETHZ that produced this prot
 
 
 ## Introduction
-This is the implementation of the DP-3T protocol using the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework of Apple/Google. Only approved government public health authorities can access the APIs. Therefore, using this SDK will result in an API error unless you were granted the `com.apple.developer.exposure-notification` entitlement by Apple. The ExposureNotification.framework is available starting with iOS 13.5.
+This is the implementation of the DP-3T protocol using the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework of Apple/Google. Only approved government public health authorities can access the APIs. Therefore, using this SDK will result in an API error unless you were granted the `com.apple.developer.exposure-notification` entitlement by Apple. We are using [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework version 2, and the deployment target is therefore set to 13.7.
 
 Our prestandard solution that is not using the Apple/Google framework can be found under the [tag prestandard](https://github.com/DP-3T/dp3t-sdk-ios/tree/prestandard).
 
@@ -23,6 +23,12 @@ Our prestandard solution that is not using the Apple/Google framework can be fou
 
 ## Further Documentation
 The full set of documents for DP3T is at https://github.com/DP-3T/documents. Please refer to the technical documents and whitepapers for a description of the implementation.
+
+## DP3T Exposure Score Calculation
+
+The in-depth technical specification of the methodology used for the score calculation can be found [here](https://github.com/admin-ch/PT-System-Documents/blob/master/SwissCovid-ExposureScore.pdf).
+
+A description of the usage of the Apple Exposure Notification API can be found [here](https://github.com/DP-3T/dp3t-sdk-ios/blob/master/EXPOSURE_NOTIFICATION_API_USAGE.md).
 
 ## Calibration App
 Included in this repository is a Calibration App that can run, debug and test the SDK directly without implementing it in a new app first. Various parameters of the SDK are exposed and can be changed at runtime. Additionally it provides an overview of how to use the SDK.
@@ -44,12 +50,12 @@ init | Initializes the SDK and configures it | `initialize(applicationDescriptor
 ### Methods 
 Name | Description | Function Name
 ---- | ----------- | -------------
-startTracing | Starts EN tracing | `func startTracing(completionHandler: )throws` 
+startTracing | Starts EN tracing | `func startTracing(completionHandler:)` 
 stopTracing | Stops EN tracing | `func stopTracing(completionHandler:)` 
 sync | Pro-actively triggers sync with backend to refresh exposed list | `func sync(callback:)` 
 status | Returns a TracingState-Object describing the current state. This contains:<br/>- `numberOfHandshakes` : `Int` <br /> - `trackingState` : `TrackingState` <br /> - `lastSync` : `Date` <br /> - `infectionStatus`:`InfectionStatus`<br /> - `backgroundRefreshState`:`UIBackgroundRefreshStatus ` | `func status(callback:)` 
 iWasExposed | This method must be called upon positive test. | `func iWasExposed(onset:authentication:isFakeRequest:callback:)` 
-reset | Removes all SDK related data | `func reset() throws`
+reset | Removes all SDK related data | `func reset()`
 
 
 ## Installation
@@ -74,7 +80,7 @@ DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
 
   ```ruby
 
-  pod 'DP3TSDK', => '1.3'
+  pod 'DP3TSDK', => '2.0.0'
 
   ```
 
@@ -85,7 +91,11 @@ This version points to the HEAD of the `develop` branch and will always fetch th
 In order to use the SDK with iOS 14 you need to specify the region for which the app works and the version of the [Exposure Notification](https://developer.apple.com/documentation/exposurenotification) Framework which should be used. 
 
 This is done by adding [`ENDeveloperRegion`](https://developer.apple.com/documentation/bundleresources/information_property_list/endeveloperregion) as an `Info.plist` property with the according ISO 3166-1 country code as its value.
-The SDK currently works with EN Framework version 1 and therefore we need to specify [`ENAPIVersion`](https://developer.apple.com/documentation/bundleresources/information_property_list/enapiversion) with a value of 1 in the `Info.plist`.
+The SDK works with EN Framework version 2 and therefore we need to specify [`ENAPIVersion`](https://developer.apple.com/documentation/bundleresources/information_property_list/enapiversion) with a value of 2 in the `Info.plist`.
+
+### Backend
+
+Starting with DP3T SDK version 2.0 the required [backend](https://github.com/DP-3T/dp3t-sdk-backend) version is 2.0.
 
 ### Initialization
 
@@ -93,9 +103,9 @@ In your AppDelegate in the `didFinishLaunchingWithOptions` function you have to 
 
 ```swift
 let url = URL(string: "https://example.com/your/api/")!
-try! DP3TTracing.initialize(with: .init(appId: "com.example.your.app", 
-                                        bucketBaseUrl: url, 
-                                        reportBaseUrl: url))
+DP3TTracing.initialize(with: .init(appId: "com.example.your.app", 
+                                   bucketBaseUrl: url, 
+                                   reportBaseUrl: url))
 ```
 
 ##### 
@@ -107,13 +117,13 @@ The SDK accepts a `URLSession` as an optional argument to the initializer. This 
 ### Start / Stop tracing
 To start and stop tracing use
 ```swift
-try DP3TTracing.startTracing()
+DP3TTracing.startTracing()
 DP3TTracing.stopTracing()
 ```
 
 ### Checking the current tracing status
 ```swift
-DP3TTracing.status(callback: (Result<TracingState, DP3TTracingErrors>) -> Void)
+let status = DP3TTracing.status
 ```
 The `TracingState` object contains all information regarding the current tracing status.
 

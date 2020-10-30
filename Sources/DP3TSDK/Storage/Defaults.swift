@@ -17,7 +17,7 @@ protocol DefaultStorage {
     /// Last date a backend sync happend
     var lastSync: Date? { get set }
 
-    var lastSyncTimestamps: [Date: Date] { get set }
+    var lastKeyBundleTag: String? { get set }
 
     /// Current infection status
     var didMarkAsInfected: Bool { get set }
@@ -26,8 +26,6 @@ protocol DefaultStorage {
     var parameters: DP3TParameters { get set }
 
     var exposureDetectionDates: [Date] { get set }
-
-    var infectionStatusIsResettable: Bool { get set }
 
     func reset()
 }
@@ -45,8 +43,8 @@ class Default: DefaultStorage {
     @Persisted(userDefaultsKey: "org.dpppt.lastsync", defaultValue: nil)
     var lastSync: Date?
 
-    @Persisted(userDefaultsKey: "org.dpppt.lastSyncTimestamps", defaultValue: [:])
-    var lastSyncTimestamps: [Date: Date]
+    @KeychainPersisted(key: "org.dpppt.lastPublishedKeyTag", defaultValue: nil)
+    var lastKeyBundleTag: String?
 
     /// Current infection status
     @KeychainPersisted(key: "org.dpppt.didMarkAsInfected", defaultValue: false)
@@ -54,11 +52,6 @@ class Default: DefaultStorage {
 
     @Persisted(userDefaultsKey: "org.dpppt.exposureDetectionDates", defaultValue: [])
     var exposureDetectionDates: [Date]
-
-    /// Is infection status resettable
-    /// on iOS > 13.7 we need to delay to disable of tracing until OutstandingPublishOperation is finished
-    @KeychainPersisted(key: "org.dpppt.infectionStatusIsResettable", defaultValue: true)
-    var infectionStatusIsResettable: Bool
 
     /// Parameters
     private func saveParameters(_ parameters: DP3TParameters) {
@@ -114,8 +107,7 @@ class Default: DefaultStorage {
         parameters = .init()
         lastSync = nil
         didMarkAsInfected = false
-        lastSyncTimestamps = [:]
-        infectionStatusIsResettable = true
+        lastKeyBundleTag = nil
     }
 }
 
