@@ -14,7 +14,7 @@ import XCTest
 
 class AttenuationsValuesTests: XCTestCase {
     func testMatching() {
-        let attenuationValues = AttenuationValues(lowerBucket: 120, higherBucket: 120)
+        let attenuationValues = AttenuationValues(lowerBucket: 120, higherBucket: 120, disregarded: 0)
 
         XCTAssert(attenuationValues.matches(factorLow: 0, factorHigh: 1, triggerThreshold: 2))
         XCTAssert(attenuationValues.matches(factorLow: 1, factorHigh: 0, triggerThreshold: 2))
@@ -24,7 +24,7 @@ class AttenuationsValuesTests: XCTestCase {
     }
 
     func testRoundingMinutesUp(){
-        let attenuationValues = AttenuationValues(lowerBucket: 59, higherBucket: 0)
+        let attenuationValues = AttenuationValues(lowerBucket: 59, higherBucket: 0, disregarded: 0)
         XCTAssert(attenuationValues.matches(factorLow: 1, factorHigh: 0, triggerThreshold: 1))
     }
 }
