@@ -25,6 +25,7 @@ extension Array where Element: ENExposureWindow {
 struct AttenuationValues {
     let lowerBucket: Int
     let higherBucket: Int
+    let disregarded: Int
 }
 
 extension AttenuationValues {
@@ -67,6 +68,7 @@ extension Array where Element == ENExposureWindow {
     /// - Returns: the 2 buckets
     func attenuationValues(lowerThreshold: Int, higherThreshold: Int) -> AttenuationValues {
         return AttenuationValues(lowerBucket:  getSeconds(above: 0,              below: lowerThreshold),
-                                 higherBucket: getSeconds(above: lowerThreshold, below: higherThreshold))
+                                 higherBucket: getSeconds(above: lowerThreshold, below: higherThreshold),
+                                 disregarded:  getSeconds(above: higherThreshold, below: Int.max))
     }
 }

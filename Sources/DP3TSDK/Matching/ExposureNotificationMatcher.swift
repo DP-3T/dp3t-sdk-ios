@@ -77,7 +77,9 @@ class ExposureNotificationMatcher: Matcher {
                 logger.error("ENManager.getExposureWindows failed error: %{public}@", error.localizedDescription)
                 throw DP3TTracingError.exposureNotificationError(error: error)
             case let .success(value):
-                logger.log("received windows: %{public}@", value.description)
+                for window in value {
+                    logger.log("received window for day: %{public}@ with scanInstances: %{public}@", window.date.description, window.scanInstances)
+                }
                 windows = value
             }
 
@@ -112,10 +114,11 @@ class ExposureNotificationMatcher: Matcher {
             let attenuationValues = windows.attenuationValues(lowerThreshold: parameters.lowerThreshold,
                                                               higherThreshold: parameters.higherThreshold)
 
-            logger.log("day: %{public}@ lowerBucket: %{public}d upperBucket: %{public}d (lowerThreshold: %{public}d, higherThreshold: %{public}d)",
+            logger.log("day: %{public}@ lowerBucket: %{public}d upperBucket: %{public}d disregarded: %{public}d (lowerThreshold: %{public}d, higherThreshold: %{public}d)",
                        day.description,
                        attenuationValues.lowerBucket,
                        attenuationValues.higherBucket,
+                       attenuationValues.disregarded,
                        parameters.lowerThreshold,
                        parameters.higherThreshold)
 
