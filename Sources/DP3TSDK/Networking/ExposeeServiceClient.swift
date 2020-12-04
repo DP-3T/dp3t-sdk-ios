@@ -83,7 +83,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
         let adjustedDate = date.addingTimeInterval(response.age)
 
-        let timeShift = Date().timeIntervalSince(adjustedDate)
+        let timeShift = abs(Date().timeIntervalSince(adjustedDate))
 
         log.log("detected timeshift is %{public}.2f", timeShift)
 
