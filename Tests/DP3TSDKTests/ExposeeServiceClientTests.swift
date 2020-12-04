@@ -95,7 +95,7 @@ class ExposeeServiceClientTests: XCTestCase {
         }
     }
 
-    func testDetectTimeShiftWithDateAndAgeFailing(){
+    func testDetectTimeShiftWithDateAndAgeFutureFailing(){
         let expectedURL = URL(string: "https://bucket.dpppt.org/v2/gaen/exposed")!
         session.data = "Data".data(using: .utf8)
         let age: TimeInterval = 100
@@ -116,7 +116,26 @@ class ExposeeServiceClientTests: XCTestCase {
         }
     }
 
+    func testDetectTimeShiftWithDateAndAgePastFailing(){
+        let expectedURL = URL(string: "https://bucket.dpppt.org/v2/gaen/exposed")!
+        session.data = "Data".data(using: .utf8)
+        let age: TimeInterval = 100
+        let date = Date().addingTimeInterval((parameters.networking.allowedServerTimeDiff + age))
+        session.urlResponse = HTTPURLResponse(url: expectedURL,
+                                              statusCode: 200,
+                                              httpVersion: nil,
+                                              headerFields: [
+                                                "Age": "\(Int(age))",
+                                                "date": HTTPURLResponse.dateFormatter.string(from: date)])
+        let (_, result) = getExposeeRequest(lastKeyBundleTag: nil)
 
+        switch result {
+        case .success:
+            XCTFail()
+        case let .failure(error):
+            XCTAssert(error == .timeInconsistency(shift: parameters.networking.allowedServerTimeDiff + age))
+        }
+    }
 
 
 
