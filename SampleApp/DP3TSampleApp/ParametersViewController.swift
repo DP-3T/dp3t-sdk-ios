@@ -23,7 +23,11 @@ class ParametersViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Parameters"
-        tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "wrench.fill"), tag: 0)
+        if #available(iOS 13.0, *) {
+            tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "wrench.fill"), tag: 0)
+        } else {
+            tabBarItem = UITabBarItem(title: title, image: nil, tag: 0)
+        }
     }
 
     required init?(coder _: NSCoder) {
@@ -32,7 +36,7 @@ class ParametersViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .systemBackground
+        self.view.backgroundColor = .white
         view.addSubview(stackView)
         stackView.snp.makeConstraints { make in
             make.left.right.bottom.equalTo(self.view.layoutMarginsGuide)

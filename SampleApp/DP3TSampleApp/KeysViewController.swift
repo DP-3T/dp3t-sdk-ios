@@ -37,12 +37,14 @@ struct KeySection: Hashable {
     }()
 }
 
+@available(iOS 13.0, *)
 class KeyDiffableDataSource: UITableViewDiffableDataSource<KeySection, NetworkingHelper.DebugZips> {
     override func tableView(_: UITableView, titleForHeaderInSection section: Int) -> String? {
         return snapshot().sectionIdentifiers[section].title
     }
 }
 
+@available(iOS 13.0, *)
 class KeysViewController: UIViewController {
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
 
@@ -189,6 +191,7 @@ class KeysViewController: UIViewController {
     }
 }
 
+@available(iOS 13.0, *)
 extension KeysViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
@@ -309,6 +312,7 @@ extension KeysViewController: UITableViewDelegate {
     }
 }
 
+@available(iOS 13.0, *)
 extension KeysViewController {
 
     private func getTempDirectory() -> URL {
@@ -436,6 +440,7 @@ extension KeysViewController {
     }
 }
 
+@available(iOS 13.0, *)
 extension NSDiffableDataSourceSnapshot where SectionIdentifierType == KeySection,ItemIdentifierType == NetworkingHelper.DebugZips {
     mutating func insert(section: KeySection, items: [NetworkingHelper.DebugZips]) {
         if !sectionIdentifiers.contains(section) {

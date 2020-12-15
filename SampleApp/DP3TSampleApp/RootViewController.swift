@@ -12,13 +12,19 @@ import DP3TSDK
 import UIKit
 
 class RootViewController: UITabBarController {
-    var controlsViewController = ControlViewController()
-    var parameterViewController = ParametersViewController()
-    var logsViewController = LogsViewController()
-    var keysViewController = KeysViewController()
 
-    lazy var tabs: [UIViewController] = [controlsViewController, keysViewController,
-                                         parameterViewController, logsViewController]
+    lazy var tabs: [UIViewController] = {
+        if #available(iOS 13.0, *) {
+            return [ControlViewController(),
+             ParametersViewController(),
+             LogsViewController(),
+             KeysViewController()]
+        } else {
+            return [ControlViewController(),
+             ParametersViewController(),
+             LogsViewController()]
+        }
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
