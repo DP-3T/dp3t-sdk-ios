@@ -52,20 +52,28 @@ class DP3TBackgroundTaskManager {
         guard !Self.didRegisterBackgroundTask else { return }
         Self.didRegisterBackgroundTask = true
 
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.exposureNotificationTaskIdentifier, using: .main) { task in
-            self.handleExposureNotificationBackgroundTask(task)
+        if #available(iOS 13.0, *) {
+            BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.exposureNotificationTaskIdentifier, using: .main) { task in
+                self.handleExposureNotificationBackgroundTask(task)
+            }
+            BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.refreshTaskIdentifier, using: .main) { task in
+                // Downcast the parameter to an app refresh task as this identifier is used for a refresh request.
+                self.handleRefreshTask(task as! BGAppRefreshTask)
+            }
+        } else {
+            // Fallback on earlier versions
         }
 
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.refreshTaskIdentifier, using: .main) { task in
-            // Downcast the parameter to an app refresh task as this identifier is used for a refresh request.
-            self.handleRefreshTask(task as! BGAppRefreshTask)
-        }
+
     }
 
     @objc func appDidEnterBackground(){
-        scheduleBackgroundTasks()
+        if #available(iOS 13.0, *) {
+            scheduleBackgroundTasks()
+        }
     }
 
+    @available(iOS 13.0, *)
     private func handleExposureNotificationBackgroundTask(_ task: BGTask) {
         logger.trace()
         scheduleBackgroundTasks()
@@ -109,6 +117,7 @@ class DP3TBackgroundTaskManager {
         }
     }
 
+    @available(iOS 13.0, *)
     private func handleRefreshTask(_ task: BGTask) {
         logger.trace()
         scheduleBackgroundTasks()
@@ -141,6 +150,7 @@ class DP3TBackgroundTaskManager {
         }
     }
 
+    @available(iOS 13.0, *)
     private func scheduleBackgroundTasks() {
         logger.trace()
 
