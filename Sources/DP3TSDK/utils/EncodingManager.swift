@@ -12,12 +12,25 @@ import Foundation
 
 enum EncodingManager {
     static func encode<T: Encodable>(object: T) throws -> Data {
-        if #available(iOS 13.0, *) {
+        if #available(iOS 13.1, *) {
             return try JSONEncoder().encode(object)
         } else {
-            // Fallback for iOS 12
-            //https://github.com/apple/swift/pull/30615/files#diff-20486a3e986e2ca169265f8fb80e4e834bfbf4a1a691e109474391e7fd4c608aL257
-            return try JSONSerialization.data(withJSONObject: object, options: .fragmentsAllowed)
+            // workaround if object is top level to support pre 13.1
+            if T.self == Optional<Date>.self ||
+               T.self == Optional<Bool>.self ||
+                T.self == Date.self ||
+                T.self == Bool.self ||
+                T.self == String.self ||
+                T.self == Optional<String>.self {
+                let encodedDate = try JSONEncoder().encode([object])
+                var encodedString = String(data: encodedDate, encoding: .utf8)
+                //remove "[" and "]"
+                encodedString?.removeLast()
+                encodedString?.removeFirst()
+                return encodedString!.data(using: .utf8)!
+            } else {
+                return try JSONEncoder().encode(object)
+            }
         }
     }
 }
