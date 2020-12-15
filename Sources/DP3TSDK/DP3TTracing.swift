@@ -40,6 +40,23 @@ public enum DP3TTracing {
         }
     }
 
+    /// Determines if the OS is compatible with the DP3T SDK
+    /// only in the case that the OS is compatible the Instance can be initialized
+    public static var isOSCompatible: Bool {
+        guard NSClassFromString("ENManager") != nil else {
+            // between 13.0 and 13.5 where no Exposure Notification framework is available
+            return false
+        }
+
+        if #available(iOS 13.7, *) {
+            return true
+        } else if #available(iOS 13.5, *) {
+            // Not supportet between iOS 13.5 and 13.7
+            return false
+        }
+        return true
+    }
+
     /// initialize the SDK
     /// - Parameters:
     ///   - config: configuration describing the backend to use
@@ -49,6 +66,7 @@ public enum DP3TTracing {
     public static func initialize(with applicationDescriptor: ApplicationDescriptor,
                                   urlSession: URLSession = .shared,
                                   backgroundHandler: DP3TBackgroundHandler? = nil) {
+        precondition(Self.isOSCompatible, "Operating System is not compatible")
         precondition(instance == nil, "DP3TSDK already initialized")
         instance = DP3TSDK(applicationDescriptor: applicationDescriptor,
                                urlSession: urlSession,

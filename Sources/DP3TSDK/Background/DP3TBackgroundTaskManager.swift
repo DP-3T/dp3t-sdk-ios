@@ -11,6 +11,7 @@
 import BackgroundTasks
 import Foundation
 import UIKit.UIApplication
+import ExposureNotification
 
 class DP3TBackgroundTaskManager {
     static let exposureNotificationTaskIdentifier: String = "org.dpppt.exposure-notification"
@@ -33,13 +34,25 @@ class DP3TBackgroundTaskManager {
     init(handler: DP3TBackgroundHandler?,
          keyProvider: DiagnosisKeysProvider,
          serviceClient: ExposeeServiceClientProtocol,
-         tracer: Tracer) {
+         tracer: Tracer,
+         manager: ENManager) {
         self.handler = handler
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
         self.tracer = tracer
 
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+
+        // this is only needed for iOS 12.5
+        if #available(iOS 13.7, *) {}
+        else {
+            manager.setLaunchActivityHandler { [weak self] (activityFlags) in
+                if activityFlags.contains(.periodicRun) {
+                    self?.handleiOS12BackgroundLaunch()
+                }
+            }
+        }
+
     }
 
     deinit {
@@ -71,6 +84,37 @@ class DP3TBackgroundTaskManager {
         if #available(iOS 13.0, *) {
             scheduleBackgroundTasks()
         }
+    }
+
+    private func handleiOS12BackgroundLaunch() {
+        logger.trace()
+        let queue = OperationQueue()
+
+        let completionGroup = DispatchGroup()
+
+        if let handler = handler {
+            let handlerOperation = HandlerOperation(handler: handler)
+
+            completionGroup.enter()
+            handlerOperation.completionBlock = { [weak self] in
+                self?.logger.log("Exposure notification handlerOperation finished")
+                completionGroup.leave()
+            }
+
+            queue.addOperation(handlerOperation)
+        }
+
+        let syncOperation = SyncOperation()
+
+        completionGroup.enter()
+        syncOperation.completionBlock = { [weak self] in
+            self?.logger.log("SyncOperation finished")
+            completionGroup.leave()
+        }
+
+        queue.addOperation(syncOperation)
+
+        completionGroup.wait(timeout: .now() + 3.5 * .minute)
     }
 
     @available(iOS 13.0, *)
