@@ -129,7 +129,9 @@ class Persisted<Value: Codable> {
 
     var wrappedValue: Value {
         didSet {
-            UserDefaults.standard.set(try! EncodingManager.encode(object: wrappedValue), forKey: userDefaultsKey)
+            if let encoded = try? EncodingManager.encode(object: wrappedValue) {
+                UserDefaults.standard.set(encoded, forKey: userDefaultsKey)
+            }
         }
     }
 }
