@@ -114,7 +114,12 @@ class DP3TBackgroundTaskManager {
 
         queue.addOperation(syncOperation)
 
-        completionGroup.wait(timeout: .now() + 3.5 * .minute)
+        if completionGroup.wait(timeout: .now() + 3.5 * .minute) == .timedOut {
+            // This should never be the case but it protects us from errors
+            // in ExposureNotifications.frameworks which cause the completion
+            // handler to never get called.
+            logger.error("iOS 12.5 background execution time was not sufficient")
+        }
     }
 
     @available(iOS 13.0, *)
