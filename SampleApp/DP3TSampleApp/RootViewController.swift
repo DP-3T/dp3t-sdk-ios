@@ -14,16 +14,10 @@ import UIKit
 class RootViewController: UITabBarController {
 
     lazy var tabs: [UIViewController] = {
-        if #available(iOS 13.0, *) {
-            return [ControlViewController(),
-             ParametersViewController(),
-             LogsViewController(),
-             KeysViewController()]
-        } else {
-            return [ControlViewController(),
-             ParametersViewController(),
-             LogsViewController()]
-        }
+        [ControlViewController(),
+         ParametersViewController(),
+         LogsViewController(),
+         KeysViewController()]
     }()
 
     override func viewDidLoad() {

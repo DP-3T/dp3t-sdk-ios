@@ -27,6 +27,7 @@
 		F89B452424731DD40011AD07 /* KeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F89B452324731DD40011AD07 /* KeysViewController.swift */; };
 		F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */; };
 		F8D581032588E83A00307C2B /* ExposureNotification.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F8D580FA2588E61E00307C2B /* ExposureNotification.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F8D5814F2589EC5A00307C2B /* DiffableDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = F8D5814E2589EC5A00307C2B /* DiffableDataSources */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +62,7 @@
 				F83079972492909A005D3C65 /* SQLite in Frameworks */,
 				F8287D15246A78570022CFD9 /* DP3TSDK in Frameworks */,
 				DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */,
+				F8D5814F2589EC5A00307C2B /* DiffableDataSources in Frameworks */,
 				F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -147,6 +149,7 @@
 				DF07D0A52451E59200CFD431 /* Alamofire */,
 				F8287D14246A78570022CFD9 /* DP3TSDK */,
 				F83079962492909A005D3C65 /* SQLite */,
+				F8D5814E2589EC5A00307C2B /* DiffableDataSources */,
 			);
 			productName = CovidTracingTestApp;
 			productReference = F83BE136242DDC450043FA1E /* DP3TSampleApp.app */;
@@ -180,6 +183,7 @@
 				F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */,
 				DF07D0A42451E59200CFD431 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				F83079952492909A005D3C65 /* XCRemoteSwiftPackageReference "SQLite" */,
+				F8D5814D2589EC5A00307C2B /* XCRemoteSwiftPackageReference "DiffableDataSources" */,
 			);
 			productRefGroup = F83BE137242DDC450043FA1E /* Products */;
 			projectDirPath = "";
@@ -453,6 +457,14 @@
 				minimumVersion = 5.0.1;
 			};
 		};
+		F8D5814D2589EC5A00307C2B /* XCRemoteSwiftPackageReference "DiffableDataSources" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ra1028/DiffableDataSources";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.4.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -474,6 +486,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		F8D5814E2589EC5A00307C2B /* DiffableDataSources */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F8D5814D2589EC5A00307C2B /* XCRemoteSwiftPackageReference "DiffableDataSources" */;
+			productName = DiffableDataSources;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

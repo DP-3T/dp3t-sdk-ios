@@ -12,6 +12,7 @@ import DP3TSDK
 import ExposureNotification
 import UIKit
 import ZIPFoundation
+import DiffableDataSources
 
 struct ExposureResult {
     let summary: ENExposureDetectionSummary
@@ -37,16 +38,20 @@ struct KeySection: Hashable {
     }()
 }
 
-@available(iOS 13.0, *)
-class KeyDiffableDataSource: UITableViewDiffableDataSource<KeySection, NetworkingHelper.DebugZips> {
+class KeyDiffableDataSource: TableViewDiffableDataSource<KeySection, NetworkingHelper.DebugZips> {
     override func tableView(_: UITableView, titleForHeaderInSection section: Int) -> String? {
         return snapshot().sectionIdentifiers[section].title
     }
 }
 
-@available(iOS 13.0, *)
 class KeysViewController: UIViewController {
-    private let tableView = UITableView(frame: .zero, style: .insetGrouped)
+    private let tableView: UITableView = {
+        if #available(iOS 13.0, *) {
+            return UITableView(frame: .zero, style: .insetGrouped)
+        } else {
+            return UITableView(frame: .zero, style: .grouped)
+        }
+    }()
 
     private let datePicker = UIDatePicker()
 
@@ -64,7 +69,11 @@ class KeysViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Keys"
-        tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "keyboard"), tag: 0)
+        if #available(iOS 13.0, *) {
+            tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "keyboard"), tag: 0)
+        } else {
+            tabBarItem = UITabBarItem(title: title, image: nil, tag: 0)
+        }
     }
 
     required init?(coder _: NSCoder) {
@@ -74,7 +83,11 @@ class KeysViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .systemBackground
+        if #available(iOS 13.0, *) {
+            view.backgroundColor = .systemBackground
+        } else {
+            view.backgroundColor = .white
+        }
 
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
@@ -88,7 +101,11 @@ class KeysViewController: UIViewController {
             make.height.equalTo(50)
         }
 
-        datePicker.backgroundColor = .systemBackground
+        if #available(iOS 13.0, *) {
+            datePicker.backgroundColor = .systemBackground
+        } else {
+            datePicker.backgroundColor = .white
+        }
         datePicker.datePickerMode = .date
         datePicker.addTarget(self, action: #selector(datePickerDidChange), for: .valueChanged)
 
@@ -96,7 +113,7 @@ class KeysViewController: UIViewController {
         tableView.dataSource = dataSource
         tableView.delegate = self
 
-        self.dataSource.apply(NSDiffableDataSourceSnapshot<KeySection, NetworkingHelper.DebugZips>(), animatingDifferences: true)
+        self.dataSource.apply(DiffableDataSourceSnapshot<KeySection, NetworkingHelper.DebugZips>(), animatingDifferences: true)
 
 
         activityIndicator.hidesWhenStopped = true
@@ -191,7 +208,6 @@ class KeysViewController: UIViewController {
     }
 }
 
-@available(iOS 13.0, *)
 extension KeysViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
@@ -312,7 +328,6 @@ extension KeysViewController: UITableViewDelegate {
     }
 }
 
-@available(iOS 13.0, *)
 extension KeysViewController {
 
     private func getTempDirectory() -> URL {
@@ -440,8 +455,7 @@ extension KeysViewController {
     }
 }
 
-@available(iOS 13.0, *)
-extension NSDiffableDataSourceSnapshot where SectionIdentifierType == KeySection,ItemIdentifierType == NetworkingHelper.DebugZips {
+extension DiffableDataSourceSnapshot where SectionIdentifierType == KeySection,ItemIdentifierType == NetworkingHelper.DebugZips {
     mutating func insert(section: KeySection, items: [NetworkingHelper.DebugZips]) {
         if !sectionIdentifiers.contains(section) {
             var inserted = false
