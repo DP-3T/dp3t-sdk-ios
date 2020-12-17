@@ -44,7 +44,7 @@ class DP3TBackgroundTaskManager {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
 
         // this is only needed for iOS 12.5
-        if #available(iOS 13.7, *) {}
+        if #available(iOS 13.0, *) {}
         else {
             manager.setLaunchActivityHandler { [weak self] (activityFlags) in
                 if activityFlags.contains(.periodicRun) {
@@ -73,11 +73,7 @@ class DP3TBackgroundTaskManager {
                 // Downcast the parameter to an app refresh task as this identifier is used for a refresh request.
                 self.handleRefreshTask(task as! BGAppRefreshTask)
             }
-        } else {
-            // Fallback on earlier versions
         }
-
-
     }
 
     @objc func appDidEnterBackground(){
