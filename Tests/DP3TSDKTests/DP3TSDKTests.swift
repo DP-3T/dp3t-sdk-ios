@@ -57,7 +57,7 @@ class DP3TSDKTests: XCTestCase {
 
         service = MockService()
         keyProvider = MockKeyProvider()
-        backgroundTaskManager = DP3TBackgroundTaskManager(handler: nil, keyProvider: keyProvider, serviceClient: service, tracer: tracer)
+        backgroundTaskManager = DP3TBackgroundTaskManager(handler: nil, keyProvider: keyProvider, serviceClient: service, tracer: tracer, manager: manager)
         sdk = DP3TSDK(applicationDescriptor: descriptor,
                           urlSession: MockSession(data: nil, urlResponse: nil, error: nil),
                           tracer: tracer,

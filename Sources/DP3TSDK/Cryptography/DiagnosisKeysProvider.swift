@@ -39,7 +39,7 @@ extension DiagnosisKeysProvider {
 }
 
 fileprivate var logger = Logger(.main, category: "DiagnosisKeysProvider")
-
+@available(iOS 12.5, *)
 extension ENManager: DiagnosisKeysProvider {
     func getDiagnosisKeys(onsetDate: Date?, appDesc: ApplicationDescriptor, disableExposureNotificationAfterCompletion: Bool, completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void) {
         logger.trace()
@@ -114,7 +114,7 @@ extension ENManager: DiagnosisKeysProvider {
         completionHandler(.success(getFakeKeys(count: Default.shared.parameters.networking.numberOfKeysToSubmit, startingFrom: .init(timeIntervalSinceNow: -.day))))
     }
 }
-
+@available(iOS 12.5, *)
 extension CodableDiagnosisKey {
     init(key: ENTemporaryExposureKey) {
         keyData = key.keyData
@@ -124,7 +124,7 @@ extension CodableDiagnosisKey {
         fake = 0
     }
 }
-
+@available(iOS 12.5, *)
 extension ENTemporaryExposureKey {
     var date: Date {
         Date(timeIntervalSince1970: TimeInterval(rollingStartNumber) * TimeInterval.minute * 10)

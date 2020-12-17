@@ -10,6 +10,7 @@
 
 import Foundation
 
+@available(iOS 12.5, *)
 class SyncOperation: Operation {
     override func main() {
         let semaphore = DispatchSemaphore(value: 0)

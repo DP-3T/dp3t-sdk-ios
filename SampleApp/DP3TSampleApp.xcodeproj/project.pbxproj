@@ -26,6 +26,8 @@
 		F88A3BDE2508AB4A001DDE5B /* ENExposureConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F88A3BDD2508AB4A001DDE5B /* ENExposureConfiguration.swift */; };
 		F89B452424731DD40011AD07 /* KeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F89B452324731DD40011AD07 /* KeysViewController.swift */; };
 		F8A7E69D24731FB400213CE2 /* NetworkingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */; };
+		F8D581032588E83A00307C2B /* ExposureNotification.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F8D580FA2588E61E00307C2B /* ExposureNotification.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F8D5814F2589EC5A00307C2B /* DiffableDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = F8D5814E2589EC5A00307C2B /* DiffableDataSources */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +50,7 @@
 		F88A3BDD2508AB4A001DDE5B /* ENExposureConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ENExposureConfiguration.swift; path = ../../../Sources/DP3TSDK/Matching/ENExposureConfiguration.swift; sourceTree = "<group>"; };
 		F89B452324731DD40011AD07 /* KeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysViewController.swift; sourceTree = "<group>"; };
 		F8A7E69C24731FB400213CE2 /* NetworkingHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkingHelper.swift; sourceTree = "<group>"; };
+		F8D580FA2588E61E00307C2B /* ExposureNotification.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExposureNotification.framework; path = System/Library/Frameworks/ExposureNotification.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,9 +58,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F8D581032588E83A00307C2B /* ExposureNotification.framework in Frameworks */,
 				F83079972492909A005D3C65 /* SQLite in Frameworks */,
 				F8287D15246A78570022CFD9 /* DP3TSDK in Frameworks */,
 				DF07D0A62451E59200CFD431 /* Alamofire in Frameworks */,
+				F8D5814F2589EC5A00307C2B /* DiffableDataSources in Frameworks */,
 				F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -117,6 +122,7 @@
 		F83BE151242DE0C00043FA1E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F8D580FA2588E61E00307C2B /* ExposureNotification.framework */,
 				F83BE17C242DE1BF0043FA1E /* covid-tracing-ios-sdk */,
 			);
 			name = Frameworks;
@@ -143,6 +149,7 @@
 				DF07D0A52451E59200CFD431 /* Alamofire */,
 				F8287D14246A78570022CFD9 /* DP3TSDK */,
 				F83079962492909A005D3C65 /* SQLite */,
+				F8D5814E2589EC5A00307C2B /* DiffableDataSources */,
 			);
 			productName = CovidTracingTestApp;
 			productReference = F83BE136242DDC450043FA1E /* DP3TSampleApp.app */;
@@ -176,6 +183,7 @@
 				F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */,
 				DF07D0A42451E59200CFD431 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				F83079952492909A005D3C65 /* XCRemoteSwiftPackageReference "SQLite" */,
+				F8D5814D2589EC5A00307C2B /* XCRemoteSwiftPackageReference "DiffableDataSources" */,
 			);
 			productRefGroup = F83BE137242DDC450043FA1E /* Products */;
 			projectDirPath = "";
@@ -285,7 +293,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -305,7 +313,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XPL89PTG92;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -366,7 +374,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -386,7 +394,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XPL89PTG92;
 				INFOPLIST_FILE = DP3TSampleApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -449,6 +457,14 @@
 				minimumVersion = 5.0.1;
 			};
 		};
+		F8D5814D2589EC5A00307C2B /* XCRemoteSwiftPackageReference "DiffableDataSources" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ra1028/DiffableDataSources";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.4.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -470,6 +486,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F83BE14E242DDFF60043FA1E /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		F8D5814E2589EC5A00307C2B /* DiffableDataSources */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F8D5814D2589EC5A00307C2B /* XCRemoteSwiftPackageReference "DiffableDataSources" */;
+			productName = DiffableDataSources;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -35,7 +35,11 @@ class ControlViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Controls"
-        tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "doc.text"), tag: 0)
+        if #available(iOS 13.0, *) {
+            tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "doc.text"), tag: 0)
+        } else {
+            tabBarItem = UITabBarItem(title: title, image: nil, tag: 0)
+        }
         segmentedControl.selectedSegmentIndex = 1
         segmentedControl.addTarget(self, action: #selector(segmentedControlChanges), for: .valueChanged)
 
@@ -66,7 +70,11 @@ class ControlViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .systemBackground
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = .systemBackground
+        } else {
+            self.view.backgroundColor = .white
+        }
         view.addSubview(scrollView)
         scrollView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -88,7 +96,11 @@ class ControlViewController: UIViewController {
         statusLabel.font = .systemFont(ofSize: 18)
         statusLabel.textAlignment = .center
         statusLabel.numberOfLines = 0
-        statusLabel.backgroundColor = .systemGroupedBackground
+        if #available(iOS 13.0, *) {
+            statusLabel.backgroundColor = .systemGroupedBackground
+        } else {
+            statusLabel.backgroundColor = .white
+        }
         self.updateUI(DP3TTracing.status)
 
         stackView.addArrangedSubview(statusLabel)

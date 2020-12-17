@@ -6,53 +6,71 @@
         "repositoryURL": "https://github.com/Alamofire/Alamofire.git",
         "state": {
           "branch": null,
-          "revision": "fca036f7aeca07124067cb6e0c12b0ad6359e3d4",
-          "version": "5.1.0"
+          "revision": "9e0328127dfb801cefe8ac53a13c0c90a7770448",
+          "version": "5.4.0"
         }
       },
       {
         "package": "Cryptor",
-        "repositoryURL": "https://github.com/IBM-Swift/BlueCryptor.git",
+        "repositoryURL": "https://github.com/Kitura/BlueCryptor.git",
         "state": {
           "branch": null,
-          "revision": "12d2bf3ec7207ec3cd004b9582f69ef5fae1da3b",
-          "version": "1.0.32"
+          "revision": "ee5880e031da4c609f372cf7472476ab51d5dd19",
+          "version": "1.0.200"
         }
       },
       {
         "package": "CryptorECC",
-        "repositoryURL": "https://github.com/IBM-Swift/BlueECC.git",
+        "repositoryURL": "https://github.com/Kitura/BlueECC.git",
         "state": {
           "branch": null,
-          "revision": "73f362cb0d9c5f1fd0089240d7b293cd2bff18db",
-          "version": "1.2.5"
+          "revision": "baf6ed3fc1a622675f0041b4aff7c02dd1a93818",
+          "version": "1.2.200"
         }
       },
       {
         "package": "CryptorRSA",
-        "repositoryURL": "https://github.com/IBM-Swift/BlueRSA.git",
+        "repositoryURL": "https://github.com/Kitura/BlueRSA.git",
         "state": {
           "branch": null,
-          "revision": "8ea901f2582296837d88f882b0fa5a0601759598",
-          "version": "1.0.35"
+          "revision": "c885fcdbe1b04718cb46d747387137653c030f6c",
+          "version": "1.0.200"
+        }
+      },
+      {
+        "package": "DiffableDataSources",
+        "repositoryURL": "https://github.com/ra1028/DiffableDataSources",
+        "state": {
+          "branch": null,
+          "revision": "581b4f8d1634e83c6b33caaafdc6a115a74650c3",
+          "version": "0.4.0"
+        }
+      },
+      {
+        "package": "DifferenceKit",
+        "repositoryURL": "https://github.com/ra1028/DifferenceKit.git",
+        "state": {
+          "branch": null,
+          "revision": "14c66681e12a38b81045f44c6c29724a0d4b0e72",
+          "version": "1.1.5"
         }
       },
       {
         "package": "KituraContracts",
-        "repositoryURL": "https://github.com/IBM-Swift/KituraContracts.git",
+        "repositoryURL": "https://github.com/Kitura/KituraContracts.git",
         "state": {
           "branch": null,
-          "revision": "a30e2fb79e926672776a05ec6b919c239870a221",
-          "version": "1.2.1"
+          "revision": "8418006e39e2efae9b31ae92721cb597ac29c617",
+          "version": "1.2.200"
         }
       },
       {
         "package": "LoggerAPI",
-        "repositoryURL": "https://github.com/IBM-Swift/LoggerAPI.git",
+        "repositoryURL": "https://github.com/Kitura/LoggerAPI.git",
         "state": {
           "branch": null,
-          "revision": "3357dd9526cdf9436fa63bb792b669e6efdc43da",
-          "version": "1.9.0"
+          "revision": "e82d34eab3f0b05391082b11ea07d3b70d2f65bb",
+          "version": "1.9.200"
         }
       },
       {
@@ -75,11 +93,11 @@
       },
       {
         "package": "SwiftJWT",
-        "repositoryURL": "https://github.com/IBM-Swift/Swift-JWT.git",
+        "repositoryURL": "https://github.com/Kitura/Swift-JWT.git",
         "state": {
           "branch": null,
-          "revision": "0d435423d12e61c0d14adb6d04396c08a6a650f1",
-          "version": "3.6.1"
+          "revision": "2f2fc12ae88660e0760b04d9e6c341517b31ad7b",
+          "version": "3.6.200"
         }
       },
       {
@@ -87,8 +105,8 @@
         "repositoryURL": "https://github.com/apple/swift-log.git",
         "state": {
           "branch": null,
-          "revision": "74d7b91ceebc85daf387ebb206003f78813f71aa",
-          "version": "1.2.0"
+          "revision": "173f567a2dfec11d74588eea82cecea555bdc0bc",
+          "version": "1.4.0"
         }
       },
       {

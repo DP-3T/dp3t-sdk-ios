@@ -10,6 +10,7 @@
 
 import ExposureNotification
 
+@available(iOS 12.5, *)
 extension ENExposureConfiguration {
     /// This configuration only sets values needed to get ExposureWindows from the EN Framework
     /// DP3T does not use the risk calculation of the EN framework. It only uses ExposureWindows and ScanInstances to gather information about a exposures.
