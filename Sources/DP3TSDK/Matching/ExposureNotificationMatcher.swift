@@ -15,7 +15,7 @@ import ZIPFoundation
 enum ExposureNotificationMatcherError: Error {
     case timeOut
 }
-
+@available(iOS 12.5, *)
 class ExposureNotificationMatcher: Matcher {
     weak var timingManager: ExposureDetectionTimingManager?
 

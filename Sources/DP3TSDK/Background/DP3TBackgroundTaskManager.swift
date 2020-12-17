@@ -13,6 +13,7 @@ import Foundation
 import UIKit.UIApplication
 import ExposureNotification
 
+@available(iOS 12.5, *)
 class DP3TBackgroundTaskManager {
     static let exposureNotificationTaskIdentifier: String = "org.dpppt.exposure-notification"
     static let refreshTaskIdentifier: String = "org.dpppt.refresh"

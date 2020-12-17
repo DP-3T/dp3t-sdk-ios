@@ -12,6 +12,7 @@ import ExposureNotification
 import Foundation
 import UIKit.UIApplication
 
+@available(iOS 12.5, *)
 class ExposureNotificationTracer: Tracer {
     private let manager: ENManager
 
@@ -163,6 +164,7 @@ class ExposureNotificationTracer: Tracer {
     }
 }
 
+@available(iOS 12.5, *)
 extension TrackingState {
     init(state: ENStatus, authorizationStatus: ENAuthorizationStatus, enabled: Bool) {
 

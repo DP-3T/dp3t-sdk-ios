@@ -11,7 +11,7 @@
 import Foundation
 import ExposureNotification
 
-
+@available(iOS 12.5, *)
 extension Array where Element: ENExposureWindow {
     /// Groups windows by Date
     var groupByDay: [Date: [ENExposureWindow]] {
@@ -43,6 +43,7 @@ extension AttenuationValues {
     }
 }
 
+@available(iOS 12.5, *)
 extension Array where Element == ENExposureWindow {
     /// Get Seconds of ScanInstances with a typical attenuation between to given values
     /// - Parameters:

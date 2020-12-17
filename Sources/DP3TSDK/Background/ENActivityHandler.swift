@@ -20,6 +20,7 @@ struct ENActivityFlags: OptionSet {
 
 typealias ENActivityHandler = (ENActivityFlags) -> Void
 
+@available(iOS 12.5, *)
 extension ENManager {
     func setLaunchActivityHandler(activityHandler: @escaping ENActivityHandler) {
         let proxyActivityHandler: @convention(block) (UInt32) -> Void = {integerFlag in
