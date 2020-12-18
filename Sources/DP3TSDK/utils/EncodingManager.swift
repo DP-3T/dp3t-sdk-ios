@@ -34,3 +34,26 @@ enum EncodingManager {
         }
     }
 }
+
+enum DecodingManager {
+    static func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+        if #available(iOS 13.1, *) {
+            return try JSONDecoder().decode(type, from: data)
+        } else {
+            // workaround if object is top level to support pre 13.1
+            if T.self == Optional<Date>.self ||
+               T.self == Optional<Bool>.self ||
+                T.self == Date.self ||
+                T.self == Bool.self ||
+                T.self == String.self ||
+                T.self == Optional<String>.self {
+                let encodedString = String(data: data, encoding: .utf8)!
+                let wrappedElement = "[\(encodedString)]"
+                let collection = try JSONDecoder().decode([T].self, from: wrappedElement.data(using: .utf8)!)
+                return collection.first!
+            } else {
+                return try JSONDecoder().decode(type, from: data)
+            }
+        }
+    }
+}
