@@ -87,31 +87,21 @@ class DP3TBackgroundTaskManager {
         logger.trace()
         let queue = OperationQueue()
 
-        let completionGroup = DispatchGroup()
-
         if let handler = handler {
             let handlerOperation = HandlerOperation(handler: handler)
 
-            completionGroup.enter()
             handlerOperation.completionBlock = { [weak self] in
                 self?.logger.log("Exposure notification handlerOperation finished")
-                completionGroup.leave()
             }
 
             queue.addOperation(handlerOperation)
         }
 
         let syncOperation = SyncOperation()
-
-        completionGroup.enter()
         syncOperation.completionBlock = { [weak self] in
             self?.logger.log("SyncOperation finished")
-            completionGroup.leave()
         }
-
         queue.addOperation(syncOperation)
-
-        completionGroup.wait()
     }
 
     @available(iOS 13.0, *)
