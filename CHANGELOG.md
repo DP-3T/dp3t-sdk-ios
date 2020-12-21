@@ -1,6 +1,13 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 2.1.0 (21.12.2020)
+- Add support for iOS 12.5 
+- Fix timeshift detection
+
 ## Version 2.0.0 (29.10.2020)
+
+IMPORTANT: Make sure to update dp3t-sdk-backend to 2.0.0 or higher as this version of the dp3t-sdk-ios requires new API endpoints.
+
 - 'Bearer' is not added as a prefix to auth key if using HTTPAuthorizationHeader auth method. 
 - HTTPAuthorizationBearer auth method is deprecated
 - updates to Exposure Notification Framework version 2
