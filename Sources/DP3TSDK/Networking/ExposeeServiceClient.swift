@@ -83,7 +83,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
         let adjustedDate = date.addingTimeInterval(response.age)
 
-        let timeShift = Date().timeIntervalSince(adjustedDate)
+        let timeShift = abs(Date().timeIntervalSince(adjustedDate))
 
         log.log("detected timeshift is %{public}.2f", timeShift)
 
@@ -125,7 +125,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
                 return
             }
 
-            let keyBundleTag = httpResponse.value(forHTTPHeaderField: "x-key-bundle-tag")
+            let keyBundleTag = httpResponse.value(forHeaderField: "x-key-bundle-tag")
 
             let httpStatus = httpResponse.statusCode
             switch httpStatus {
@@ -172,7 +172,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         // addExposee endpoint
         let url = managingExposeeEndpoint.addExposedGaen()
 
-        guard let payload = try? JSONEncoder().encode(exposees) else {
+        guard let payload = try? EncodingManager.encode(object: exposees) else {
             completion(.failure(.couldNotEncodeBody))
             return
         }
@@ -227,12 +227,12 @@ internal extension HTTPURLResponse {
     }()
 
     var date: Date? {
-        guard let string = value(forHTTPHeaderField: "date") else { return nil }
+        guard let string = value(forHeaderField: "date") else { return nil }
         return HTTPURLResponse.dateFormatter.date(from: string)
     }
 
     var age: TimeInterval {
-        guard let string = value(forHTTPHeaderField: "Age") else { return 0 }
+        guard let string = value(forHeaderField: "Age") else { return 0 }
         return TimeInterval(string) ?? 0
     }
 }
@@ -248,5 +248,23 @@ private struct ExposeeClaims: DP3TClaims {
         case contentHash = "content-hash"
         case hashAlg = "hash-alg"
         case iss, iat, exp
+    }
+}
+
+
+extension HTTPURLResponse {
+    func value(forHeaderField field: String) -> String? {
+        if #available(iOS 13.0, *) {
+            return self.value(forHTTPHeaderField: field)
+        } else {
+            for header in self.allHeaderFields {
+                if let stringValue = header.value as? String,
+                   let key = header.key as? String,
+                   key.lowercased() == field.lowercased() {
+                    return stringValue
+                }
+            }
+            return nil
+        }
     }
 }

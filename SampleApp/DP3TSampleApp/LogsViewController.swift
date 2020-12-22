@@ -35,7 +35,11 @@ class LogsViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Logs"
-        tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "list.bullet"), tag: 0)
+        if #available(iOS 13.0, *) {
+            tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "list.bullet"), tag: 0)
+        } else {
+            tabBarItem = UITabBarItem(title: title, image: nil, tag: 0)
+        }
         loadLogs()
         NotificationCenter.default.addObserver(self, selector: #selector(didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
 
@@ -103,7 +107,11 @@ extension LogsViewController: UITableViewDataSource {
         case .info:
             cell.backgroundColor = UIColor.green.withAlphaComponent(0.05)
         default:
-            cell.backgroundColor = .systemBackground
+            if #available(iOS 13.0, *) {
+                cell.backgroundColor = .systemBackground
+            } else {
+                cell.backgroundColor = .white
+            }
         }
         return cell
     }

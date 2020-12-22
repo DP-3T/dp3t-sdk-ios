@@ -55,9 +55,8 @@ class Default: DefaultStorage {
 
     /// Parameters
     private func saveParameters(_ parameters: DP3TParameters) {
-        let encoder = JSONEncoder()
 
-        if let encoded = try? encoder.encode(parameters) {
+        if let encoded = try? EncodingManager.encode(object: parameters) {
             store.set(encoded, forKey: "org.dpppt.parameters")
         }
     }
@@ -81,9 +80,7 @@ class Default: DefaultStorage {
                 return parametersCache!
             }
 
-            let decoder = JSONDecoder()
-
-            guard let decoded = try? decoder.decode(DP3TParameters.self, from: obj) else {
+            guard let decoded = try? DecodingManager.decode(DP3TParameters.self, from: obj) else {
                 parametersCache = .init()
                 saveParameters(parametersCache!)
                 return parametersCache!
@@ -117,7 +114,7 @@ class Persisted<Value: Codable> {
         self.userDefaultsKey = userDefaultsKey
         if let data = UserDefaults.standard.data(forKey: userDefaultsKey) {
             do {
-                wrappedValue = try JSONDecoder().decode(Value.self, from: data)
+                wrappedValue = try DecodingManager.decode(Value.self, from: data)
             } catch {
                 wrappedValue = defaultValue
             }
@@ -130,7 +127,9 @@ class Persisted<Value: Codable> {
 
     var wrappedValue: Value {
         didSet {
-            UserDefaults.standard.set(try! JSONEncoder().encode(wrappedValue), forKey: userDefaultsKey)
+            if let encoded = try? EncodingManager.encode(object: wrappedValue) {
+                UserDefaults.standard.set(encoded, forKey: userDefaultsKey)
+            }
         }
     }
 }

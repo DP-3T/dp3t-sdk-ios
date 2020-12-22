@@ -11,7 +11,9 @@
 import BackgroundTasks
 import Foundation
 import UIKit.UIApplication
+import ExposureNotification
 
+@available(iOS 12.5, *)
 class DP3TBackgroundTaskManager {
     static let exposureNotificationTaskIdentifier: String = "org.dpppt.exposure-notification"
     static let refreshTaskIdentifier: String = "org.dpppt.refresh"
@@ -33,13 +35,25 @@ class DP3TBackgroundTaskManager {
     init(handler: DP3TBackgroundHandler?,
          keyProvider: DiagnosisKeysProvider,
          serviceClient: ExposeeServiceClientProtocol,
-         tracer: Tracer) {
+         tracer: Tracer,
+         manager: ENManager) {
         self.handler = handler
         self.keyProvider = keyProvider
         self.serviceClient = serviceClient
         self.tracer = tracer
 
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+
+        // this is only needed for iOS 12.5
+        if #available(iOS 13.0, *) {}
+        else {
+            manager.setLaunchActivityHandler { [weak self] (activityFlags) in
+                if activityFlags.contains(.periodicRun) {
+                    self?.handleiOS12BackgroundLaunch()
+                }
+            }
+        }
+
     }
 
     deinit {
@@ -52,20 +66,45 @@ class DP3TBackgroundTaskManager {
         guard !Self.didRegisterBackgroundTask else { return }
         Self.didRegisterBackgroundTask = true
 
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.exposureNotificationTaskIdentifier, using: .main) { task in
-            self.handleExposureNotificationBackgroundTask(task)
-        }
-
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.refreshTaskIdentifier, using: .main) { task in
-            // Downcast the parameter to an app refresh task as this identifier is used for a refresh request.
-            self.handleRefreshTask(task as! BGAppRefreshTask)
+        if #available(iOS 13.0, *) {
+            BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.exposureNotificationTaskIdentifier, using: .main) { task in
+                self.handleExposureNotificationBackgroundTask(task)
+            }
+            BGTaskScheduler.shared.register(forTaskWithIdentifier: DP3TBackgroundTaskManager.refreshTaskIdentifier, using: .main) { task in
+                // Downcast the parameter to an app refresh task as this identifier is used for a refresh request.
+                self.handleRefreshTask(task as! BGAppRefreshTask)
+            }
         }
     }
 
     @objc func appDidEnterBackground(){
-        scheduleBackgroundTasks()
+        if #available(iOS 13.0, *) {
+            scheduleBackgroundTasks()
+        }
     }
 
+    private func handleiOS12BackgroundLaunch() {
+        logger.trace()
+        let queue = OperationQueue()
+
+        if let handler = handler {
+            let handlerOperation = HandlerOperation(handler: handler)
+
+            handlerOperation.completionBlock = { [weak self] in
+                self?.logger.log("Exposure notification handlerOperation finished")
+            }
+
+            queue.addOperation(handlerOperation)
+        }
+
+        let syncOperation = SyncOperation()
+        syncOperation.completionBlock = { [weak self] in
+            self?.logger.log("SyncOperation finished")
+        }
+        queue.addOperation(syncOperation)
+    }
+
+    @available(iOS 13.0, *)
     private func handleExposureNotificationBackgroundTask(_ task: BGTask) {
         logger.trace()
         scheduleBackgroundTasks()
@@ -109,6 +148,7 @@ class DP3TBackgroundTaskManager {
         }
     }
 
+    @available(iOS 13.0, *)
     private func handleRefreshTask(_ task: BGTask) {
         logger.trace()
         scheduleBackgroundTasks()
@@ -141,6 +181,7 @@ class DP3TBackgroundTaskManager {
         }
     }
 
+    @available(iOS 13.0, *)
     private func scheduleBackgroundTasks() {
         logger.trace()
 

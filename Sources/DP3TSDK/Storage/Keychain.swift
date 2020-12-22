@@ -74,8 +74,6 @@ protocol KeychainProtocol {
 
 /// A wrapper class for the keychain
 class Keychain: KeychainProtocol {
-    private let encoder = JSONEncoder()
-    private let decoder = JSONDecoder()
 
     /// Get a object from the keychain
     /// - Parameter key: a key object with the type
@@ -96,7 +94,7 @@ class Keychain: KeychainProtocol {
                 fatalError("Keychain not returning Data")
             }
             do {
-                let object = try JSONDecoder().decode(T.self, from: item)
+                let object = try DecodingManager.decode(T.self, from: item)
                 return .success(object)
             } catch {
                 return .failure(.decodingError(error))
@@ -115,7 +113,7 @@ class Keychain: KeychainProtocol {
     public func set<T: Codable>(_ object: T, for key: KeychainKey<T>) -> Result<Void, KeychainError> {
         let data: Data
         do {
-            data = try encoder.encode(object)
+            data = try EncodingManager.encode(object:object)
         } catch {
             return .failure(.encodingError(error))
         }

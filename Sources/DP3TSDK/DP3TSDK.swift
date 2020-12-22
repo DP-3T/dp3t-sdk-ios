@@ -15,6 +15,7 @@ import UIKit
 
 /// Main class for handling SDK logic
 
+@available(iOS 12.5, *)
 class DP3TSDK {
     /// appId of this instance
     private let applicationDescriptor: ApplicationDescriptor
@@ -88,7 +89,7 @@ class DP3TSDK {
 
         let synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service, descriptor: applicationDescriptor)
 
-        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service, tracer: tracer)
+        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service, tracer: tracer, manager: manager)
 
         self.init(applicationDescriptor: applicationDescriptor,
                   urlSession: urlSession,
@@ -329,13 +330,13 @@ class DP3TSDK {
 }
 
 // MARK: BluetoothPermissionDelegate implementation
-
+@available(iOS 12.5, *)
 extension DP3TSDK: TracerDelegate {
     func stateDidChange() {
         state.trackingState = tracer.state
     }
 }
-
+@available(iOS 12.5, *)
 extension DP3TSDK: KnownCasesSynchronizerDelegate {
     func didFindMatch() {
         state.infectionStatus = InfectionStatus.getInfectionState(from: exposureDayStorage)

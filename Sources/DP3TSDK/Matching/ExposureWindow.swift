@@ -11,7 +11,7 @@
 import Foundation
 import ExposureNotification
 
-
+@available(iOS 12.5, *)
 extension Array where Element: ENExposureWindow {
     /// Groups windows by Date
     var groupByDay: [Date: [ENExposureWindow]] {
@@ -25,6 +25,7 @@ extension Array where Element: ENExposureWindow {
 struct AttenuationValues {
     let lowerBucket: Int
     let higherBucket: Int
+    let disregarded: Int
 }
 
 extension AttenuationValues {
@@ -42,6 +43,7 @@ extension AttenuationValues {
     }
 }
 
+@available(iOS 12.5, *)
 extension Array where Element == ENExposureWindow {
     /// Get Seconds of ScanInstances with a typical attenuation between to given values
     /// - Parameters:
@@ -67,6 +69,7 @@ extension Array where Element == ENExposureWindow {
     /// - Returns: the 2 buckets
     func attenuationValues(lowerThreshold: Int, higherThreshold: Int) -> AttenuationValues {
         return AttenuationValues(lowerBucket:  getSeconds(above: 0,              below: lowerThreshold),
-                                 higherBucket: getSeconds(above: lowerThreshold, below: higherThreshold))
+                                 higherBucket: getSeconds(above: lowerThreshold, below: higherThreshold),
+                                 disregarded:  getSeconds(above: higherThreshold, below: Int.max))
     }
 }
