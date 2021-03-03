@@ -276,6 +276,7 @@ class DP3TSDK {
                 mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: fakeKeyCount, startingFrom: startingFrom))
 
                 let model = ExposeeListModel(gaenKeys: mutableKeys,
+                                             withFederationGateway: self.applicationDescriptor.withFederationGateway,
                                              fake: isFakeRequest)
 
                 self.service.addExposeeList(model, authentication: authentication) { [weak self] result in

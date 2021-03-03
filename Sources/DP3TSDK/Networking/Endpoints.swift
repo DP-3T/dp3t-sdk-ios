@@ -33,7 +33,7 @@ struct ExposeeEndpoint {
     /// Get the URL for the exposed people endpoint for a given lastKeyBundleTag
     /// - Parameters:
     ///  - lastKeyBundleTag: last published key tag if one is stored
-    func getExposee(lastKeyBundleTag: String?) -> URL {
+    func getExposee(lastKeyBundleTag: String?, withFederationGateway: Bool?) -> URL {
         let url = baseURLVersionned.appendingPathComponent("gaen")
             .appendingPathComponent("exposed")
 
@@ -42,6 +42,13 @@ struct ExposeeEndpoint {
             urlComponents?.queryItems = [
                 URLQueryItem(name: "lastKeyBundleTag", value: lastKeyBundleTag)
             ]
+        }
+
+        if let withFederationGateway = withFederationGateway {
+            if urlComponents?.queryItems == nil {
+                urlComponents?.queryItems = []
+            }
+            urlComponents?.queryItems?.append(URLQueryItem(name: "withFederationGateway", value: "\(withFederationGateway)"))
         }
 
         guard let finalUrl = urlComponents?.url else {
