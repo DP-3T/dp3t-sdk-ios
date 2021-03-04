@@ -89,11 +89,11 @@ class DP3TSDK {
         let matcher = ExposureNotificationMatcher(manager: manager, exposureDayStorage: exposureDayStorage)
         let diagnosisKeysProvider: DiagnosisKeysProvider = manager
 
-        let service = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession, federationGateway: federationGateway)
+        let serviceClient = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession, federationGateway: federationGateway)
 
-        let synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service, descriptor: applicationDescriptor)
+        let synchronizer = KnownCasesSynchronizer(matcher: matcher, service: serviceClient, descriptor: applicationDescriptor)
 
-        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service, tracer: tracer, manager: manager)
+        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: serviceClient, tracer: tracer, manager: manager)
 
         self.init(applicationDescriptor: applicationDescriptor,
                   urlSession: urlSession,
@@ -101,7 +101,7 @@ class DP3TSDK {
                   matcher: matcher,
                   diagnosisKeysProvider: diagnosisKeysProvider,
                   exposureDayStorage: exposureDayStorage,
-                  service: service,
+                  service: serviceClient,
                   synchronizer: synchronizer,
                   backgroundTaskManager: backgroundTaskManager,
                   defaults: defaults)
