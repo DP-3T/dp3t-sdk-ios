@@ -12,12 +12,11 @@ import Foundation
 
 /// Model to describe the application configuration
 public struct ApplicationDescriptor {
-    public init(appId: String, bucketBaseUrl: URL, reportBaseUrl: URL, jwtPublicKey: Data? = nil, withFederationGateway: Bool? = nil, mode: Mode = .production) {
+    public init(appId: String, bucketBaseUrl: URL, reportBaseUrl: URL, jwtPublicKey: Data? = nil, mode: Mode = .production) {
         self.appId = appId
         self.bucketBaseUrl = bucketBaseUrl
         self.reportBaseUrl = reportBaseUrl
         self.jwtPublicKey = jwtPublicKey
-        self.withFederationGateway = withFederationGateway
         self.mode = mode
     }
 
@@ -29,8 +28,6 @@ public struct ApplicationDescriptor {
     var reportBaseUrl: URL
     /// The JWT public key
     var jwtPublicKey: Data?
-
-    var withFederationGateway: Bool?
 
     var mode: Mode = .production
 
