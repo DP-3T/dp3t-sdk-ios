@@ -23,6 +23,8 @@ protocol ExposeeServiceClientProtocol: class {
 
     var descriptor: ApplicationDescriptor { get }
 
+    var federationGateway: FederationGateway { get set }
+
     /// Get all exposee for a known lastKeyBundleTag
     /// - Parameters:
     ///  - since: last published key tag if one is stored
@@ -52,6 +54,8 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     private let jwtVerifier: DP3TJWTVerifier?
 
+    var federationGateway: FederationGateway
+
     private let log = Logger(ExposeeServiceClient.self, category: "exposeeServiceClient")
 
     /// The user agent to send with the requests
@@ -66,7 +70,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     /// Initialize the client with a  descriptor
     /// - Parameter descriptor: The descriptor to use
-    public init(descriptor: ApplicationDescriptor, urlSession: URLSession = .shared, urlCache: URLCache = .shared) {
+    public init(descriptor: ApplicationDescriptor, urlSession: URLSession = .shared, urlCache: URLCache = .shared, federationGateway: FederationGateway = .unspecified) {
         self.descriptor = descriptor
         self.urlSession = urlSession
         self.urlCache = urlCache
@@ -77,6 +81,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
         } else {
             jwtVerifier = nil
         }
+        self.federationGateway = federationGateway
     }
     func detectTimeshift(response: HTTPURLResponse) -> DP3TNetworkingError? {
         guard let date = response.date else { return nil }
@@ -102,7 +107,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
     /// - returns: array of objects or nil if they were already cached
     func getExposee(lastKeyBundleTag: String?, completion: @escaping (Result<ExposeeSuccess, DP3TNetworkingError>) -> Void) -> URLSessionDataTask {
         log.log("getExposeeSynchronously for lastPublishedKeyTag %{public}@", lastKeyBundleTag ?? "nil")
-        let url: URL = exposeeEndpoint.getExposee(lastKeyBundleTag: lastKeyBundleTag)
+        let url: URL = exposeeEndpoint.getExposee(lastKeyBundleTag: lastKeyBundleTag, federationGateway: federationGateway)
 
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60.0)
         request.setValue("application/zip", forHTTPHeaderField: "Accept")
