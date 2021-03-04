@@ -70,7 +70,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     /// Initialize the client with a  descriptor
     /// - Parameter descriptor: The descriptor to use
-    public init(descriptor: ApplicationDescriptor, urlSession: URLSession = .shared, urlCache: URLCache = .shared, federationGateway: FederationGateway) {
+    public init(descriptor: ApplicationDescriptor, urlSession: URLSession = .shared, urlCache: URLCache = .shared, federationGateway: FederationGateway = .unspecified) {
         self.descriptor = descriptor
         self.urlSession = urlSession
         self.urlCache = urlCache
