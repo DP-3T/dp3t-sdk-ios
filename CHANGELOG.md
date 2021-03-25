@@ -1,6 +1,6 @@
 # Changelog for DP3T-SDK iOS
 
-## Next version
+## Version 2.2.0 (25.03.2021)
 - Add support for international key exchange with parameter 'federationGateway'
 
 ## Version 2.1.0 (21.12.2020)
