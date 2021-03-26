@@ -24,6 +24,8 @@ class MockDefaults: DefaultStorage {
 
     var didMarkAsInfected: Bool = false
 
+    var federationGateway: FederationGateway = .unspecified
+
     func reset() {
         exposureDetectionDates = []
         lastKeyBundleTag = nil

@@ -66,9 +66,11 @@ class DP3TSDK {
     ///   - applicationDescriptor: information about the backend to use
     ///   - urlSession: the url session to use for networking (app can set it to enable certificate pinning)
     ///   - backgroundHandler: handler which gets called on background execution
+    ///   - federationGateway: specifies whether keys should be shared with other countries
     convenience init(applicationDescriptor: ApplicationDescriptor,
                      urlSession: URLSession,
-                     backgroundHandler: DP3TBackgroundHandler?) {
+                     backgroundHandler: DP3TBackgroundHandler?,
+                     federationGateway: FederationGateway) {
         // reset keychain on first launch
         let defaults = Default.shared
         if defaults.isFirstLaunch {
@@ -78,6 +80,8 @@ class DP3TSDK {
             defaults.reset()
         }
 
+        defaults.federationGateway = federationGateway
+
         let exposureDayStorage = ExposureDayStorage()
 
         let manager = ENManager()
@@ -85,11 +89,11 @@ class DP3TSDK {
         let matcher = ExposureNotificationMatcher(manager: manager, exposureDayStorage: exposureDayStorage)
         let diagnosisKeysProvider: DiagnosisKeysProvider = manager
 
-        let service = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession)
+        let serviceClient = ExposeeServiceClient(descriptor: applicationDescriptor, urlSession: urlSession, federationGateway: federationGateway)
 
-        let synchronizer = KnownCasesSynchronizer(matcher: matcher, service: service, descriptor: applicationDescriptor)
+        let synchronizer = KnownCasesSynchronizer(matcher: matcher, service: serviceClient, descriptor: applicationDescriptor)
 
-        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: service, tracer: tracer, manager: manager)
+        let backgroundTaskManager = DP3TBackgroundTaskManager(handler: backgroundHandler, keyProvider: manager, serviceClient: serviceClient, tracer: tracer, manager: manager)
 
         self.init(applicationDescriptor: applicationDescriptor,
                   urlSession: urlSession,
@@ -97,7 +101,7 @@ class DP3TSDK {
                   matcher: matcher,
                   diagnosisKeysProvider: diagnosisKeysProvider,
                   exposureDayStorage: exposureDayStorage,
-                  service: service,
+                  service: serviceClient,
                   synchronizer: synchronizer,
                   backgroundTaskManager: backgroundTaskManager,
                   defaults: defaults)
@@ -222,6 +226,16 @@ class DP3TSDK {
         return state
     }
 
+    var federationGateway: FederationGateway {
+        get {
+            return defaults.federationGateway
+        }
+        set {
+            defaults.federationGateway = newValue
+            service.federationGateway = newValue
+        }
+    }
+
     /// tell the SDK that the user was exposed
     /// This will stop tracing
     /// - Parameters:
@@ -275,7 +289,18 @@ class DP3TSDK {
 
                 mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: fakeKeyCount, startingFrom: startingFrom))
 
+                let withFederationGateway: Bool?
+                switch self.federationGateway {
+                case .yes:
+                    withFederationGateway = true
+                case .no:
+                    withFederationGateway = false
+                case .unspecified:
+                    withFederationGateway = nil
+                }
+
                 let model = ExposeeListModel(gaenKeys: mutableKeys,
+                                             withFederationGateway: withFederationGateway,
                                              fake: isFakeRequest)
 
                 self.service.addExposeeList(model, authentication: authentication) { [weak self] result in

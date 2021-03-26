@@ -23,17 +23,21 @@ struct ExposeeListModel: Encodable {
     /// Diagnosis keys
     let gaenKeys: [CodableDiagnosisKey]
 
+    let withFederationGateway: Bool?
+
     let fake: Bool
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         // Encode key
         try container.encode(gaenKeys, forKey: .gaenKeys)
-
+        if let withFederationGateway = withFederationGateway {
+            try container.encode(withFederationGateway ? 1 : 0, forKey: .withFederationGateway)
+        }
         try container.encode(fake ? 1 : 0, forKey: .fake)
     }
 
     enum CodingKeys: CodingKey {
-        case gaenKeys, fake
+        case gaenKeys, withFederationGateway, fake
     }
 }

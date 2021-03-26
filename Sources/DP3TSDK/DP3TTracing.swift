@@ -29,7 +29,7 @@ private var instance: DP3TSDK!
 /// DP3TTracing
 public enum DP3TTracing {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "2.1.0"
+    public static let frameworkVersion: String = "2.2.0"
 
     /// sets global parameter values which are used throughout the sdk
     public static var parameters: DP3TParameters {
@@ -64,15 +64,18 @@ public enum DP3TTracing {
     ///   - enviroment: enviroment to use
     ///   - urlSession: the url session to use for networking (can used to enable certificate pinning)
     ///   - backgroundHandler: a delegate to perform background tasks
+    ///   - federationGateway: specifies whether keys should be shared with other countries
     @available(iOS 12.5, *)
     public static func initialize(with applicationDescriptor: ApplicationDescriptor,
                                   urlSession: URLSession = .shared,
-                                  backgroundHandler: DP3TBackgroundHandler? = nil) {
+                                  backgroundHandler: DP3TBackgroundHandler? = nil,
+                                  federationGateway: FederationGateway = .unspecified) {
         precondition(Self.isOSCompatible, "Operating System is not compatible")
         precondition(instance == nil, "DP3TSDK already initialized")
         instance = DP3TSDK(applicationDescriptor: applicationDescriptor,
                                urlSession: urlSession,
-                               backgroundHandler: backgroundHandler)
+                               backgroundHandler: backgroundHandler,
+                               federationGateway: federationGateway)
     }
 
     @available(iOS 12.5, *)

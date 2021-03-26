@@ -45,16 +45,17 @@ Included in this repository is a Calibration App that can run, debug and test th
 ### Initialization
 Name | Description | Function Name
 ---- | ----------- | -------------
-init | Initializes the SDK and configures it | `initialize(applicationDescriptor:urlSession:backgroundHandler)` 
+init | Initializes the SDK and configures it | `initialize(applicationDescriptor:urlSession:backgroundHandler:federationGateway)` 
 
-### Methods 
-Name | Description | Function Name
+### Methods & Properties
+Name | Description | Function/Variable Name
 ---- | ----------- | -------------
 startTracing | Starts EN tracing | `func startTracing(completionHandler:)` 
 stopTracing | Stops EN tracing | `func stopTracing(completionHandler:)` 
 sync | Pro-actively triggers sync with backend to refresh exposed list | `func sync(callback:)` 
 status | Returns a TracingState-Object describing the current state. This contains:<br/>- `numberOfHandshakes` : `Int` <br /> - `trackingState` : `TrackingState` <br /> - `lastSync` : `Date` <br /> - `infectionStatus`:`InfectionStatus`<br /> - `backgroundRefreshState`:`UIBackgroundRefreshStatus ` | `func status(callback:)` 
-iWasExposed | This method must be called upon positive test. | `func iWasExposed(onset:authentication:isFakeRequest:callback:)` 
+iWasExposed | This method must be called upon positive test. | `func iWasExposed(onset:authentication:isFakeRequest:callback:)`
+federationGateway | Specifies whether keys should be exchanged with other compatible countries. Possible values are 'yes', 'no', 'unspecified' (default) | `var federationGateway`
 reset | Removes all SDK related data | `func reset()`
 
 
@@ -80,7 +81,7 @@ DP3T-SDK is available through [Cocoapods](https://cocoapods.org/)
 
   ```ruby
 
-  pod 'DP3TSDK', => '2.1.0'
+  pod 'DP3TSDK', => '2.2.0'
 
   ```
 

@@ -1,7 +1,10 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 2.2.0 (25.03.2021)
+- Add support for international key exchange with parameter 'federationGateway'
+
 ## Version 2.1.0 (21.12.2020)
-- Add support for iOS 12.5 
+- Add support for iOS 12.5
 - Fix timeshift detection
 
 ## Version 2.0.0 (29.10.2020)

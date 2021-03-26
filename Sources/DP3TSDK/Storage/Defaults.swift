@@ -10,6 +10,12 @@
 
 import Foundation
 
+public enum FederationGateway: Int, Codable {
+    case yes
+    case no
+    case unspecified
+}
+
 protocol DefaultStorage {
     /// stores if this is the first launch of the SDK
     var isFirstLaunch: Bool { get set }
@@ -26,6 +32,8 @@ protocol DefaultStorage {
     var parameters: DP3TParameters { get set }
 
     var exposureDetectionDates: [Date] { get set }
+
+    var federationGateway: FederationGateway { get set }
 
     func reset()
 }
@@ -52,6 +60,9 @@ class Default: DefaultStorage {
 
     @Persisted(userDefaultsKey: "org.dpppt.exposureDetectionDates", defaultValue: [])
     var exposureDetectionDates: [Date]
+
+    @Persisted(userDefaultsKey: "org.dpppt.federationGateway", defaultValue: .unspecified)
+    var federationGateway: FederationGateway
 
     /// Parameters
     private func saveParameters(_ parameters: DP3TParameters) {
