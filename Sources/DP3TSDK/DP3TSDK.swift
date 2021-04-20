@@ -318,7 +318,7 @@ class DP3TSDK {
                                 self.tracer.setEnabled(false, completionHandler: nil)
                             }
 
-                            callback(.success((.init(oldestKeyDate: oldestNonFakeKeyDate))))
+                            callback(.success(.init(oldestKeyDate: oldestNonFakeKeyDate)))
                         case let .failure(error):
                             callback(.failure(.networkingError(error: error)))
                         }
