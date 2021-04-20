@@ -299,10 +299,10 @@ class DP3TSDK {
                     withFederationGateway = nil
                 }
 
-                let oldestNonFakeKeyDate = mutableKeys
-                    .filter { $0.fake == 0 }
-                    .map(\.date)
-                    .min()
+                var oldestNonFakeKeyDate: Date? = nil
+                if !isFakeRequest {
+                    oldestNonFakeKeyDate = Date(timeIntervalSince1970: Double(oldestRollingStartNumber) *  10 * .minute)
+                }
 
                 let model = ExposeeListModel(gaenKeys: mutableKeys,
                                              withFederationGateway: withFederationGateway,
