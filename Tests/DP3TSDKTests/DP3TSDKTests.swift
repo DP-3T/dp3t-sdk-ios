@@ -96,8 +96,18 @@ class DP3TSDKTests: XCTestCase {
         XCTAssertEqual(sdk.status.infectionStatus, .healthy)
 
         let exp = expectation(description: "infected")
-        keyProvider.keys = [ .init(keyData: Data(count: 16), rollingPeriod: 144, rollingStartNumber: DayDate().period, transmissionRiskLevel: 0, fake: 0) ]
+        let oldestDate = Date(timeIntervalSinceNow: -.day * 5)
+        keyProvider.keys = [
+            .init(keyData: Data(count: 16), rollingPeriod: 144, rollingStartNumber: DayDate(date: oldestDate.addingTimeInterval(.day)).period, transmissionRiskLevel: 0, fake: 0),
+            .init(keyData: Data(count: 16), rollingPeriod: 144, rollingStartNumber: DayDate(date: oldestDate).period, transmissionRiskLevel: 0, fake: 0),
+            .init(keyData: Data(count: 16), rollingPeriod: 144, rollingStartNumber: DayDate(date: oldestDate.addingTimeInterval(.day * 2)).period, transmissionRiskLevel: 0, fake: 0),
+        ]
         sdk.iWasExposed(onset: .init(timeIntervalSinceNow: -.day), authentication: .none) { (result) in
+            if case let Result.success(wrapper) = result {
+                XCTAssertEqual(wrapper.oldestKeyDate, DayDate(date: oldestDate).dayMin)
+            } else {
+                XCTFail()
+            }
             exp.fulfill()
         }
         wait(for: [exp], timeout: 0.1)
@@ -108,8 +118,8 @@ class DP3TSDKTests: XCTestCase {
         let rollingStartNumbers = Set(model!.gaenKeys.map(\.rollingStartNumber))
         XCTAssertEqual(rollingStartNumbers.count, model!.gaenKeys.count)
         var runningDate: Date?
-        for key in model!.gaenKeys {
-            let date = Date(timeIntervalSince1970: Double(key.rollingStartNumber) * 10 * .minute)
+        for key in model!.gaenKeys.sorted(by: { $0.date > $1.date }) {
+            let date = key.date
             guard runningDate != nil else {
                 runningDate = date
                 continue
