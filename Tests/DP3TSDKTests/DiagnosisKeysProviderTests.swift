@@ -13,6 +13,7 @@ import Foundation
 import XCTest
 import ExposureNotification
 
+@available(iOS 12.5, *)
 class DiagnosisKeysProviderTests: XCTestCase {
 
     var manager: MockENManager!
@@ -81,6 +82,7 @@ class DiagnosisKeysProviderTests: XCTestCase {
     
 }
 
+@available(iOS 12.5, *)
 extension ENTemporaryExposureKey {
     static func initialize(data: Data = Data(capacity: 16),
                            rollingPeriod: ENIntervalNumber = UInt32(TimeInterval.day / (.minute * 10)),

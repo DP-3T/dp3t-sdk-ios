@@ -26,6 +26,7 @@ private class MockKeyProvider: DiagnosisKeysProvider {
 }
 
 
+@available(iOS 12.5, *)
 class DP3TSDKTests: XCTestCase {
 
     fileprivate var keychain: MockKeychain!
