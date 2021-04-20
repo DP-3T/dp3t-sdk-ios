@@ -11,6 +11,7 @@
 @testable import DP3TSDK
 import XCTest
 
+@available(iOS 12.5, *)
 class ExposureNotificationTracerTests: XCTestCase {
 
     var manager: MockENManager!

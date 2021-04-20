@@ -1,5 +1,8 @@
 # Changelog for DP3T-SDK iOS
 
+## next version
+- expose oldest shared keydate when calling iWasExposed
+
 ## Version 2.2.0 (25.03.2021)
 - Add support for international key exchange with parameter 'federationGateway'
 

@@ -54,7 +54,7 @@ class ExposeeServiceClient: ExposeeServiceClientProtocol {
 
     private let jwtVerifier: DP3TJWTVerifier?
 
-    var federationGateway: FederationGateway
+    internal var federationGateway: FederationGateway
 
     private let log = Logger(ExposeeServiceClient.self, category: "exposeeServiceClient")
 

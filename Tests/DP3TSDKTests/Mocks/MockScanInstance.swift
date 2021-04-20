@@ -11,6 +11,7 @@
 import Foundation
 import ExposureNotification
 
+@available(iOS 12.5, *)
 class MockScanInstance: ENScanInstance {
 
     private var internalTypicalAttenuation: ENAttenuation

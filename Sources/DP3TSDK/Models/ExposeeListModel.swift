@@ -18,6 +18,12 @@ struct CodableDiagnosisKey: Codable, Equatable {
     let fake: UInt8
 }
 
+extension CodableDiagnosisKey {
+    var date: Date {
+        Date(timeIntervalSince1970: TimeInterval(rollingStartNumber) * TimeInterval.minute * 10)
+    }
+}
+
 /// Model of the exposed person
 struct ExposeeListModel: Encodable {
     /// Diagnosis keys
