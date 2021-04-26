@@ -147,9 +147,14 @@ class ExposureNotificationTracer: Tracer {
         }
 
         deferredEnable = nil
-
+        let wasAuthorized = isAuthorized
         manager.setExposureNotificationEnabled(enabled) { [weak self] error in
             guard let self = self else { return }
+
+            if wasAuthorized != self.isAuthorized, self.isAuthorized {
+                self.delegate?.didGetAuthorized()
+            }
+
             if let error = error {
                 self.logger.error("ENMananger.setExposureNotificationEnabled failed error: %{public}@", error.localizedDescription)
                 self.deferredEnable = enabled

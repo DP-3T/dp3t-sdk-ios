@@ -359,11 +359,15 @@ class DP3TSDK {
     }
 }
 
-// MARK: BluetoothPermissionDelegate implementation
 @available(iOS 12.5, *)
 extension DP3TSDK: TracerDelegate {
     func stateDidChange() {
         state.trackingState = tracer.state
+    }
+    func didGetAuthorized() {
+        if #available(iOS 13.0, *) {
+            backgroundTaskManager.scheduleBackgroundTasks()
+        }
     }
 }
 @available(iOS 12.5, *)

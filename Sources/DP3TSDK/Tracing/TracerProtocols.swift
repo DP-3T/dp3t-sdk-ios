@@ -12,6 +12,7 @@ import Foundation
 
 protocol TracerDelegate: AnyObject {
     func stateDidChange()
+    func didGetAuthorized()
 }
 
 public typealias TracingEnableResult = Result<Void, DP3TTracingError>

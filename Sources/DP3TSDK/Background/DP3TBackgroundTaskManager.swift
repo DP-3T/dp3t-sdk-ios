@@ -182,7 +182,7 @@ class DP3TBackgroundTaskManager {
     }
 
     @available(iOS 13.0, *)
-    private func scheduleBackgroundTasks() {
+    func scheduleBackgroundTasks() {
         logger.trace()
 
         // Schedule next app refresh task 12h in the future
@@ -195,11 +195,6 @@ class DP3TBackgroundTaskManager {
             logger.error("Scheduling refresh task failed error: %{public}@", error.localizedDescription)
         }
 
-        // Only schedule exposure notification task after EN is authorized
-        guard tracer.isAuthorized else {
-            logger.log("Skipping scheduling of exposure notification task because ENManager is not authorized")
-            return
-        }
         let taskRequest = BGProcessingTaskRequest(identifier: DP3TBackgroundTaskManager.exposureNotificationTaskIdentifier)
         taskRequest.requiresNetworkConnectivity = true
         do {

@@ -12,7 +12,7 @@ import Foundation
 import os.log
 
 /// A logging delegate
-public protocol LoggingDelegate: class {
+public protocol LoggingDelegate: AnyObject {
     /// Log a string
     /// - Parameter LogType: the type of log
     /// - Parameter string: The string to log

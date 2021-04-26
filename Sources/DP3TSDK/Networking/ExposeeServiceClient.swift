@@ -17,7 +17,7 @@ struct ExposeeSuccess {
     let keyBundleTag: String?
 }
 
-protocol ExposeeServiceClientProtocol: class {
+protocol ExposeeServiceClientProtocol: AnyObject {
     typealias ExposeeResult = Result<Data?, DP3TNetworkingError>
     typealias ExposeeCompletion = Result<Void, DP3TNetworkingError>
 
