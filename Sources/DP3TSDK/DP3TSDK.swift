@@ -246,7 +246,7 @@ class DP3TSDK {
     func iWasExposed(onset: Date,
                      authentication: ExposeeAuthMethod,
                      isFakeRequest: Bool = false,
-                     callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+                     callback: @escaping (Result<DP3TTracing.IWasExposedResult, DP3TTracingError>) -> Void) {
         log.trace()
         if !isFakeRequest,
             case .infected = state.infectionStatus {
@@ -299,6 +299,11 @@ class DP3TSDK {
                     withFederationGateway = nil
                 }
 
+                var oldestNonFakeKeyDate: Date? = nil
+                if !isFakeRequest {
+                    oldestNonFakeKeyDate = Date(timeIntervalSince1970: Double(oldestRollingStartNumber) *  10 * .minute)
+                }
+
                 let model = ExposeeListModel(gaenKeys: mutableKeys,
                                              withFederationGateway: withFederationGateway,
                                              fake: isFakeRequest)
@@ -313,7 +318,7 @@ class DP3TSDK {
                                 self.tracer.setEnabled(false, completionHandler: nil)
                             }
 
-                            callback(.success(()))
+                            callback(.success(.init(oldestKeyDate: oldestNonFakeKeyDate)))
                         case let .failure(error):
                             callback(.failure(.networkingError(error: error)))
                         }

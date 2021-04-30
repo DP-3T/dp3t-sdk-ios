@@ -12,6 +12,7 @@
 import Foundation
 import ExposureNotification
 
+@available(iOS 12.5, *)
 class MockENManager: ENManager {
     var activateCallbacks: [ENErrorHandler] = []
 
@@ -108,6 +109,7 @@ class MockENManager: ENManager {
     }
 }
 
+@available(iOS 12.5, *)
 class MockSummary: ENExposureDetectionSummary {
     override var attenuationDurations: [NSNumber] {
         get {

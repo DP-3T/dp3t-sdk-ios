@@ -13,6 +13,7 @@ import XCTest
 import ExposureNotification
 
 
+@available(iOS 12.5, *)
 class ExposureWindowTests: XCTestCase {
     func testDayGroupingSingle(){
         var windows: [MockWindow] = []

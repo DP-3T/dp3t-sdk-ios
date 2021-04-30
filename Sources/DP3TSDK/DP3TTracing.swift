@@ -29,7 +29,7 @@ private var instance: DP3TSDK!
 /// DP3TTracing
 public enum DP3TTracing {
     /// The current version of the SDK
-    public static let frameworkVersion: String = "2.2.0"
+    public static let frameworkVersion: String = "2.3.0"
 
     /// sets global parameter values which are used throughout the sdk
     public static var parameters: DP3TParameters {
@@ -135,6 +135,11 @@ public enum DP3TTracing {
         return instance.status
     }
 
+
+    public struct IWasExposedResult {
+        public let oldestKeyDate: Date?
+    }
+    
     /// tell the SDK that the user was exposed
     /// - Parameters:
     ///   - onset: Start date of the exposure
@@ -145,7 +150,7 @@ public enum DP3TTracing {
     public static func iWasExposed(onset: Date,
                                    authentication: ExposeeAuthMethod,
                                    isFakeRequest: Bool = false,
-                                   callback: @escaping (Result<Void, DP3TTracingError>) -> Void) {
+                                   callback: @escaping (Result<IWasExposedResult, DP3TTracingError>) -> Void) {
         instancePrecondition()
         instance.iWasExposed(onset: onset,
                              authentication: authentication,

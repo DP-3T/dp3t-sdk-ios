@@ -15,6 +15,7 @@ import Foundation
 import XCTest
 import ZIPFoundation
 
+@available(iOS 12.5, *)
 final class ExposureNotificationMatcherTests: XCTestCase {
     var keychain = MockKeychain()
 

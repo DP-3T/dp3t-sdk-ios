@@ -11,6 +11,7 @@
 import Foundation
 import ExposureNotification
 
+@available(iOS 12.5, *)
 class MockWindow: ENExposureWindow {
     private var internalDate: Date
     private var internalScanInstances: [ENScanInstance]
