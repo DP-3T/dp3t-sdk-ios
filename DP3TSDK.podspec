@@ -2,7 +2,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "DP3TSDK"
-  spec.version      = ENV['LIB_VERSION'] || '2.2.0'
+  spec.version      = ENV['LIB_VERSION'] || '2.3.0'
   spec.summary      = "Open protocol for COVID-19 proximity tracing using Bluetooth Low Energy on mobile devices"
 
   spec.description  = <<-DESC
