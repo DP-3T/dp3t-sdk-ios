@@ -11,7 +11,7 @@
 import Foundation
 
 
-protocol Matcher: class {
+protocol Matcher: AnyObject {
     var timingManager: ExposureDetectionTimingManager? { get set }
     
     /// returns true if we found a match
