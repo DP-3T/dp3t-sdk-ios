@@ -19,7 +19,7 @@ class ExposureNotificationTracer: Tracer {
     private var stateObservation: NSKeyValueObservation?
     private var enabledObservation: NSKeyValueObservation?
 
-    var delegate: TracerDelegate?
+    weak var delegate: TracerDelegate?
 
     private let queue = DispatchQueue(label: "org.dpppt.tracer")
 
