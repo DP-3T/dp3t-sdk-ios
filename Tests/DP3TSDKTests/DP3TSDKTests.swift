@@ -292,4 +292,46 @@ class DP3TSDKTests: XCTestCase {
 
         XCTAssertEqual(tracer.state, TrackingState.active)
     }
+
+    func testInfectedAfterReset() {
+
+        XCTAssertEqual(sdk.status.infectionStatus, .healthy)
+
+        let firstInfected = expectation(description: "firstInfected")
+        sdk.iWasExposed(onset: .init(), authentication: .none) { _ in
+            firstInfected.fulfill()
+        }
+        wait(for: [firstInfected], timeout: 1.0)
+
+        XCTAssertEqual(sdk.status.infectionStatus, .infected)
+
+        sdk.reset()
+        sdk = nil
+        //re-init SDK
+        setUp()
+
+        XCTAssertEqual(sdk.status.infectionStatus, .healthy)
+
+        let secondInfected = expectation(description: "secondInfected")
+        sdk.iWasExposed(onset: .init(), authentication: .none) { _ in
+            secondInfected.fulfill()
+        }
+        wait(for: [secondInfected], timeout: 1.0)
+
+        XCTAssertEqual(sdk.status.infectionStatus, .infected)
+    }
+
+    func testCorrectDeallocation() {
+        weak var weakRef = sdk
+        sdk.reset()
+        sdk = nil
+        let expt = expectation(description: "deallocated")
+
+        DispatchQueue.main.async {
+            XCTAssertNil(weakRef)
+            expt.fulfill()
+        }
+
+        wait(for: [expt], timeout: 1.0)
+    }
 }
