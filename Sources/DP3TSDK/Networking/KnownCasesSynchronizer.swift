@@ -12,7 +12,7 @@ import Foundation
 import UIKit.UIApplication
 
 /// A delegate used to respond on DP3T events
-protocol KnownCasesSynchronizerDelegate: AnyObject {
+protocol KnownCasesSynchronizerDelegate: class {
     /// We found a match
     func didFindMatch()
 }

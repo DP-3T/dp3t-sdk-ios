@@ -11,7 +11,7 @@
 import ExposureNotification
 import Foundation
 
-protocol DiagnosisKeysProvider: AnyObject {
+protocol DiagnosisKeysProvider: class {
     func getFakeDiagnosisKeys(completionHandler: @escaping (Result<[CodableDiagnosisKey], DP3TTracingError>) -> Void)
 
     func getFakeKeys(count: Int, startingFrom: Date) -> [CodableDiagnosisKey]
