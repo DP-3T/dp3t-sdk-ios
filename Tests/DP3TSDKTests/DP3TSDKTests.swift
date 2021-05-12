@@ -319,8 +319,19 @@ class DP3TSDKTests: XCTestCase {
         wait(for: [secondInfected], timeout: 1.0)
 
         XCTAssertEqual(sdk.status.infectionStatus, .infected)
+    }
 
+    func testCorrectDeallocation() {
+        weak var weakRef = sdk
+        sdk.reset()
+        sdk = nil
+        let expt = expectation(description: "deallocated")
 
+        DispatchQueue.main.async {
+            XCTAssertNil(weakRef)
+            expt.fulfill()
+        }
 
+        wait(for: [expt], timeout: 1.0)
     }
 }
