@@ -102,7 +102,7 @@ class DP3TSDKTests: XCTestCase {
             .init(keyData: Data(count: 16), rollingPeriod: 144, rollingStartNumber: DayDate(date: oldestDate).period, transmissionRiskLevel: 0, fake: 0),
             .init(keyData: Data(count: 16), rollingPeriod: 144, rollingStartNumber: DayDate(date: oldestDate.addingTimeInterval(.day * 2)).period, transmissionRiskLevel: 0, fake: 0),
         ]
-        sdk.iWasExposed(onset: .init(timeIntervalSinceNow: -.day), authentication: .none) { (result) in
+        sdk.iWasExposed(onset: .distantPast, authentication: .none) { (result) in
             if case let Result.success(wrapper) = result {
                 XCTAssertEqual(wrapper.oldestKeyDate, DayDate(date: oldestDate).dayMin)
             } else {

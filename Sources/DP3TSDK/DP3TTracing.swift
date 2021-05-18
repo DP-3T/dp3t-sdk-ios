@@ -139,8 +139,34 @@ public enum DP3TTracing {
     public struct IWasExposedResult {
         public let oldestKeyDate: Date?
     }
+
+    /// Request the user permission to obtain all TEK's
+    /// This results with a IWasExposedState object which later can be used to transmit the filtered TEK's to the backend by calling sendTEKs
+    /// - Parameter callback: a handler which receives the state object or an error
+    @available(iOS 12.5, *)
+    public static func requestTEKPermission(callback: @escaping (Result<IWasExposedState, DP3TTracingError>) -> Void) {
+        instancePrecondition()
+        instance.requestTEKPermission(callback: callback)
+    }
+
+    /// Send the obtained keys to the backend. First a valid state has to be obtained by calling requestTEKPermission
+    /// - Parameters:
+    ///   - onset: Start date of the exposure
+    ///   - iWasExposedState: state object obtained by calling requestTEKPermission
+    ///   - authentication: Authentication method
+    ///   - callback: callback
+    @available(iOS 12.5, *)
+    public static func sendTEKs(onset: Date,
+                  iWasExposedState: IWasExposedState,
+                  authentication: ExposeeAuthMethod,
+                  callback: @escaping (Result<IWasExposedResult, DP3TTracingError>) -> Void) {
+        instancePrecondition()
+        instance.sendTEKs(onset: onset, iWasExposedState: iWasExposedState, authentication: authentication, callback: callback)
+    }
     
     /// tell the SDK that the user was exposed
+    /// This is a convenience method that for not fake requests internally first calls requestTEKPermission and then sendTEKs
+    /// This will stop tracing
     /// - Parameters:
     ///   - onset: Start date of the exposure
     ///   - authentication: Authentication method
