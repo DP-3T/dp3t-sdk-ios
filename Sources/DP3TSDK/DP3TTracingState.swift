@@ -104,3 +104,12 @@ public enum SyncResult: Equatable {
         }
     }
 }
+
+public struct IWasExposedState {
+    internal let keys: [CodableDiagnosisKey]
+    internal let isFake: Bool
+
+    public static var fake: Self {
+        return .init(keys: [], isFake: true)
+    }
+}

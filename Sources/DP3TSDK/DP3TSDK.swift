@@ -236,7 +236,91 @@ class DP3TSDK {
         }
     }
 
+    /// Request the user permission to obtain all TEK's
+    /// This results with a IWasExposedState object which later can be used to transmit the filtered TEK's to the backend
+    /// - Parameter callback: a handler which receives the state object or an error
+    func requestTEKPermission(callback: @escaping (Result<IWasExposedState, DP3TTracingError>) -> Void) {
+        log.trace()
+        if case .infected = state.infectionStatus {
+            callback(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
+            return
+        }
+        diagnosisKeysProvider.getDiagnosisKeys(onsetDate: nil, appDesc: applicationDescriptor, disableExposureNotificationAfterCompletion: false) { result in
+            switch result {
+            case let .success(keys):
+                callback(.success(.init(keys: keys, isFake: false)))
+            case let .failure(error):
+                callback(.failure(error))
+            }
+        }
+    }
+
     /// tell the SDK that the user was exposed
+    /// - Parameters:
+    ///   - onset: Start date of the exposure
+    ///   - authentication: Authentication method
+    ///   - isFakeRequest: indicates if the request should be a fake one. This method should be called regulary so people sniffing the networking traffic can no figure out if somebody is marking themself actually as exposed
+    ///   - callback: callback
+    func sendTEKs(onset: Date,
+                  iWasExposedState: IWasExposedState,
+                  authentication: ExposeeAuthMethod,
+                  callback: @escaping (Result<DP3TTracing.IWasExposedResult, DP3TTracingError>) -> Void) {
+        log.trace()
+        if !iWasExposedState.isFake,
+            case .infected = state.infectionStatus {
+            callback(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
+            return
+        }
+        var keys: [CodableDiagnosisKey] = iWasExposedState.keys.filter { $0.date > onset }
+
+        // always make sure we fill up the keys to defaults.parameters.crypto.numberOfKeysToSubmit
+        let fakeKeyCount = self.defaults.parameters.networking.numberOfKeysToSubmit - keys.count
+
+        let oldestRollingStartNumber = keys.min { (a, b) -> Bool in a.rollingStartNumber < b.rollingStartNumber }?.rollingStartNumber ?? DayDate(date: .init(timeIntervalSinceNow: -.day)).period
+
+        let startingFrom = Date(timeIntervalSince1970: Double(oldestRollingStartNumber) *  10 * .minute - .day)
+
+        keys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: fakeKeyCount, startingFrom: startingFrom))
+
+        let withFederationGateway: Bool?
+        switch self.federationGateway {
+        case .yes:
+            withFederationGateway = true
+        case .no:
+            withFederationGateway = false
+        case .unspecified:
+            withFederationGateway = nil
+        }
+
+        var oldestNonFakeKeyDate: Date? = nil
+        if !iWasExposedState.isFake {
+            oldestNonFakeKeyDate = Date(timeIntervalSince1970: Double(oldestRollingStartNumber) *  10 * .minute)
+        }
+
+        let model = ExposeeListModel(gaenKeys: keys,
+                                     withFederationGateway: withFederationGateway,
+                                     fake: iWasExposedState.isFake)
+
+        self.service.addExposeeList(model, authentication: authentication) { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    if !iWasExposedState.isFake {
+                        self.state.infectionStatus = .infected
+                        self.tracer.setEnabled(false, completionHandler: nil)
+                    }
+
+                    callback(.success(.init(oldestKeyDate: oldestNonFakeKeyDate)))
+                case let .failure(error):
+                    callback(.failure(.networkingError(error: error)))
+                }
+            }
+        }
+    }
+
+    /// tell the SDK that the user was exposed
+    /// This is a convenience method that for not fake requests internally first calls requestTEKPermission and then sendTEKs
     /// This will stop tracing
     /// - Parameters:
     ///   - onset: Start date of the exposure
@@ -248,81 +332,24 @@ class DP3TSDK {
                      isFakeRequest: Bool = false,
                      callback: @escaping (Result<DP3TTracing.IWasExposedResult, DP3TTracingError>) -> Void) {
         log.trace()
-        if !isFakeRequest,
-            case .infected = state.infectionStatus {
-            callback(.failure(DP3TTracingError.userAlreadyMarkedAsInfected))
-            return
+
+        let handle: (_ state: IWasExposedState) -> Void = { [weak self] state in
+            guard let self = self else { return }
+            self.sendTEKs(onset: onset,
+                          iWasExposedState: state,
+                          authentication: authentication,
+                          callback: callback)
         }
-
-        let group = DispatchGroup()
-
-        var diagnosisKeysResult: Result<[CodableDiagnosisKey], DP3TTracingError> = .success([])
 
         if isFakeRequest {
-            group.enter()
-            diagnosisKeysProvider.getFakeDiagnosisKeys { result in
-                diagnosisKeysResult = result
-                group.leave()
-            }
+            handle(.init(keys: [], isFake: true))
         } else {
-            group.enter()
-            diagnosisKeysProvider.getDiagnosisKeys(onsetDate: onset, appDesc: applicationDescriptor, disableExposureNotificationAfterCompletion: false) { result in
-                diagnosisKeysResult = result
-                group.leave()
-            }
-        }
-
-        group.notify(queue: .main) { [weak self] in
-            guard let self = self else { return }
-            switch diagnosisKeysResult {
-            case let .failure(error):
-                callback(.failure(error))
-            case let .success(keys):
-
-                var mutableKeys = keys
-                // always make sure we fill up the keys to defaults.parameters.crypto.numberOfKeysToSubmit
-                let fakeKeyCount = self.defaults.parameters.networking.numberOfKeysToSubmit - mutableKeys.count
-
-                let oldestRollingStartNumber = keys.min { (a, b) -> Bool in a.rollingStartNumber < b.rollingStartNumber }?.rollingStartNumber ?? DayDate(date: .init(timeIntervalSinceNow: -.day)).period
-
-                let startingFrom = Date(timeIntervalSince1970: Double(oldestRollingStartNumber) *  10 * .minute - .day)
-
-                mutableKeys.append(contentsOf: self.diagnosisKeysProvider.getFakeKeys(count: fakeKeyCount, startingFrom: startingFrom))
-
-                let withFederationGateway: Bool?
-                switch self.federationGateway {
-                case .yes:
-                    withFederationGateway = true
-                case .no:
-                    withFederationGateway = false
-                case .unspecified:
-                    withFederationGateway = nil
-                }
-
-                var oldestNonFakeKeyDate: Date? = nil
-                if !isFakeRequest {
-                    oldestNonFakeKeyDate = Date(timeIntervalSince1970: Double(oldestRollingStartNumber) *  10 * .minute)
-                }
-
-                let model = ExposeeListModel(gaenKeys: mutableKeys,
-                                             withFederationGateway: withFederationGateway,
-                                             fake: isFakeRequest)
-
-                self.service.addExposeeList(model, authentication: authentication) { [weak self] result in
-                    guard let self = self else { return }
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success:
-                            if !isFakeRequest {
-                                self.state.infectionStatus = .infected
-                                self.tracer.setEnabled(false, completionHandler: nil)
-                            }
-
-                            callback(.success(.init(oldestKeyDate: oldestNonFakeKeyDate)))
-                        case let .failure(error):
-                            callback(.failure(.networkingError(error: error)))
-                        }
-                    }
+            requestTEKPermission { result in
+                switch result {
+                case let .success(state):
+                    handle(state)
+                case let .failure(error):
+                    callback(.failure(error))
                 }
             }
         }
