@@ -1,5 +1,10 @@
 # Changelog for DP3T-SDK iOS
 
+## Version 2.4.0 (30.04.2021)
+- adds methods which allows to separately ask for user consent from sending the keys to the backend (DP3TTracing.requestTEKPermission and DP3TTracing.sendTEKs)
+- fixes retain cycle
+- fixes typo (renames permissonError to permissionError)
+
 ## Version 2.3.0 (30.04.2021)
 - expose oldest shared keydate when calling iWasExposed
 

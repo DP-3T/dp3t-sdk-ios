@@ -30,7 +30,7 @@ class DP3TBackgroundTaskManager {
 
     private let serviceClient: ExposeeServiceClientProtocol
 
-    private let tracer: Tracer
+    private weak var tracer: Tracer!
 
     init(handler: DP3TBackgroundHandler?,
          keyProvider: DiagnosisKeysProvider,

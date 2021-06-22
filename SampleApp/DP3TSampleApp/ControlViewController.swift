@@ -463,7 +463,7 @@ extension DP3TTracingError {
             return "caseSynchronizationError \(errors.map { $0.localizedDescription })"
         case let .networkingError(error: error):
             return "networkingError \(error.localizedDescription)"
-        case .permissonError:
+        case .permissionError:
             return "permissionError"
         case .authorizationUnknown:
             return "authorizationUnknown"

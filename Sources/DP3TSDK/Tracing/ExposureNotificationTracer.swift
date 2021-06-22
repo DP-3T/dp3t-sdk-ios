@@ -19,7 +19,7 @@ class ExposureNotificationTracer: Tracer {
     private var stateObservation: NSKeyValueObservation?
     private var enabledObservation: NSKeyValueObservation?
 
-    var delegate: TracerDelegate?
+    weak var delegate: TracerDelegate?
 
     private let queue = DispatchQueue(label: "org.dpppt.tracer")
 
@@ -141,7 +141,7 @@ class ExposureNotificationTracer: Tracer {
             if case let TrackingState.inactive(error: error) = state {
                 completionHandler?(.failure(error))
             } else {
-                completionHandler?(.failure(DP3TTracingError.permissonError))
+                completionHandler?(.failure(DP3TTracingError.permissionError))
             }
             return
         }
@@ -177,7 +177,7 @@ extension TrackingState {
             self = .inactive(error: .authorizationUnknown)
             return
         case .notAuthorized, .restricted:
-            self = .inactive(error: .permissonError)
+            self = .inactive(error: .permissionError)
             return
         @unknown default:
             fatalError()
@@ -196,11 +196,11 @@ extension TrackingState {
         case .bluetoothOff:
             self = .inactive(error: .bluetoothTurnedOff)
         case .restricted:
-            self = .inactive(error: .permissonError)
+            self = .inactive(error: .permissionError)
         case .paused:
             self = .stopped
         case .unauthorized:
-            self = .inactive(error: .permissonError)
+            self = .inactive(error: .permissionError)
         @unknown default:
             fatalError()
         }

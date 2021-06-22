@@ -17,9 +17,9 @@ Our prestandard solution that is not using the Apple/Google framework can be fou
 ## Repositories
 * Android SDK & Calibration app: [dp3t-sdk-android](https://github.com/DP-3T/dp3t-sdk-android)
 * iOS SDK & Calibration app: [dp3t-sdk-ios](https://github.com/DP-3T/dp3t-sdk-ios)
-* Android Demo App: [dp3t-app-android](https://github.com/DP-3T/dp3t-app-android)
-* iOS Demo App: [dp3t-app-ios](https://github.com/DP-3T/dp3t-app-ios)
 * Backend SDK: [dp3t-sdk-backend](https://github.com/DP-3T/dp3t-sdk-backend)
+
+For an example project using the SDK look at the Swiss contact tracing app [SwissCovid](https://github.com/SwissCovid).
 
 ## Further Documentation
 The full set of documents for DP3T is at https://github.com/DP-3T/documents. Please refer to the technical documents and whitepapers for a description of the implementation.
@@ -178,7 +178,7 @@ If a `DP3TBackgroundHandler` was passed to the SDK on initialisation it will be 
 ## Apps using the DP3T-SDK for iOS
 Name | Country | Source code | Store | Release-Date
 ---- | ----------- | ------------- | ------------- | -------------
-SwissCovid | Switzerland | [Github](https://github.com/DP-3T/dp3t-app-ios-ch) | [AppStore](https://apps.apple.com/ch/app/swisscovid/id1509275381) | 25. Mai 2020
+SwissCovid | Switzerland | [Github](https://github.com/SwissCovid/swisscovid-app-ios) | [AppStore](https://apps.apple.com/ch/app/swisscovid/id1509275381) | 25. Mai 2020
 ASI | Ecuador | [minka.gob.ec](https://minka.gob.ec/asi-ecuador/ios) | [AppStore](https://apps.apple.com/app/id1523594087) | 2. August 2020
 Hoia | Estonia | [koodivaramu.eesti.ee](https://koodivaramu.eesti.ee/tehik/hoia/dp3t-app-ios) | [AppStore](https://apps.apple.com/app/id1515441601) | 19. August 2020
 STAYAWAY COVID | Portugal | [Github](https://github.com/stayawayinesctec/stayaway-app) | [AppStore](https://apps.apple.com/pt/app/id1519479652) | 28. August 2020

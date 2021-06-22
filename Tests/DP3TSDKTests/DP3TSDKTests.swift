@@ -102,7 +102,7 @@ class DP3TSDKTests: XCTestCase {
             .init(keyData: Data(count: 16), rollingPeriod: 144, rollingStartNumber: DayDate(date: oldestDate).period, transmissionRiskLevel: 0, fake: 0),
             .init(keyData: Data(count: 16), rollingPeriod: 144, rollingStartNumber: DayDate(date: oldestDate.addingTimeInterval(.day * 2)).period, transmissionRiskLevel: 0, fake: 0),
         ]
-        sdk.iWasExposed(onset: .init(timeIntervalSinceNow: -.day), authentication: .none) { (result) in
+        sdk.iWasExposed(onset: .distantPast, authentication: .none) { (result) in
             if case let Result.success(wrapper) = result {
                 XCTAssertEqual(wrapper.oldestKeyDate, DayDate(date: oldestDate).dayMin)
             } else {
@@ -291,5 +291,47 @@ class DP3TSDKTests: XCTestCase {
         sleep(1)
 
         XCTAssertEqual(tracer.state, TrackingState.active)
+    }
+
+    func testInfectedAfterReset() {
+
+        XCTAssertEqual(sdk.status.infectionStatus, .healthy)
+
+        let firstInfected = expectation(description: "firstInfected")
+        sdk.iWasExposed(onset: .init(), authentication: .none) { _ in
+            firstInfected.fulfill()
+        }
+        wait(for: [firstInfected], timeout: 1.0)
+
+        XCTAssertEqual(sdk.status.infectionStatus, .infected)
+
+        sdk.reset()
+        sdk = nil
+        //re-init SDK
+        setUp()
+
+        XCTAssertEqual(sdk.status.infectionStatus, .healthy)
+
+        let secondInfected = expectation(description: "secondInfected")
+        sdk.iWasExposed(onset: .init(), authentication: .none) { _ in
+            secondInfected.fulfill()
+        }
+        wait(for: [secondInfected], timeout: 1.0)
+
+        XCTAssertEqual(sdk.status.infectionStatus, .infected)
+    }
+
+    func testCorrectDeallocation() {
+        weak var weakRef = sdk
+        sdk.reset()
+        sdk = nil
+        let expt = expectation(description: "deallocated")
+
+        DispatchQueue.main.async {
+            XCTAssertNil(weakRef)
+            expt.fulfill()
+        }
+
+        wait(for: [expt], timeout: 1.0)
     }
 }

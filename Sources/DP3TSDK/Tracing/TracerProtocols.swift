@@ -16,7 +16,7 @@ protocol TracerDelegate: AnyObject {
 
 public typealias TracingEnableResult = Result<Void, DP3TTracingError>
 
-protocol Tracer {
+protocol Tracer: AnyObject {
     var delegate: TracerDelegate? { get set }
 
     var state: TrackingState { get }

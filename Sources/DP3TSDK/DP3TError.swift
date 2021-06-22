@@ -31,7 +31,7 @@ public enum DP3TTracingError: Error {
     case authorizationUnknown
 
     /// The user either denied authorization or region is not active
-    case permissonError
+    case permissionError
 
     /// The user was marked as infected
     case userAlreadyMarkedAsInfected
