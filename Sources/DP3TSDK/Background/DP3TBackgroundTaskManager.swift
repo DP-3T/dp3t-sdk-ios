@@ -31,6 +31,8 @@ class DP3TBackgroundTaskManager {
     private let serviceClient: ExposeeServiceClientProtocol
 
     private weak var tracer: Tracer!
+    
+    var shouldReschedule: Bool = true
 
     init(handler: DP3TBackgroundHandler?,
          keyProvider: DiagnosisKeysProvider,
@@ -183,6 +185,8 @@ class DP3TBackgroundTaskManager {
 
     @available(iOS 13.0, *)
     private func scheduleBackgroundTasks() {
+        guard self.shouldReschedule else { return }
+        
         logger.trace()
 
         // Schedule next app refresh task 12h in the future
