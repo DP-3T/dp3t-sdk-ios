@@ -14,8 +14,8 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - name: Switch to Xcode 12.3
-      run: sudo xcode-select --switch /Applications/Xcode_12.3.app
+    - name: Switch to Xcode 13.2.1
+      run: sudo xcode-select --switch /Applications/Xcode_13.2.1.app
 
     - name: Fastlane test
       run: fastlane test
@@ -34,8 +34,8 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - name: Switch to Xcode 12.3
-      run: sudo xcode-select --switch /Applications/Xcode_12.3.app
+    - name: Switch to Xcode 13.2.1
+      run: sudo xcode-select --switch /Applications/Xcode_13.2.1.app
 
     # Compile sample app for iOS Simulator (no signing)
     - name: Compile and run tests
