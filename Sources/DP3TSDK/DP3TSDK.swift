@@ -375,6 +375,10 @@ class DP3TSDK {
         exposureDayStorage.reset()
         URLCache.shared.removeAllCachedResponses()
     }
+    
+    func setBackgroundTasksEnabled(_ enabled: Bool) {
+        backgroundTaskManager.shouldReschedule = enabled
+    }
 
     @objc func backgroundRefreshStatusDidChange() {
         let new = UIApplication.shared.backgroundRefreshStatus

@@ -206,6 +206,12 @@ public enum DP3TTracing {
         instance = nil
     }
     
+    @available(iOS 12.5, *)
+    public static func setBackgroundTasksEnabled(_ enabled: Bool) {
+        instancePrecondition()
+        instance.setBackgroundTasksEnabled(enabled)
+    }
+    
     public static var loggingEnabled: Bool {
         set {
             Logger.loggingEnabled = newValue

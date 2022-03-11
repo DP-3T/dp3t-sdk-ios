@@ -13,8 +13,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Switch to Xcode 12.3
-      run: sudo xcode-select --switch /Applications/Xcode_12.3.app
+    - name: Switch to Xcode 13.2.1
+      run: sudo xcode-select --switch /Applications/Xcode_13.2.1.app
     
     - name: Install Cocoapods
       run: gem install cocoapods
