@@ -32,7 +32,15 @@ class DP3TBackgroundTaskManager {
 
     private weak var tracer: Tracer!
     
-    var shouldReschedule: Bool = true
+    var shouldReschedule: Bool = true {
+        didSet {
+            if shouldReschedule == false {
+                if #available(iOS 13.0, *) {
+                    cancelScheduledTask()
+                }
+            }
+        }
+    }
 
     init(handler: DP3TBackgroundHandler?,
          keyProvider: DiagnosisKeysProvider,
@@ -87,6 +95,11 @@ class DP3TBackgroundTaskManager {
 
     private func handleiOS12BackgroundLaunch() {
         logger.trace()
+        
+        if !shouldReschedule {
+            return
+        }
+        
         let queue = OperationQueue()
 
         if let handler = handler {
@@ -110,6 +123,10 @@ class DP3TBackgroundTaskManager {
     private func handleExposureNotificationBackgroundTask(_ task: BGTask) {
         logger.trace()
         scheduleBackgroundTasks()
+        
+        if !shouldReschedule {
+            return
+        }
 
         let queue = OperationQueue()
 
@@ -154,6 +171,10 @@ class DP3TBackgroundTaskManager {
     private func handleRefreshTask(_ task: BGTask) {
         logger.trace()
         scheduleBackgroundTasks()
+        
+        if !shouldReschedule {
+            return
+        }
 
         let queue = OperationQueue()
         let completionGroup = DispatchGroup()
@@ -212,5 +233,10 @@ class DP3TBackgroundTaskManager {
         } catch {
             logger.error("Exposure notification task schedule failed error: %{public}@", error.localizedDescription)
         }
+    }
+    
+    @available(iOS 13.0, *)
+    func cancelScheduledTask() {
+        BGTaskScheduler.shared.cancelAllTaskRequests()
     }
 }
