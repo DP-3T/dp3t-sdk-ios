@@ -171,6 +171,10 @@ class DP3TBackgroundTaskManager {
     private func handleRefreshTask(_ task: BGTask) {
         logger.trace()
         scheduleBackgroundTasks()
+        
+        if !shouldReschedule {
+            return
+        }
 
         let queue = OperationQueue()
         let completionGroup = DispatchGroup()
