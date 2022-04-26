@@ -183,6 +183,7 @@ ASI | Ecuador | [minka.gob.ec](https://minka.gob.ec/asi-ecuador/ios) | [AppStore
 Hoia | Estonia | [koodivaramu.eesti.ee](https://koodivaramu.eesti.ee/tehik/hoia/dp3t-app-ios) | [AppStore](https://apps.apple.com/app/id1515441601) | 19. August 2020
 STAYAWAY COVID | Portugal | [Github](https://github.com/stayawayinesctec/stayaway-app) | [AppStore](https://apps.apple.com/pt/app/id1519479652) | 28. August 2020
  Radar COVID | Spain | [Github](https://github.com/RadarCOVID/radar-covid-ios) | [AppStore](https://apps.apple.com/es/app/radar-covid/id1520443509) |
+COVIDAlertMalta | Malta | [Github](https://github.com/GOVMT-MITA/mt.gov.dp3t.ios) | [AppStore](https://apps.apple.com/us/app/id1513522951) | 18. September 2020
 
 If your project/country is not yet listed but uses the DP3T-SDK feel free to send a pull-request to add it to the [README](README).
 
